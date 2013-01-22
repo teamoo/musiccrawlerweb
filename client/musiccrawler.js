@@ -1,8 +1,3 @@
-// Set up a collection to contain player information. On the server,
-// it is backed by a MongoDB collection named "links".
-
-Links = new Meteor.Collection("links");
-
 if (Meteor.isClient) {
   Template.linklist.links = function () {
     return Links.find({}, {sort: {date: 1, name: 1}, limit:3});
