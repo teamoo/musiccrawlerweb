@@ -45,8 +45,6 @@ Accounts.onCreateUser(function (options, user) {
 	return user;
 });
 
-
-Links = new Meteor.Collection("links");
 // On server startup, create some links if the database is empty.
 if (Meteor.isServer) {
   Meteor.startup(function () {	
