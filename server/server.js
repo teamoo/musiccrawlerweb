@@ -1,6 +1,5 @@
 // Set up a collection to contain player information. On the server,
 // it is backed by a MongoDB collection named "links".
-Accounts.config({forbidClientAccountCreation : false});
 
 Accounts.onCreateUser(function (options, user) {
 	var accessToken = user.services.facebook.accessToken,
@@ -22,9 +21,8 @@ Accounts.onCreateUser(function (options, user) {
 		"username",
 		"email");
 	
-	result = Meteor.http.get("https://graph.facebook.com/me/picture?redirect=?access_token=", {
+	result = Meteor.http.get("https://graph.facebook.com/me/picture?access_token=&redirect=false", {
 		params: {
-			redirect : false,
 			access_token: accessToken
 		}
 	});
@@ -33,17 +31,22 @@ Accounts.onCreateUser(function (options, user) {
 		throw result.error;
 	
 	profile.autoupdateip = true;
-	profile.pictureurl = result.data.url;
-	user.profile = profile;
-	user.email = profile.email;
+	profile.ip = "";
+	profile.port = 10025;
+	profile.pictureurl = result.data.data.url;
+	
+	user.emails = profile.email;
 	user.username = profile.username;
-	//delete profile.username;
-	//delete profile.email;
+	delete profile.username;
+	delete profile.email;
+	
+	user.profile = profile;
 	
 	return user;
 });
 
 
+Links = new Meteor.Collection("links");
 // On server startup, create some links if the database is empty.
 if (Meteor.isServer) {
   Meteor.startup(function () {	
