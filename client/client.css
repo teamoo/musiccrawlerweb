@@ -8,3 +8,7 @@
     opacity: .4;
     z-index: 1;
 }
+
+.hand {
+	cursor: pointer;
+}

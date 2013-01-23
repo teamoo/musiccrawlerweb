@@ -5,6 +5,23 @@ Links = new Meteor.Collection("links");
 //Template-Helper für handlebars
 //Hier kommt alles rein, was an Logik nicht ins Template soll
 
+
+
+//  format an ISO date using Moment.js
+//  http://momentjs.com/
+//  moment syntax example: moment(Date("2011-07-18T15:50:52")).format("MMMM YYYY")
+//  usage: {{dateFormat creation_date format="MMMM YYYY"}}
+Handlebars.registerHelper('dateFormat', function(context, block) {
+  if (window.moment) {
+	moment().lang('de');
+    var f = block.hash.format || "MMM Do, YYYY";
+    return moment(Date(context)).format(f);
+  }else{
+    return context;   //  moment plugin not available. return data as is.
+  };
+});
+
+
 //Links-Outlet: alle Links, später ggf. jeweils andere Subscriptions anhängen
 Template.linklist.links = function () {
     return Links.find({}, {sort: {date: 1, name: 1}, limit:7});
@@ -32,6 +49,55 @@ Template.link.events({
   Session.set("selected_link", this._id);
 }
 });
+
+Template.link.getSizeinMB = function (data) {
+	if (this.size && this.size > 0)
+	{
+		return Math.round(this.size/1048576) + " MB";
+	}
+	return undefined;
+};
+
+Template.link.getStatusIcon = function (data) {
+	switch (this.status)
+	{
+		case 'on':	return "icon-ok"
+		case 'off': return  "icon-remove"
+		case 'unknown':	return "icon-remove"
+	}
+};
+
+Template.link.getPlayerWidget = function (data) {
+	//Soundcloud: <a href="http://soundcloud.com/matas/hobnotropic" class="sc-player">My new dub track</a>
+	//Youtube: schauen
+	//zippyshare: testen: <script type="text/javascript" src="http://api.zippyshare.com/api/embed.js"></script>
+	//vimeo: auch machen!
+	
+    // This is the oEmbed endpoint for Vimeo (we're using JSON)
+    // (Vimeo also supports oEmbed discovery. See the PHP example.)
+    var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
+		
+	if (this.hoster === "soundcloud.com")
+		return "<a href=" + this.url + " class='sc-player'></a>";
+	else if (this.hoster === "zippyshare.com")
+		//Link aufsplitten, so dass wir die Bestandteile bekommen...
+		return "<script type='text/javascript'>var zippywww='www49';var zippyfile='67788444';var zippydown='101010';var zippyfront='ffffff';var zippyback='101010';var zippylight='ffffff';var zippywidth=30;var zippyauto=false;var zippyvol=80;</script>"
+	else if (this.hoster === "youtube.com")
+		return undefined
+	else if (this.hoster === "vimeo.com")
+	{
+        var callback = function (video) {
+			return unescape(video.html);
+		};
+        var url = endpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
+	}
+	else return undefined
+};
+
+
+Template.page.notConnected = function(){
+	return !Meteor.status().connected;
+};
 
 //Klick auf Login-Button
 Template.user_loggedout.events({
@@ -89,6 +155,21 @@ Template.user_accountsettings.events({
 Template.page.showAccountSettingsDialog = function () {
   return Session.get("showAccountSettingsDialog");
 };
+
+ var openAddLinkDialog = function () {
+	Session.set("showAddLinkDialog", true);
+};
+
+Template.page.showAddLinkDialog = function () {
+  return Session.get("showAddLinkDialog");
+};
+
+Template.addlinkbutton.events({
+    'click': function () {
+		openAddLinkDialog();
+		return false;
+    }
+});
   
 Template.accountSettingsDialog.events({
   'click .save': function (event, template) {
@@ -111,7 +192,8 @@ Template.accountSettingsDialog.events({
 						console.log("RESULLTT:" + result.data);
 						if (result.data == "JDownloader") {Session.set("JDownloaderActive",true);}
 						else {Session.set("JDownloaderActive",false);};
-				}
+					}
+				)
 			}
 		);
 	}
@@ -134,7 +216,7 @@ Template.accountSettingsDialog.events({
 //zur Verfügung. Workaround: Timer auf 5 Sekunden, dann ist das Objekt im Regelfall verfügbar.
 Meteor.startup(function () {
 	Meteor.setTimeout(
-		function () {
+		function () {			
 			//bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
 			if (Meteor.user().profile.autoupdateip) {
 				if (Meteor.user().profile.autoupdateip == true)
@@ -160,6 +242,6 @@ Meteor.startup(function () {
 					}
 				);
 			};
-		},5000
+		},3000
 	);
 });

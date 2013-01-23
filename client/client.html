@@ -8,6 +8,12 @@
 </body>
 
 <template name="page">
+  {{#if notConnected}}
+	{{> connectionLostWarning}}
+  {{/if}}
+  
+  {{>header}}
+  
   {{#if showAccountSettingsDialog}}
     {{> accountSettingsDialog}}
   {{/if}}
@@ -19,38 +25,76 @@
   {{#if showAddSiteDialog}}
     {{> addSiteDialog}}
   {{/if}}
-
-  {{>header}}
-  <div class="container">
-    <div class="row">
-      <div class="span1"> </div>
-
-      <div class="span10">
-        <div class="header row">
-
-        </div>
-
-        <div class="row">
-
-        </div>
-      </div>
-
-      <div class="span1"> </div>
-    </div>
-  </div>
+  
+  {{#if showSitesDialog}}
+    {{> sitesDialog}}
+  {{/if}}
+  
+  {{> linklist}}
 </template>  
 
+<template name="connectionLostWarning">
+	<script type="text/javascript">
+		function closeWindow() {
+			if ($.browser.opera || $.browser.mozilla) window.close(); 
+			else {
+					window.open('','_self','');
+					window.close()
+				};
+		}
+	</script>
+	<div class="alert alert-error alert-block">
+		<h4 class="error heading">Achtung!</h4>
+		<p>Anscheinend hast du die Verbindung zum Server verloren. Wir versuchen dich automatisch wieder zu verbinden. Sollte dies innerhalb von 1 Minute nicht klappen, schließe bitte diese Seite und öffne sie erneut.</p>
+		<p>
+			<a class="btn btn-danger" href="" onclick="closeWindow()">Anwendung beenden</a>
+			<a class="btn" href="#">Warten</a>
+		</p>
+	</div>
+</template>
 
 <template name="header">
 	<div class="navbar">
 		<div class="navbar-inner">
 			<a class="brand" href="#">MusicCrawler</a>
-			<div class="nav pull-right">
-				{{> user_info}}
-			</div>
-			<form class="navbar-search pull-right">
-				<input type="text" class="search-query" placeholder="Search">
-			</form>
+			<ul class="nav" role="navigation">
+				<li class="dropdown">
+                      <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
+                      <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
+                        <li><a tabindex="-1" href="#">Heute</a></li>
+                        <li><a tabindex="-1" href="#">Letzte 14 Tage</a></li>
+                        <li><a tabindex="-1" href="#">Letzte 30 Tage</a></li>
+						<li><a tabindex="-1" href="#">Letzte 90 Tage</a></li>
+                        <li class="divider"></li>
+                        <li><a tabindex="-1" href="#">Letztes Jahr</a></li>
+						<li><a tabindex="-1" href="#">Alle</a></li>
+                      </ul>
+                </li>
+				<li class="dropdown">
+                      <a id="drop2" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Seiten <b class="caret"></b></a>
+                      <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
+                        <li><a tabindex="-1" href="#">Seite hinzufügen</a></li>
+                        <li class="divider"></li>
+                        <li><a tabindex="-1" href="#">Seiten anzeigen</a></li>
+                      </ul>
+                </li>
+				<li class="divider-vertical"></li>
+				{{> addlinkbutton}}
+				{{> downloadlinksbutton}}
+			</ul>
+			<ul class="nav pull-right">
+				<li>
+					<form class="navbar-search pull-right">
+						<input type="text" class="search-query" placeholder="Titel, Interpret, Album...">
+					</form>
+				</li>
+				<li class="divider-vertical"></li>
+				<li>
+					<div class="btn-group">
+						{{> user_info}}		  
+					</div>
+				</li>
+			</ul>
 		</div>
 	</div>
 </template>
@@ -65,64 +109,87 @@
 
 <template name="user_loggedin">
 	{{#if loggingIn}}
-		<li><a>Einloggen...</a></li>
+		<a class="btn" href="#"><i class="icon-user"></i> Einloggen...</a>
 	{{else}}
-		<li>
-			<span class="badge">
-			 {{#if unreadlinks}}
-				{{unreadlinks}}
-			 {{else}}
-				0
-			 {{/if}}
-			</span>
-		</li>
-		<li>
-			<img class="img-rounded" style="height: 32px; margin-top: 4px;" src="{{currentUser.profile.pictureurl}}"/>
-		</li>
-		<li class="dropdown">
-			<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-				{{currentUser.profile.name}}
-			</a>
-			<ul class="dropdown-menu">
-				{{> user_accountsettings}}
-				<li class="divider"></li>
-				<li><a id="logout">Abmelden</a></li>
-			</ul>
-		</li>
+		<a class="btn" href="#" id="accountbtn" rel="popover" data-original-title="{{currentUser.profile.name}}" data-placement="bottom"><i class="icon-user"></i> {{currentUser.profile.first_name}}</a>
+		<a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
+		<ul class="dropdown-menu pull-right">
+			{{> user_accountsettings}}
+			<li class="divider"></li>
+			<li><a href="#"><i class="icon-off"></i> Abmelden</a></li>
+		</ul>
 	{{/if}}
 </template>
 
-<template name="user_accountsettings">
-	<li><a href="#l" role="button">Kontoeinstellungen</a></li>
+<template name="user_loggedout">
+		<a class="btn" href="#"><i class="icon-user"></i> Login</a>
 </template>
 
-<template name="user_loggedout">
-	<li><a href="#" id="login">Login mit Facebook</a></li>
+<template name="user_accountsettings">
+	<li><a href="#"><i class="icon-wrench"></i> Einstellungen</a></li>
+</template>
+
+<template name="addlinkbutton">
+	<a class="btn" href="#"><i class="icon-plus"></i> Link hinzufügen</a>
+</template>
+
+<template name="downloadlinksbutton">
+	<a class="btn btn-primary" href="#"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+</template>
+
+<template name="progressBar">
+	<div class="progress progress-striped active">
+		<div class="bar" style="width: 40%;"></div>
+	</div>
 </template>
 
 <template name="linklist">
-  <table class="table table-condensed table-hover">
-    {{#each links}}
-      {{> link}}
-    {{/each}}
+  <table class="table table-condensed table-striped">
+	<thead>
+		<th>
+			<input type="checkbox" value="">
+		</th>
+		<th></th>
+		<th><i class="icon-volume-up"></i></th>
+		<th>Name</th>
+		<th>URL</th>
+		<th></th>
+		<th>Status</th>
+		<th>Quelle</th>
+		<th>Größe</th>
+		<th>Hinzugefügt</th>
+	</thead>
+	<tbody>
+		{{#each links}}
+			{{> link}}
+		{{/each}}
+	</tbody>
   </table>
-
-  {{#if selected_link}}
-  <div class="details">
-    <div class="name">{{selected_link}}</div>
-    <input type="button" class="btn btn-small" value="Download" data-loading-text="Wird gesendet..."/>
-  </div>
-  {{/if}}
 </template>
 
 <template name="link">
   <tr>
-	<td>{{status}}</td>
+	<td>
+		<input type="checkbox" value="">
+	</td>
+	<td>
+		<i class="icon-refresh hand"></i>
+	</td>
+	<td>
+		play
+	</td>
     <td>{{name}}</td>
     <td>{{url}}</td>
+	<td>
+	<i class="icon-thumbs-up hand"></i>
+	{{#if likes}}{{likes}}{{else}}0{{/if}}
+	</td>
+	<td>
+		<i class="{{getStatusIcon}}"></i>
+	</td>
 	<td>{{source}}</td>
-	<td>{{size}}</td>
-	<td>{{date}}</td>
+	<td>{{getSizeinMB}}</td>
+	<td>{{dateFormat date format="DD. MMM YYYY"}}</td>
   </tr>
 </template>
 
@@ -130,7 +197,7 @@
 <div class="mask"> </div>
 <div id="accountSettingsModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	<button type="button" class="close cancel" aria-hidden="true">&times;</button>
     <h3 id="accountSettingsLabel" align="center">Kontoeinstellungen</h3>
   </div>
   <div class="modal-body">
@@ -157,9 +224,9 @@
 
 <template name="addLinkDialog">
 <div class="mask"> </div>
-<div id="accountSettingsModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="addLinkModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	<button type="button" class="close cancel" aria-hidden="true">&times;</button>
     <h3 id="accountSettingsLabel" align="center">Link hinzufügen</h3>
   </div>
   <div class="modal-body">
@@ -171,36 +238,26 @@
 	</form>
   </div>
   <div class="modal-footer">
-
   </div>
 </div>
 </template>
 
 <template name="addSiteDialog">
 <div class="mask"> </div>
-<div id="accountSettingsModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="addSiteModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel3" aria-hidden="true">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="accountSettingsLabel" align="center">Kontoeinstellungen</h3>
+	<button type="button" class="close cancel" aria-hidden="true">&times;</button>
+    <h3 id="accountSettingsLabel" align="center">Musik-Blog hinzufügen</h3>
   </div>
   <div class="modal-body">
 	<form class="form-horizontal">
-		<span class="help-inline">IP-Adresse:</span>
-		<div class="input-append">
-			<span class="input-medium uneditable-input ip">{{currentUser.profile.ip}}</span>
-			<button class="btn btn-link" type="button">Aktualisieren</button>
-		</div>
-		<span class="help-inline">Port:</span>
-		<input class="input-mini port" type="text" value={{currentUser.profile.port}}>
-		<label class="checkbox">
-		<input class="autoupdate" type="checkbox" checked={{currentUser.profile.autoupdateip}}>
-		IP-Adresse automatisch updaten?
-		</label>
+		<span class="help-inline">URL der Seite, die wir nach Links durchsuchen sollen</span>
+		<input class="input-mini port" type="text" placeholder="http://electrotechnosuperblog.com">
 	</form>
   </div>
   <div class="modal-footer">
     <button class="btn cancel" data-dismiss="modal" aria-hidden="true">Schließen</button>
-    <button class="btn btn-primary save">Speichern</button>
+    <button class="btn btn-primary save">Seite hinzufügen</button>
   </div>
 </div>
 </template>
