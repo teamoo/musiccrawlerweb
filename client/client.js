@@ -1,51 +1,67 @@
-// Set up a collection to contain player information. On the server,
-// it is backed by a MongoDB collection named "links".
+//Clientseitige Methoden
+//Hier muss später die Subscription gemacht werden, ja nach Benutzerauswahl
 Links = new Meteor.Collection("links");
 
-  Template.linklist.links = function () {
+//Template-Helper für handlebars
+//Hier kommt alles rein, was an Logik nicht ins Template soll
+
+//Links-Outlet: alle Links, später ggf. jeweils andere Subscriptions anhängen
+Template.linklist.links = function () {
     return Links.find({}, {sort: {date: 1, name: 1}, limit:7});
-  };
+};
 
-  Template.linklist.selected = function () {
-    var link = Links.findOne(Session.get("selected_link"));
-    return link && link.url;
-  };
+//Event-Handler für die Linkliste und die Links...
+//brauchen wir momentan nicht, ggf. später, ist ein Relikt aus dem Beispiel
+Template.linklist.selected = function () {
+var link = Links.findOne(Session.get("selected_link"));
+return link && link.url;
+};
 
-  Template.linklist.events({
-    'click': function () {
+Template.linklist.events({
+'click': function () {
 
-    }
-  });
-  
-  Template.link.selected = function () {
-    return Session.equals("selected_link", this._id) ? "selected" : '';
-  };
+}
+});
 
-  Template.link.events({
-    'click': function () {
-      Session.set("selected_link", this._id);
-    }
-  });
-  
- Template.user_loggedout.events({
+Template.link.selected = function () {
+return Session.equals("selected_link", this._id) ? "selected" : '';
+};
+
+Template.link.events({
+'click': function () {
+  Session.set("selected_link", this._id);
+}
+});
+
+//Klick auf Login-Button
+Template.user_loggedout.events({
     'click #login': function () {
+		//wir loggen den User mit Facebook ein, erbitten Zugriff auf seine eMail-Adresse
 		Meteor.loginWithFacebook({
 		  requestPermissions: ['email']
 		}, function (err) {
 		  if (err)
+			//TODO: Error-Handling
 			console.log(err);
 		  else {
-			Meteor.http.call("GET","http://api.hostip.info/get_json.php",
-				function (error, result) {
-					if (error)
-						throw error;
-					Meteor.users.update( { _id: Meteor.userId()}, {$set: {'profile.ip': result.data.ip} } );
-				}
-			);
+			//wenn die User-IP geupdate werden soll...
+			if (Meteor.user().profile.autoupdateip === true)
+			{
+				//dann rufen wir die neue IP ab und speichern sie im Profil
+				Meteor.http.call("GET","http://api.hostip.info/get_json.php",
+					function (error, result) {
+						if (error)
+							throw error;
+						else {
+							Meteor.users.update( { _id: Meteor.userId()}, {$set: {'profile.ip': result.data.ip} } );
+						}
+					}
+				);			
+			}
 		  }
 		});
 	}	
-  });
+});
   
 Template.user_loggedin.events({
 'click #logout': function () {
@@ -87,49 +103,63 @@ Template.accountSettingsDialog.events({
 				if (error)
 					throw error;
 				Meteor.users.update( { _id: Meteor.userId()}, {$set: {'profile.ip': result.data.ip , 'profile.port' : aport, 'profile.autoupdateip' : aupdateip}})
+				//neue IP nutzen und checken, ob hier ein JD läuft...
+				Meteor.http.call("GET","http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/get/version",
+					function (error, result) {
+						if (error)
+							throw result.error;
+						console.log("RESULLTT:" + result.data);
+						if (result.data == "JDownloader") {Session.set("JDownloaderActive",true);}
+						else {Session.set("JDownloaderActive",false);};
+				}
 			}
 		);
 	}
 	else {
+		//wenn Aut-Update aus ist, nehmen wir die IP-Adresse, die der User im Formular eingetragen hat
 		Meteor.users.update( { _id: Meteor.userId()}, {$set: {'profile.port' : aport, 'profile.ip': aip} } );
 	}
-
-	
+	//es wurde gespeichert, Dialog schließen
     Session.set("showAccountSettingsDialog", false);
   },
 
   'click .cancel': function () {
+	//User hat abgebrochen, Dialog schließen
     Session.set("showAccountSettingsDialog", false);
   }
 });
 
-
-
-  
-Meteor.setTimeout(
-	function () {
-		if (Meteor.user().profile.autoupdateip) {
-			if (Meteor.user().profile.autoupdateip == true)
-			{
-				Meteor.http.call("GET","http://api.hostip.info/get_json.php",
+//Startup-Eventhandler: wird aufgerufen, wenn der Client bzw. Server vollständig gestartet ist
+//leider funktioniert das noch nicht ganz, das Meteor.user() Objekt steht dann noch nicht immer
+//zur Verfügung. Workaround: Timer auf 5 Sekunden, dann ist das Objekt im Regelfall verfügbar.
+Meteor.startup(function () {
+	Meteor.setTimeout(
+		function () {
+			//bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
+			if (Meteor.user().profile.autoupdateip) {
+				if (Meteor.user().profile.autoupdateip == true)
+				{
+					Meteor.http.call("GET","http://api.hostip.info/get_json.php",
+						function (error, result) {
+							if (error)
+								//TODO error handling
+								throw result.error;	
+							Meteor.user().profile.ip = result.data.ip;
+						}
+					);
+				}
+				//unabhängig von autoupdate schauen wir, ob die gewünschte IP online ist
+				Meteor.http.call("GET","http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/get/version",
 					function (error, result) {
 						if (error)
-							throw result.error;	
-						Meteor.user().profile.ip = result.data.ip;
+							//TODO error handling
+							throw result.error;
+						console.log("RESULLTT:" + result.data);
+						if (result.data == "JDownloader") {Session.set("JDownloaderActive",true);}
+						else {Session.set("JDownloaderActive",false);};
 					}
 				);
-			}
-	
-			Meteor.http.call("GET","http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/get/version",
-				function (error, result) {
-					if (error)
-						throw result.error;
-					console.log("RESULLTT:" + result.data);
-					if (result.data == "JDownloader") {Session.set("JDownloaderActive",true);}
-					else {Session.set("JDownloaderActive",false);};
-				}
-	
-	
-		};
-	},5000
-);
+			};
+		},5000
+	);
+});

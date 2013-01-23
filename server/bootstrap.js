@@ -1,3 +1,4 @@
+ //Beim Start des Servers Daten einfügen, falls keine vorhanden sind.
  Meteor.startup(function () {	
 	if (Links.find().count() === 0) {
 		Links.insert({ status: "on", hoster: "novafile.com", name: "0501.rar", url: "http://novafile.com/0zrcryg69wr1", metainfo: "", source: "http://www.bestclubsound.com", date: "2013-01-21 19:37:10", password: "", size: 432537600 });

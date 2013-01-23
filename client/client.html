@@ -11,6 +11,14 @@
   {{#if showAccountSettingsDialog}}
     {{> accountSettingsDialog}}
   {{/if}}
+  
+  {{#if showAddLinkDialog}}
+    {{> addLinkDialog}}
+  {{/if}}
+  
+  {{#if showAddSiteDialog}}
+    {{> addSiteDialog}}
+  {{/if}}
 
   {{>header}}
   <div class="container">
@@ -119,6 +127,56 @@
 </template>
 
 <template name="accountSettingsDialog">
+<div class="mask"> </div>
+<div id="accountSettingsModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="accountSettingsLabel" align="center">Kontoeinstellungen</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal">
+		<span class="help-inline">IP-Adresse:</span>
+		<div class="input-append">
+			<span class="input-medium uneditable-input ip">{{currentUser.profile.ip}}</span>
+			<button class="btn btn-link" type="button">Aktualisieren</button>
+		</div>
+		<span class="help-inline">Port:</span>
+		<input class="input-mini port" type="text" value={{currentUser.profile.port}}>
+		<label class="checkbox">
+		<input class="autoupdate" type="checkbox" checked={{currentUser.profile.autoupdateip}}>
+		IP-Adresse automatisch updaten?
+		</label>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn cancel" data-dismiss="modal" aria-hidden="true">Schließen</button>
+    <button class="btn btn-primary save">Speichern</button>
+  </div>
+</div>
+</template>
+
+<template name="addLinkDialog">
+<div class="mask"> </div>
+<div id="accountSettingsModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="accountSettingsLabel" align="center">Link hinzufügen</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-inline">
+		<div class="input-append">
+			<input class="input-xxlarge linkurl" type="url" placeholder="http://www3.zippyshare.com/12345/file.html" required>
+			<button class="btn btn-primary addlink" type="button">Hinzufügen</button>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+
+  </div>
+</div>
+</template>
+
+<template name="addSiteDialog">
 <div class="mask"> </div>
 <div id="accountSettingsModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
