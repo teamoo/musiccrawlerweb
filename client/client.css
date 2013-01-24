@@ -13,7 +13,10 @@
 	cursor: pointer;
 }
 
-
 .linkurl {
 	width: 420px;
+}
+
+body {
+	padding: 40px;
 }

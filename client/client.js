@@ -1,12 +1,28 @@
-//Clientseitige Methoden
-//Hier muss später die Subscription gemacht werden, ja nach Benutzerauswahl
-Links = new Meteor.Collection("links");
+﻿//Clientseitige Methoden
+//Hier muss später die Subscription gemacht werden
+var tmp_date = new Date();
+var filter_status = new Array();
+tmp_date.setDate(tmp_date.getDate()-14);
+filter_status.push("on");
+Session.set("filter_date",tmp_date);
+Session.set("filter_status",filter_status);
+
+// Always be subscribed to the currently filtered links
+Meteor.autosubscribe(function () {
+  var filter_date = Session.get('filter_date');
+  var filter_status = Session.get('filter_status');
+  if (filter_date && filter_status)
+    Meteor.subscribe('links', filter_date, filter_status);
+});
+
+Meteor.autosubscribe(function () {
+  var showSitesDialog = Session.get('showSitesDialog');
+  var showAddSiteDialog = Session.get('showAddSiteDialog');
+  if (showSitesDialog == true || showAddSiteDialog == true)
+    Meteor.subscribe('sites');
+});
 
 //Template-Helper für handlebars
-//Hier kommt alles rein, was an Logik nicht ins Template soll
-
-
-
 //  format an ISO date using Moment.js
 //  http://momentjs.com/
 //  moment syntax example: moment(Date("2011-07-18T15:50:52")).format("MMMM YYYY")
@@ -15,41 +31,24 @@ Handlebars.registerHelper('dateFormat', function(context, block) {
   if (window.moment) {
 	moment().lang('de');
     var f = block.hash.format || "MMM Do, YYYY";
-    return moment(Date(context)).format(f);
+	if (moment(context).isValid())return moment(context).format(f);
+	return context;
   }else{
     return context;   //  moment plugin not available. return data as is.
   };
 });
 
-
-//Links-Outlet: alle Links, später ggf. jeweils andere Subscriptions anhängen
+//
+//Handlebar-Funktionen
+//
+//Links-Outlet: alle Links, die gerade in der subscription sind
 Template.linklist.links = function () {
-    return Links.find({}, {sort: {date: 1, name: 1}, limit:7});
+    //var links = Links.find({});
+	//if (links.count() == 0) return false;
+	return Links.find({});
 };
 
-//Event-Handler für die Linkliste und die Links...
-//brauchen wir momentan nicht, ggf. später, ist ein Relikt aus dem Beispiel
-Template.linklist.selected = function () {
-var link = Links.findOne(Session.get("selected_link"));
-return link && link.url;
-};
-
-Template.linklist.events({
-'click': function () {
-
-}
-});
-
-Template.link.selected = function () {
-return Session.equals("selected_link", this._id) ? "selected" : '';
-};
-
-Template.link.events({
-'click': function () {
-  Session.set("selected_link", this._id);
-}
-});
-
+//Link-Größe von Kilobyte in MB umwandeln
 Template.link.getSizeinMB = function (data) {
 	if (this.size && this.size > 0)
 	{
@@ -58,6 +57,7 @@ Template.link.getSizeinMB = function (data) {
 	return undefined;
 };
 
+//Status-Icon auswählen je nach Status
 Template.link.getStatusIcon = function (data) {
 	switch (this.status)
 	{
@@ -67,6 +67,7 @@ Template.link.getStatusIcon = function (data) {
 	}
 };
 
+//Player-Widget zurückgeben, wenn es einen embedabble player gibt
 Template.link.getPlayerWidget = function (data) {
 	//Soundcloud: <a href="http://soundcloud.com/matas/hobnotropic" class="sc-player">My new dub track</a>
 	//Youtube: schauen
@@ -75,29 +76,120 @@ Template.link.getPlayerWidget = function (data) {
 	
     // This is the oEmbed endpoint for Vimeo (we're using JSON)
     // (Vimeo also supports oEmbed discovery. See the PHP example.)
-    var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
-		
-	if (this.hoster === "soundcloud.com")
-		return "<a href=" + this.url + " class='sc-player'></a>";
-	else if (this.hoster === "zippyshare.com")
-		//Link aufsplitten, so dass wir die Bestandteile bekommen...
-		return "<script type='text/javascript'>var zippywww='www49';var zippyfile='67788444';var zippydown='101010';var zippyfront='ffffff';var zippyback='101010';var zippylight='ffffff';var zippywidth=30;var zippyauto=false;var zippyvol=80;</script>"
-	else if (this.hoster === "youtube.com")
-		return undefined
-	else if (this.hoster === "vimeo.com")
+	
+	return undefined;
+	
+	if (this.status === 'on')
 	{
-        var callback = function (video) {
-			return unescape(video.html);
-		};
-        var url = endpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
+		if (this.hoster === "soundcloud.com")
+			return Meteor.render("<a href=" + this.url + " class='sc-player'></a>");
+		else if (this.hoster === "zippyshare.com")
+			//Link aufsplitten, so dass wir die Bestandteile bekommen...
+			return Meteor.render("<script type='text/javascript'>var zippywww='www49';var zippyfile='67788444';var zippydown='101010';var zippyfront='ffffff';var zippyback='101010';var zippylight='ffffff';var zippywidth=30;var zippyauto=false;var zippyvol=80;</script>");
+		else if (this.hoster === "youtube.com")
+			return undefined
+		else if (this.hoster === "vimeo.com")
+		{
+			var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
+			var callback = function (video) {
+				return Meteor.render(unescape(video.html));
+			};
+			var url = endpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
+		x}
 	}
-	else return undefined
+	else return Meteor.render("<i class=\"icon-ban-circle\"></i>");
+};
+
+Template.linkfilter_items.getLinkCount = function(context){
+	
 };
 
 
+//Connected-Status nutzen für Fehlermeldungsanzeige
 Template.page.notConnected = function(){
 	return !Meteor.status().connected;
 };
+
+ var openAccountSettingsDialog = function () {
+	Session.set("showAccountSettingsDialog", true);
+};
+
+Template.page.showAccountSettingsDialog = function () {
+  return Session.get("showAccountSettingsDialog");
+};
+
+ var openAddLinkDialog = function () {
+	Session.set("showAddLinkDialog", true);
+};
+
+Template.page.showAddLinkDialog = function () {
+  return Session.get("showAddLinkDialog");
+};
+
+//
+//Eventhandler
+//
+//TODO geht noch nicht
+//Linkfilter aktualisieren
+Template.select_all_links.events({
+'click': function (event, template) {
+	if (event.srcElement.checked == true)
+	{
+		console.log("checked");
+		Template.link.find(".link_checkbox").checked == true;
+	}
+	else
+	{
+		console.log("unchecked");
+		Template.link.find(".link_checkbox").checked == false;
+	}
+}
+});
+
+
+Template.link_filter_status.events({
+'click': function (context) {
+	var tmp_status = Session.get("filter_status");
+	
+	if ($.inArray("off",tmp_status) == true) tmp_status=new Array("on");
+	else {
+		tmp_status.push("off");
+		tmp_status.push("unknown");
+	};
+	Session.set("filter_status",tmp_status);
+}
+});
+
+
+Template.comment_link.events({
+'click': function (context) {
+
+}
+});
+
+Template.comment_link_white.events({
+'click': function (context) {
+	Session.set("link_id",context.srcElement.id);
+	//console.log("'#" + context.srcElement.id + ".popover'");
+		
+	var tmplink = Links.find({_id: context.srcElement.id});	
+	
+	//console.log(tmplink);
+	//console.log(tmplink.comments);
+		
+	//$('#' + context.srcElement.id + '.popover').popover();
+	//$('#' + context.srcElement.id + '.popover').popover('show');
+}
+});
+
+//Linkfilter(Date) aktualisieren
+Template.linkfilter_items.events({
+'click': function (context) {
+	var tmp_date = new Date();
+	tmp_date.setDate(tmp_date.getDate()-context.srcElement.id);
+	Session.set("filter_date",tmp_date);
+}
+});
 
 //Klick auf Login-Button
 Template.user_loggedout.events({
@@ -128,19 +220,26 @@ Template.user_loggedout.events({
 		});
 	}	
 });
-  
+
+//Logout-Eventhandler  
 Template.user_loggedin.events({
 'click #logout': function () {
   Meteor.logout(function (err) {
 	  if (err) {
 		console.log(err);
-	  } else {
-
 	  }
    });
 }
 });
-  
+
+Template.addlinkbutton.events({
+    'click': function () {
+		openAddLinkDialog();
+		return false;
+    }
+});
+
+//Kontoeinstellungen-Eventhandler  
 Template.user_accountsettings.events({
     'click': function () {
 		openAccountSettingsDialog();
@@ -148,26 +247,15 @@ Template.user_accountsettings.events({
     }
 });
 
- var openAccountSettingsDialog = function () {
-	Session.set("showAccountSettingsDialog", true);
-};
 
-Template.page.showAccountSettingsDialog = function () {
-  return Session.get("showAccountSettingsDialog");
-};
+Template.like_link.events({
+    'click': function (context) {	
+		// This query succeeds only if the voters array doesn't contain the user
+		query   = {_id: context.srcElement.id, likers : {'$ne': Meteor.userId()}};
+		// Update to add the user to the array and increment the number of votes.
+		update  = {'$push': {'likers': Meteor.userId()}, '$inc': {likes: 1}}
 
- var openAddLinkDialog = function () {
-	Session.set("showAddLinkDialog", true);
-};
-
-Template.page.showAddLinkDialog = function () {
-  return Session.get("showAddLinkDialog");
-};
-
-Template.addlinkbutton.events({
-    'click': function () {
-		openAddLinkDialog();
-		return false;
+		Links.update(query, update);
     }
 });
 
@@ -183,9 +271,15 @@ Template.addLinkDialog.events({
   'click .cancel': function () {
 	//User hat abgebrochen, Dialog schließen
     Session.set("showAddLinkDialog", false);
-  }
+  },
+  'input #newlinkurl': function(event, template) {
+		if (!event.srcElement.validity.valid) {
+			template.find('.addlink').disabled = true;
+		} else {
+			template.find('.addlink').disabled = false;
+		};
+	}		
 });
-
   
 Template.accountSettingsDialog.events({
   'click .save': function (event, template) {
@@ -227,6 +321,9 @@ Template.accountSettingsDialog.events({
   }
 });
 
+//
+//Startup-Funktion
+//
 //Startup-Eventhandler: wird aufgerufen, wenn der Client bzw. Server vollständig gestartet ist
 //leider funktioniert das noch nicht ganz, das Meteor.user() Objekt steht dann noch nicht immer
 //zur Verfügung. Workaround: Timer auf 5 Sekunden, dann ist das Objekt im Regelfall verfügbar.
@@ -234,7 +331,7 @@ Meteor.startup(function () {
 	Meteor.setTimeout(
 		function () {		
 			//bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
-			if (Meteor.user().profile.autoupdateip) {
+			if (Meteor.userId() && Meteor.user().profile.autoupdateip) {
 				if (Meteor.user().profile.autoupdateip == true)
 				{
 					Meteor.http.call("GET","http://api.hostip.info/get_json.php",
@@ -253,6 +350,13 @@ Meteor.startup(function () {
 					    console.log(err);
 					  }
 					  Session.set("JDOnlineStatus", isOnline); 
+				  }
+				);
+				Meteor.call("getLinkCounts", [7,14,30,90], function (err, result) {
+					  if (err) {
+					    console.log(err);
+					  }
+					  console.log(result);
 				  }
 				);
 			};

@@ -30,7 +30,11 @@
     {{> sitesDialog}}
   {{/if}}
   
-  {{> linklist}}
+  {{#if currentUser}}
+	{{> linklist}}
+  {{/if}}
+  
+ 
 </template>  
 
 <template name="connectionLostWarning">
@@ -54,20 +58,14 @@
 </template>
 
 <template name="header">
-	<div class="navbar">
+	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			<a class="brand" href="#">MusicCrawler</a>
 			<ul class="nav" role="navigation">
 				<li class="dropdown">
                       <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
                       <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
-                        <li><a tabindex="-1" href="#">Heute</a></li>
-                        <li><a tabindex="-1" href="#">Letzte 14 Tage</a></li>
-                        <li><a tabindex="-1" href="#">Letzte 30 Tage</a></li>
-						<li><a tabindex="-1" href="#">Letzte 90 Tage</a></li>
-                        <li class="divider"></li>
-                        <li><a tabindex="-1" href="#">Letztes Jahr</a></li>
-						<li><a tabindex="-1" href="#">Alle</a></li>
+						{{> linkfilter_items}}
                       </ul>
                 </li>
 				<li class="dropdown">
@@ -98,6 +96,25 @@
 			</ul>
 		</div>
 	</div>
+</template>
+
+<template name="comment">
+	<div class="span4 well">
+		<form accept-charset="UTF-8" action="" method="POST">
+			<textarea class="span4" id="new_comment" name="new_comment"
+			placeholder="Kommentar eingeben" rows="5"></textarea>
+			<button class="btn btn-info" type="submit">Posten</button>
+		</form>
+	</div>
+</template>
+
+<template name="linkfilter_items">
+	<li><a tabindex="-1" href="#" id="1">Letzte 24 Stunden <span class="badge" id="1">{{getLinkCount}}</span></a></li>
+	<li><a tabindex="-1" href="#" id="14">Letzte 14 Tage <span class="badge" id="14">{{getLinkCount}}</span></a></li>
+    <li><a tabindex="-1" href="#" id="30">Letzte 30 Tage <span class="badge" id="30">{{getLinkCount}}</span></a></li>
+	<li><a tabindex="-1" href="#" id="90">Letzte 90 Tage <span class="badge" id="90">{{getLinkCount}}</span></a></li>
+    <li class="divider"></li>
+    <li><a tabindex="-1" href="#" id="365">Letztes Jahr </a></li>
 </template>
 
 <template name="user_info">
@@ -153,41 +170,80 @@
   <table class="table table-condensed table-striped">
 	<thead>
 		<th>
-			<input type="checkbox" value="">
+			{{> select_all_links}}
 		</th>
 		<th></th>
 		<th><i class="icon-volume-up"></i></th>
 		<th>Name</th>
 		<th>URL</th>
 		<th></th>
-		<th>Status</th>
+		<th></th>
+		<th>
+			{{> link_filter_status}}
+		</th>
 		<th>Quelle</th>
 		<th>Größe</th>
 		<th>Hinzugefügt</th>
-	</thead>
-	<tbody>
-		{{#each links}}
-			{{> link}}
-		{{/each}}
-	</tbody>
-  </table>
+		</thead>
+		{{#if links}}
+			<tbody>
+			{{#each links}}
+				{{> link}}
+			{{/each}}
+			</tbody>
+			</table>
+		{{else}}
+			</table>
+			<p class="lead">Für den ausgewählten Zeitraum wurden keine Links gefunden.</p>
+		{{/if}}
+</template>
+
+<template name="select_all_links">
+	<input type="checkbox" value="" id="select_all">
+</template>
+
+<template name="link_filter_status">
+	<i class="icon-filter hand"></i> Status
 </template>
 
 <template name="link">
   <tr>
 	<td>
-		<input type="checkbox" value="">
+		<input type="checkbox" value="" class="link_checkbox">
 	</td>
 	<td>
 		<i class="icon-refresh hand"></i>
 	</td>
 	<td>
-		play
+		{{getPlayerWidget}}
 	</td>
     <td>{{name}}</td>
     <td>{{url}}</td>
 	<td>
-	<i class="icon-thumbs-up hand"></i>
+		{{#if comments}}
+			{{> comment_link}}
+			<div class="popover left" id="{{_id}}_comments" date-title="Kommentare" data-trigger:"hover">
+				<div class="arrow"></div>
+				<h3 class="popover-title">Titel</h3>
+				<div class="popover-content">
+					{{#each comments}}
+						{{message}}
+					{{/each}}
+				</div>
+			</div>
+		{{else}}
+			{{> comment_link_white}}
+			<div class="popover left" id="{{_id}}">
+				<div class="arrow"></div>
+				<h3 class="popover-title">Titel</h3>
+				<div class="popover-content">
+					<p>Text...</p>
+				</div>
+			</div>
+		{{/if}}
+	</td>
+	<td>
+	{{> like_link}}
 	{{#if likes}}{{likes}}{{else}}0{{/if}}
 	</td>
 	<td>
@@ -195,8 +251,20 @@
 	</td>
 	<td>{{source}}</td>
 	<td>{{getSizeinMB}}</td>
-	<td>{{dateFormat date format="DD. MMM YYYY"}}</td>
+	<td>	{{dateFormat date format="DD. MMM YYYY"}}</td>
   </tr>
+</template>
+
+<template name="comment_link">
+	<i class="icon-comment hand" id="{{_id}}"></i>
+</template>
+
+<template name="comment_link_white">
+	<i class="icon-comment icon-white hand" id="{{_id}}"></i>
+</template>
+
+<template name="like_link">
+	<i class="icon-thumbs-up hand" id="{{_id}}"></i>
 </template>
 
 <template name="accountSettingsDialog">
@@ -238,8 +306,8 @@
   <div class="modal-body">
 	<form class="form-inline">
 		<div class="input-append">
-			<input class="input-xlarge linkurl" type="url" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required>
-			<button class="btn addlink" type="button">Hinzufügen</button>
+			<input id="newlinkurl" class="input-xlarge linkurl" type="url" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required>
+			<button class="btn addlink" type="button" disabled>Hinzufügen</button>
 		</div>
 	</form>
   </div>
