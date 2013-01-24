@@ -170,6 +170,22 @@ Template.addlinkbutton.events({
 		return false;
     }
 });
+
+Template.addLinkDialog.events({
+  'click .addlink': function (event, template) {
+	//TODO: Link checken und anzeigen
+	var newurl;
+	
+	newurl = template.find(".linkurl").value;
+	//es wurde gespeichert, Dialog schließen
+    Session.set("showAddLinkDialog", false);
+  },
+  'click .cancel': function () {
+	//User hat abgebrochen, Dialog schließen
+    Session.set("showAddLinkDialog", false);
+  }
+});
+
   
 Template.accountSettingsDialog.events({
   'click .save': function (event, template) {
@@ -183,17 +199,17 @@ Template.accountSettingsDialog.events({
 			function (error, result) {
 				if (error)
 					throw error;
-				Meteor.users.update( { _id: Meteor.userId()}, {$set: {'profile.ip': result.data.ip , 'profile.port' : aport, 'profile.autoupdateip' : aupdateip}})
+				Meteor.users.update( { _id: Meteor.userId()}, {$set: {'profile.ip': result.data.ip , 'profile.port' : aport, 'profile.autoupdateip' : aupdateip}});
 				//neue IP nutzen und checken, ob hier ein JD läuft...
-				Meteor.http.call("GET","http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/get/version",
-					function (error, result) {
-						if (error)
-							throw result.error;
-						console.log("RESULLTT:" + result.data);
-						if (result.data == "JDownloader") {Session.set("JDownloaderActive",true);}
-						else {Session.set("JDownloaderActive",false);};
-					}
-				)
+				//
+				Meteor.call("checkJDOnlineStatus", result.data.ip, aport, 
+					function (err, isOnline) {
+					  if (err) {
+					    console.log(err);
+					  }
+					  Session.set("JDOnlineStatus", isOnline); 
+				  	}
+				);
 			}
 		);
 	}
@@ -216,7 +232,7 @@ Template.accountSettingsDialog.events({
 //zur Verfügung. Workaround: Timer auf 5 Sekunden, dann ist das Objekt im Regelfall verfügbar.
 Meteor.startup(function () {
 	Meteor.setTimeout(
-		function () {			
+		function () {		
 			//bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
 			if (Meteor.user().profile.autoupdateip) {
 				if (Meteor.user().profile.autoupdateip == true)
@@ -231,15 +247,13 @@ Meteor.startup(function () {
 					);
 				}
 				//unabhängig von autoupdate schauen wir, ob die gewünschte IP online ist
-				Meteor.http.call("GET","http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/get/version",
-					function (error, result) {
-						if (error)
-							//TODO error handling
-							throw result.error;
-						console.log("RESULLTT:" + result.data);
-						if (result.data == "JDownloader") {Session.set("JDownloaderActive",true);}
-						else {Session.set("JDownloaderActive",false);};
-					}
+				//
+				Meteor.call("checkJDOnlineStatus", Meteor.user().profile.ip, Meteor.user().profile.port, function (err, isOnline) {
+					  if (err) {
+					    console.log(err);
+					  }
+					  Session.set("JDOnlineStatus", isOnline); 
+				  }
 				);
 			};
 		},3000

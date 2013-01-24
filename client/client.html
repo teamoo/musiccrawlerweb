@@ -80,6 +80,7 @@
                 </li>
 				<li class="divider-vertical"></li>
 				{{> addlinkbutton}}
+				{{> copytoclipboardbutton}}
 				{{> downloadlinksbutton}}
 			</ul>
 			<ul class="nav pull-right">
@@ -116,13 +117,13 @@
 		<ul class="dropdown-menu pull-right">
 			{{> user_accountsettings}}
 			<li class="divider"></li>
-			<li><a href="#"><i class="icon-off"></i> Abmelden</a></li>
+			<li><a href="#" id="logout"><i class="icon-off"></i> Abmelden</a></li>
 		</ul>
 	{{/if}}
 </template>
 
 <template name="user_loggedout">
-		<a class="btn" href="#"><i class="icon-user"></i> Login</a>
+		<a class="btn" href="#" id="login"><i class="icon-user"></i> Login</a>
 </template>
 
 <template name="user_accountsettings">
@@ -134,8 +135,13 @@
 </template>
 
 <template name="downloadlinksbutton">
-	<a class="btn btn-primary" href="#"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+	<a class="btn btn-primary" href="#" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
 </template>
+
+<template name="copytoclipboardbutton">
+	<a class="btn btn" href="#" disabled><i class="icon-file"></i> Zwischenablage</a>
+</template>
+
 
 <template name="progressBar">
 	<div class="progress progress-striped active">
@@ -232,8 +238,8 @@
   <div class="modal-body">
 	<form class="form-inline">
 		<div class="input-append">
-			<input class="input-xxlarge linkurl" type="url" placeholder="http://www3.zippyshare.com/12345/file.html" required>
-			<button class="btn btn-primary addlink" type="button">Hinzufügen</button>
+			<input class="input-xlarge linkurl" type="url" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required>
+			<button class="btn addlink" type="button">Hinzufügen</button>
 		</div>
 	</form>
   </div>
@@ -257,7 +263,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn cancel" data-dismiss="modal" aria-hidden="true">Schließen</button>
-    <button class="btn btn-primary save">Seite hinzufügen</button>
+    <button class="btn btn-primary addsite">Seite hinzufügen</button>
   </div>
 </div>
 </template>
