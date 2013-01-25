@@ -8,20 +8,7 @@
 </body>
 
 <template name="page">
-	<div class="container-fluid">
-		<div class="row-fluid">
-			<div class="span12">
-				{{#if notConnected}}
-					{{> connectionLostWarning}}
-				{{/if}}
-				
-				{{>header}}
-
-			</div>
-		</div>
-		<div class="row-fluid">
-			<div class="span12">
-				{{#if showAccountSettingsDialog}}
+					{{#if showAccountSettingsDialog}}
 				  {{> accountSettingsDialog}}
 				{{/if}}
 				
@@ -36,34 +23,42 @@
 				{{#if showSitesDialog}}
 				  {{> sitesDialog}}
 				{{/if}}
-				
+				{{#if notConnected}}
+					{{> connectionLostWarning}}
+				{{/if}}
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span12">
+				{{>header}}
+			</div>
+		</div>
+		<div class="row-fluid">
+			<div class="span12">
 				{{#if currentUser}}
 					{{> linklist}}
+				{{else}}
+					<p class="lead">Bitte logge dich ein, um auf MusicCrawler zuzugreifen.</p>
 				{{/if}}
 			</div>
 		</div>
 	</div>
 </template>  
 
+<template name="terminateappbutton">
+	<a class="btn btn-danger" href="#">Anwendung beenden</a>
+</template>
+
 <template name="connectionLostWarning">
-	<script type="text/javascript">
-		function closeWindow() {
-			if ($.browser.opera || $.browser.mozilla) window.close(); 
-			else {
-					window.open('','_self','');
-					window.close()
-				};
-		}
-	</script>
 	<div class="alert alert-error alert-block">
 		<h4 class="error heading">Achtung!</h4>
 		<p>Anscheinend hast du die Verbindung zum Server verloren. Wir versuchen dich automatisch wieder zu verbinden. Sollte dies innerhalb von 1 Minute nicht klappen, schließe bitte diese Seite und öffne sie erneut.</p>
 		<p>
-			<a class="btn btn-danger" href="" onclick="closeWindow()">Anwendung beenden</a>
+			{{> terminateappbutton}}
 			<a class="btn" href="#">Warten</a>
 		</p>
 	</div>
 </template>
+
 
 <template name="addsitebutton">
 	<li><a tabindex="-1" href="#"><i class="icon-plus"></i> Seite hinzufügen</a></li>
@@ -99,8 +94,8 @@
 			</ul>
 			<ul class="nav pull-right">
 				<li>
-					<form class="navbar-search pull-right">
-						<input type="text" class="search-query" placeholder="Titel, Interpret, Album...">
+					<form class="navbar-search pull-right" id="searchform">
+						<input type="text" class="search-query" placeholder="Titel, Interpret, Album..." id="searchfield">
 					</form>
 				</li>
 				<li class="divider-vertical"></li>
@@ -116,7 +111,7 @@
 
 <template name="comment">
 	<div class="span4 well">
-		<form accept-charset="UTF-8" action="" method="POST">
+		<form accept-charset="UTF-8" action="" method="">
 			<textarea class="span4" id="new_comment" name="new_comment"
 			placeholder="Kommentar eingeben" rows="5"></textarea>
 			<button class="btn btn-info" type="submit">Posten</button>
@@ -168,11 +163,11 @@
 </template>
 
 <template name="downloadlinksbutton">
-	<a class="btn btn-primary" href="#" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+	<a class="btn btn-primary download" href="#" disabled="disabled"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
 </template>
 
 <template name="copytoclipboardbutton">
-	<a class="btn btn" href="#" disabled><i class="icon-file"></i> Zwischenablage</a>
+	<a class="btn btn download" href="#" disabled="disabled"><i class="icon-file"></i> Zwischenablage</a>
 </template>
 
 
@@ -225,13 +220,13 @@
 <template name="link">
   <tr>
 	<td>
-		<input type="checkbox" value="" class="link_checkbox">
+		<input type="checkbox" value="" class="link_checkbox" id="{{_id}}">
 	</td>
 	<td>
 		<i class="icon-refresh hand"></i>
 	</td>
 	<td>
-		{{getPlayerWidget}}
+		{{{getPlayerWidget}}}
 	</td>
     <td>{{name}}</td>
     <td>{{url}}</td>
@@ -303,6 +298,8 @@
 		<input class="autoupdate" type="checkbox" checked={{currentUser.profile.autoupdateip}}>
 		IP-Adresse automatisch updaten?
 		</label>
+		<span class="help-inline">Status:</span>
+		<input class="input-mini port" type="text" value={{session "JDOnlineStatus"}}>
 	</form>
   </div>
   <div class="modal-footer">
@@ -314,9 +311,9 @@
 
 <template name="addLinkDialog">
 <div class="mask"> </div>
-<div id="addLinkModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
+<div id="addLinkModal" class="modal" tabindex="-1">
   <div class="modal-header">
-	<button type="button" class="close cancel" aria-hidden="true">&times;</button>
+	<button type="button" class="close cancel">&times;</button>
     <h3 align="center">Link hinzufügen</h3>
   </div>
   <div class="modal-body">
@@ -332,9 +329,9 @@
 
 <template name="addSiteDialog">
 <div class="mask"> </div>
-<div id="addSiteModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel3" aria-hidden="true">
+<div id="addSiteModal" class="modal" tabindex="-1">
   <div class="modal-header">
-	<button type="button" class="close cancel" aria-hidden="true">&times;</button>
+	<button type="button" class="close cancel">&times;</button>
     <h3 align="center">Musik-Blog hinzufügen</h3>
   </div>
   <div class="modal-body">
@@ -351,9 +348,9 @@
 
 <template name="sitesDialog">
 <div class="mask"> </div>
-<div id="showSitesModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel3" aria-hidden="true">
+<div id="showSitesModal" class="modal" tabindex="-1">
   <div class="modal-header">
-	<button type="button" class="close cancel" aria-hidden="true">&times;</button>
+	<button type="button" class="close cancel">&times;</button>
     <h3 align="center">Musik-Blogs</h3>
   </div>
   <div class="modal-body">

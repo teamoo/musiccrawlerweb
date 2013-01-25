@@ -1,20 +1,20 @@
-﻿//Clientseitige Methoden
-//Hier muss später die Subscription gemacht werden
-var tmp_date = new Date();
-var filter_status = new Array();
-tmp_date.setDate(tmp_date.getDate()-14);
-filter_status.push("on");
-Session.set("filter_date",tmp_date);
-Session.set("filter_status",filter_status);
-
+﻿
 // Always be subscribed to the currently filtered links
 Meteor.autosubscribe(function () {
   var filter_date = Session.get('filter_date');
   var filter_status = Session.get('filter_status');
+  var filter_term = Session.get('filer_term');
   if (filter_date && filter_status)
-    Meteor.subscribe('links', filter_date, filter_status);
+    Meteor.subscribe('links', filter_date, filter_status, filter_term);
     Meteor.subscribe('sites');
 });
+
+//Autorun: wenn sich die IP-Adresse ändert, JDOnlineStatus checken!
+//Meteor.autorun(function(handle) {
+// if (!Session.equals("shouldAlert", true)) return;
+//  handle.stop();
+//  alert("Oh no!");
+//});
 
 //Template-Helper für handlebars
 //  format an ISO date using Moment.js
@@ -30,6 +30,10 @@ Handlebars.registerHelper('dateFormat', function(context, block) {
   }else{
     return context;   //  moment plugin not available. return data as is.
   };
+});
+
+Handlebars.registerHelper('session',function(input){
+    return Session.get(input);
 });
 
 //
@@ -79,27 +83,25 @@ Template.link.getPlayerWidget = function (data) {
     // This is the oEmbed endpoint for Vimeo (we're using JSON)
     // (Vimeo also supports oEmbed discovery. See the PHP example.)
 	
-	return undefined;
-	
 	if (this.status === 'on')
 	{
 		if (this.hoster === "soundcloud.com")
-			return Meteor.render("<a href=" + this.url + " class='sc-player'></a>");
+			return "<i class=\" icon-play\"><a href=\"" + this.url + "\" class=\"sc-player\"></a></i>";
 		else if (this.hoster === "zippyshare.com")
 			//Link aufsplitten, so dass wir die Bestandteile bekommen...
-			return Meteor.render("<script type='text/javascript'>var zippywww='www49';var zippyfile='67788444';var zippydown='101010';var zippyfront='ffffff';var zippyback='101010';var zippylight='ffffff';var zippywidth=30;var zippyauto=false;var zippyvol=80;</script>");
+			return "<script type='text/javascript'>var zippywww='www49';var zippyfile='67788444';var zippydown='101010';var zippyfront='ffffff';var zippyback='101010';var zippylight='ffffff';var zippywidth=30;var zippyauto=false;var zippyvol=80;</script>";
 		else if (this.hoster === "youtube.com")
 			return undefined
 		else if (this.hoster === "vimeo.com")
 		{
 			var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
 			var callback = function (video) {
-				return Meteor.render(unescape(video.html));
+				return unescape(video.html);
 			};
 			var url = endpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
-		x}
+		}
 	}
-	else return Meteor.render("<i class=\"icon-ban-circle\"></i>");
+	else return "<i class=\"icon-ban-circle\"></i>";
 };
 
 //Connected-Status nutzen für Fehlermeldungsanzeige
@@ -146,19 +148,52 @@ Template.page.showSitesDialog = function () {
 //Linkfilter aktualisieren
 Template.select_all_links.events({
 'click': function (event, template) {
-	if (event.srcElement.checked == true)
-	{
-		console.log("checked");
-		Template.link.find(".link_checkbox").checked == true;
-	}
-	else
-	{
-		console.log("unchecked");
-		Template.link.find(".link_checkbox").checked == false;
-	}
+	if (event.srcElement.checked == true) $('[type=checkbox]').prop("checked", true);
+	else $('[type=checkbox]').prop("checked", false);
 }
 });
 
+Template.downloadlinksbutton.events({
+'click' : function (event, template) {
+	var selected = Array();
+	$('input:checkbox:checked[class=link_checkbox]').each(function() {
+		selected.push(this.id);
+	});
+	console.log(Links.find({_id : {$in : selected}}));
+}
+});
+
+Template.link.rendered = function() {
+		$('input:checkbox').click(function() {
+		var buttonsChecked = $('input:checkbox:checked');
+		console.log(buttonsChecked.length);
+        if (buttonsChecked.length) $('.download').attr('disabled',false);
+        else $('.download').attr('disabled',true);
+    });
+};
+
+//TODO: bringt nichts
+Template.header.preserve({
+'input[id]': function (node) { return node.id; }
+})
+
+//TODO: testen
+Template.header.events({
+'submit #searchform': function (event, template) {
+	//event.preventDefault();
+	var tmp_date = new Date();
+	tmp_date.setDate(tmp_date.getDate()-365);
+	Session.set("filter_date",tmp_date);
+	Session.set("filter_status",['on','off','unknow']);
+		
+	var term = template.find('#searchfield').value;
+		
+	if (term && term != undefined && term != "")
+	{
+		Session.set("filter_term", term.replace("\s",".*"));
+	} else Session.set("filter_term","");
+}
+});
 
 Template.link_filter_status.events({
 'click': function (context) {
@@ -173,27 +208,28 @@ Template.link_filter_status.events({
 }
 });
 
+Template.terminateappbutton.events({
+'click': function (context) {
+	if ($.browser.opera || $.browser.mozilla) window.close(); 
+	else {
+			window.open('','_self','');
+			window.close();
+		};
 
+}
+});
+
+
+//TODO: geht nicht
 Template.comment_link.events({
 'click': function (context) {
-
+	   $('.popover').popover('show'); //initialize all tooltips in this template
 }
 });
 
-Template.comment_link_white.events({
-'click': function (context) {
-	Session.set("link_id",context.srcElement.id);
-	//console.log("'#" + context.srcElement.id + ".popover'");
-		
-	var tmplink = Links.find({_id: context.srcElement.id});	
-	
-	//console.log(tmplink);
-	//console.log(tmplink.comments);
-		
-	//$('#' + context.srcElement.id + '.popover').popover();
-	//$('#' + context.srcElement.id + '.popover').popover('show');
-}
-});
+Template.link.rendered = function() {
+   $('.popover').popover(); //initialize all tooltips in this template
+};
 
 //Linkfilter(Date) aktualisieren
 Template.linkfilter_items.events({
@@ -218,6 +254,8 @@ Template.user_loggedout.events({
 			//wenn die User-IP geupdate werden soll...
 			if (Meteor.user().profile.autoupdateip === true)
 			{
+				//JDOnlineStatus beim starten der app oder beim einloggen prüfen?? Eigentlich Start...aber Login geht auch...
+			
 				//dann rufen wir die neue IP ab und speichern sie im Profil
 				Meteor.http.call("GET","http://api.hostip.info/get_json.php",
 					function (error, result) {
@@ -239,7 +277,10 @@ Template.user_loggedin.events({
 'click #logout': function () {
   Meteor.logout(function (err) {
 	  if (err) {
+		//TODO: Error handling
 		console.log(err);
+	  } else {
+		//ggf. Session-Variablen zurücksetzen...
 	  }
    });
 }
@@ -248,15 +289,13 @@ Template.user_loggedin.events({
 Template.addlinkbutton.events({
     'click': function () {
 		openAddLinkDialog();
-		return false;
     }
 });
 
 
 Template.addsitebutton.events({
-    'click': function () {
+    'click': function (event) {
 		openAddSiteDialog();
-		return false;
     }
 });
 
@@ -340,9 +379,7 @@ Template.sitesDialog.events({
   },	
 });
 
-  
 
-  
 Template.accountSettingsDialog.events({
   'click .save': function (event, template) {
     var aip = template.find(".ip").value;
@@ -358,7 +395,7 @@ Template.accountSettingsDialog.events({
 				Meteor.users.update( { _id: Meteor.userId()}, {$set: {'profile.ip': result.data.ip , 'profile.port' : aport, 'profile.autoupdateip' : aupdateip}});
 				//neue IP nutzen und checken, ob hier ein JD läuft...
 				//
-				Meteor.call("checkJDOnlineStatus", result.data.ip, aport, 
+				Meteor.call("checkJDOnlineStatus", {ip : result.data.ip, port: aport} , 
 					function (err, isOnline) {
 					  if (err) {
 					    console.log(err);
@@ -390,6 +427,30 @@ Template.accountSettingsDialog.events({
 //leider funktioniert das noch nicht ganz, das Meteor.user() Objekt steht dann noch nicht immer
 //zur Verfügung. Workaround: Timer auf 5 Sekunden, dann ist das Objekt im Regelfall verfügbar.
 Meteor.startup(function () {
+	$('input:checkbox').click(function() {
+		var buttonsChecked = $('input:checkbox:checked');
+		console.log(buttonsChecked.length);
+        if (buttonsChecked.length) $('.download').attr('disabled',false);
+        else $('.download').attr('disabled',true);
+    });
+	
+	if (! Session.get("filter_date")) {
+		var tmp_date = new Date();
+		tmp_date.setDate(tmp_date.getDate()-14);
+		Session.set("filter_date",tmp_date);
+    };
+	
+	if (! Session.get("filter_status")) {
+		var filter_status = new Array();
+		filter_status.push("on");
+		Session.set("filter_status",filter_status);
+    };
+	
+	if (! Session.get("filter_term")) {
+		var filter_term = "";
+		Session.set("filter_term",filter_term);
+    };
+
 	Meteor.setTimeout(
 		function () {		
 			//bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
