@@ -13,12 +13,6 @@ Meteor.autosubscribe(function () {
   var filter_status = Session.get('filter_status');
   if (filter_date && filter_status)
     Meteor.subscribe('links', filter_date, filter_status);
-});
-
-Meteor.autosubscribe(function () {
-  var showSitesDialog = Session.get('showSitesDialog');
-  var showAddSiteDialog = Session.get('showAddSiteDialog');
-  if (showSitesDialog == true || showAddSiteDialog == true)
     Meteor.subscribe('sites');
 });
 
@@ -47,6 +41,14 @@ Template.linklist.links = function () {
 	//if (links.count() == 0) return false;
 	return Links.find({});
 };
+
+Template.sitesDialog.sites = function () {
+	console.log("jo");
+    //var links = Links.find({});
+	//if (links.count() == 0) return false;
+	return Sites.find({});
+};
+
 
 //Link-Größe von Kilobyte in MB umwandeln
 Template.link.getSizeinMB = function (data) {
@@ -100,11 +102,6 @@ Template.link.getPlayerWidget = function (data) {
 	else return Meteor.render("<i class=\"icon-ban-circle\"></i>");
 };
 
-Template.linkfilter_items.getLinkCount = function(context){
-	
-};
-
-
 //Connected-Status nutzen für Fehlermeldungsanzeige
 Template.page.notConnected = function(){
 	return !Meteor.status().connected;
@@ -124,6 +121,22 @@ Template.page.showAccountSettingsDialog = function () {
 
 Template.page.showAddLinkDialog = function () {
   return Session.get("showAddLinkDialog");
+};
+
+var openAddSiteDialog = function () {
+	Session.set("showAddSiteDialog", true);
+};
+
+Template.page.showAddSiteDialog = function () {
+  return Session.get("showAddSiteDialog");
+};
+
+var openSitesDialog = function () {
+	Session.set("showSitesDialog", true);
+};
+
+Template.page.showSitesDialog = function () {
+  return Session.get("showSitesDialog");
 };
 
 //
@@ -239,6 +252,22 @@ Template.addlinkbutton.events({
     }
 });
 
+
+Template.addsitebutton.events({
+    'click': function () {
+		openAddSiteDialog();
+		return false;
+    }
+});
+
+Template.showsitesbutton.events({
+    'click': function () {
+		openSitesDialog();
+		return false;
+    }
+});
+
+
 //Kontoeinstellungen-Eventhandler  
 Template.user_accountsettings.events({
     'click': function () {
@@ -280,6 +309,39 @@ Template.addLinkDialog.events({
 		};
 	}		
 });
+
+Template.addSiteDialog.events({
+  'click .addsite': function (event, template) {
+	//TODO: Link checken und anzeigen
+	var newurl;
+	
+	newurl = template.find(".siteurl").value;
+	//es wurde gespeichert, Dialog schließen
+    Session.set("showAddSiteDialog", false);
+  },
+  'click .cancel': function () {
+	//User hat abgebrochen, Dialog schließen
+    Session.set("showAddSiteDialog", false);
+  },
+  'input #newsiteurl': function(event, template) {
+		if (!event.srcElement.validity.valid) {
+			template.find('.addsite').disabled = true;
+		} else {
+			template.find('.addsite').disabled = false;
+		};
+	}		
+});
+
+
+Template.sitesDialog.events({
+  'click .cancel': function () {
+	//User hat abgebrochen, Dialog schließen
+    Session.set("showSitesDialog", false);
+  },	
+});
+
+  
+
   
 Template.accountSettingsDialog.events({
   'click .save': function (event, template) {
@@ -344,7 +406,6 @@ Meteor.startup(function () {
 					);
 				}
 				//unabhängig von autoupdate schauen wir, ob die gewünschte IP online ist
-				//
 				Meteor.call("checkJDOnlineStatus", Meteor.user().profile.ip, Meteor.user().profile.port, function (err, isOnline) {
 					  if (err) {
 					    console.log(err);
@@ -352,13 +413,8 @@ Meteor.startup(function () {
 					  Session.set("JDOnlineStatus", isOnline); 
 				  }
 				);
-				Meteor.call("getLinkCounts", [7,14,30,90], function (err, result) {
-					  if (err) {
-					    console.log(err);
-					  }
-					  console.log(result);
-				  }
-				);
+				
+				//Link Counts holen...
 			};
 		},3000
 	);
