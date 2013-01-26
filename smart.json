@@ -1,0 +1,10 @@
+{
+  "meteor": {
+    "branch": "devel"
+  },
+  "packages": {
+    "moment": "1.7.0",
+    "handlebar-helpers": "0.0.5",
+    "bafa" : "0.3.0"
+  }
+}

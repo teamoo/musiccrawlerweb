@@ -1,0 +1,37 @@
+{
+  "meteor": {
+    "git": "https://github.com/meteor/meteor.git",
+    "branch": "devel",
+    "commit": "06f1308b4be2fbceb3b776a44be186cb6fd5141f"
+  },
+  "dependencies": {
+    "basePackages": {
+      "moment": {
+        "version": "1.7.0"
+      },
+      "handlebar-helpers": {
+        "version": "0.0.5"
+      },
+      "bafa": {
+        "version": "0.3.0"
+      }
+    },
+    "packages": {
+      "moment": {
+        "git": "https://github.com/possibilities/meteor-moment.git",
+        "tag": "v1.7.0",
+        "commit": "c64b6ec0e714b9556f4b6643d430b868ba69d3d7"
+      },
+      "handlebar-helpers": {
+        "git": "https://github.com/raix/Meteor-handlebar-helpers.git",
+        "tag": "v0.0.5",
+        "commit": "bedecf71d04097773b359ccbf6e5bd97fcb53f8e"
+      },
+      "bafa": {
+        "git": "https://github.com/jackp/BAFA.git",
+        "tag": "v0.3.0",
+        "commit": "cf8c9b0be42b21cb0203c6d08926529c4e00b0c6"
+      }
+    }
+  }
+}

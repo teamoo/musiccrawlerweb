@@ -73,6 +73,12 @@ Template.link.getStatusIcon = function (data) {
 	}
 };
 
+//Status-Icon auswählen je nach Status
+Template.link.getSourceName = function (data) {
+	//TODO: Namen anzeigen
+	return this.source;
+};
+
 //Player-Widget zurückgeben, wenn es einen embedabble player gibt
 Template.link.getPlayerWidget = function (data) {
 	//Soundcloud: <a href="http://soundcloud.com/matas/hobnotropic" class="sc-player">My new dub track</a>

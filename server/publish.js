@@ -2,7 +2,7 @@
 
 // Publish filtered list to all clients
 Meteor.publish('links', function (filter_date, filter_status, filter_term) {
-	if (this.userId) return Links.find({date: {$gte: filter_date}, status: {$in: filter_status}, name: {$regex: filter_term, $options: 'i' }}, {fields: {_id:1, name:1, size:1, likes:1, comments:1, url:1, source:1, date:1}}, {sort: {date: 1, source: 1}, limit:1000});
+	if (this.userId) return Links.find({date: {$gte: filter_date}, status: {$in: filter_status}, name: {$regex: filter_term, $options: 'i' }}, {fields: {_id:1, name:1, size:1, likes:1, comments:1, url:1, source:1, date:1, status:1}}, {sort: {$natural:-1}, limit:1000});
 });
 
 // Quellen
