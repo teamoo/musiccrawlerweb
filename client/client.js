@@ -50,9 +50,6 @@ Template.linklist.links = function () {
 };
 
 Template.sitesDialog.sites = function () {
-	console.log("jo");
-    //var links = Links.find({});
-	//if (links.count() == 0) return false;
 	return Sites.find({});
 };
 
@@ -73,6 +70,14 @@ Template.link.getStatusIcon = function (data) {
 		case 'on':	return "icon-ok"
 		case 'off': return  "icon-remove"
 		case 'unknown':	return "icon-remove"
+	}
+};
+
+Template.sitesDialog.getFeedTypeIcon = function (data) {
+	switch (this.type)
+	{
+		case 'feed': return "icon-rss"
+		case "facebook-group" : return "icon-facebook"
 	}
 };
 
@@ -193,7 +198,7 @@ Template.header.preserve({
 //TODO: testen
 Template.header.events({
 'submit #searchform': function (event, template) {
-	//event.preventDefault();
+	event.preventDefault();
 	var tmp_date = new Date();
 	tmp_date.setDate(tmp_date.getDate()-365);
 	Session.set("filter_date",tmp_date);

@@ -20,7 +20,8 @@ Accounts.onCreateUser(function (options, user) {
 		"name",
 		"first_name",
 		"username",
-		"email");
+		"email",
+		"id");
 	
 	//Das Profilbild müssen wir extra abfragen...
 	result = Meteor.http.get("https://graph.facebook.com/me/picture?access_token=&redirect=false", {

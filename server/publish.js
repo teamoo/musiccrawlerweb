@@ -8,7 +8,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term) {
 // Quellen
 // Publish all sites
 Meteor.publish('sites', function () {
-  if (this.userId) return Sites.find({},{fields: {name:1, feedurl:1, type:1, creator:1, last_crawled:1}});
+  if (this.userId) return Sites.find({},{fields: {name:1, feedurl:1, type:1, creator:1, last_crawled:1, active:1}});
 });
 
 //TODO: ausarbeiten
