@@ -196,16 +196,23 @@
 		<th>Größe</th>
 		<th>Hinzugefügt</th>
 		</thead>
-		{{#if links}}
+		{{#if isLinksComplete }}
+          	{{#if links}}
 			<tbody>
 			{{#each links}}
 				{{> link}}
 			{{/each}}
 			</tbody>
 			</table>
+			{{else}}
+				</table>
+				<p class="lead">Für den ausgewählten Zeitraum wurden keine Links gefunden.</p>
+			{{/if}}
 		{{else}}
-			</table>
-			<p class="lead">Für den ausgewählten Zeitraum wurden keine Links gefunden.</p>
+		<div class="progress progress-striped">
+			<div class="bar" style="width: 20%;"></div>
+		</div>
+         <img src="images/load.gif">
 		{{/if}}
 </template>
 

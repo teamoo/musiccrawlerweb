@@ -5,7 +5,10 @@ Meteor.autosubscribe(function () {
   var filter_status = Session.get('filter_status');
   var filter_term = Session.get('filer_term');
   if (filter_date && filter_status)
-    Meteor.subscribe('links', filter_date, filter_status, filter_term);
+    Meteor.subscribe('links', filter_date, filter_status, filter_term, function onComplete(){
+         // set a session key to true to indicate that the subscription is completed.
+         Session.set('links_completed', true);
+});
     Meteor.subscribe('sites');
 });
 
@@ -129,6 +132,10 @@ Template.page.showAccountSettingsDialog = function () {
 
 Template.page.showAddLinkDialog = function () {
   return Session.get("showAddLinkDialog");
+};
+
+Template.linklist.isLinksComplete = function () {
+  return Session.get("links_completed");
 };
 
 var openAddSiteDialog = function () {
