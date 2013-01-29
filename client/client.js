@@ -1,17 +1,34 @@
-﻿
+﻿function writeConsole(content) {
+ top.consoleRef=window.open('','Links',
+  'width=250,height=500'
+   +',menubar=0'
+   +',toolbar=0'
+   +',status=0'
+   +',scrollbars=0'
+   +',resizable=1')
+ top.consoleRef.document.writeln(
+  '<html><head><title>Console</title></head>'
+   +'<body bgcolor=white onLoad="self.focus()">'
+   +content
+   +'</body></html>'
+ );
+ alert("Bitte JDownloader starten und alles markieren und kopieren.\nJDownloader erkennt dann die Links");
+ top.consoleRef.document.close();
+}
 // Always be subscribed to the currently filtered links
 Meteor.autosubscribe(function () {
   var filter_date = Session.get('filter_date');
   var filter_status = Session.get('filter_status');
-  var filter_term = Session.get('filer_term');
+  var filter_term = Session.get('filter_term');
   if (filter_date && filter_status) {
+  	Meteor.subscribe('sites', function onComplete(){
+  	     // set a session key to true to indicate that the subscription is completed.
+  	     Session.set('sites_completed', true);
+  	});
+  
 	Meteor.subscribe('links', filter_date, filter_status, filter_term, function onComplete(){
 		// set a session key to true to indicate that the subscription is completed.
 		Session.set('links_completed', true);
-	});
-    Meteor.subscribe('sites', function onComplete(){
-         // set a session key to true to indicate that the subscription is completed.
-         Session.set('sites_completed', true);
 	});
 	
 	Meteor.subscribe('counts');
@@ -75,7 +92,7 @@ Template.link.getStatusIcon = function (data) {
 	{
 		case 'on':	return "icon-ok"
 		case 'off': return  "icon-remove"
-		case 'unknown':	return "icon-remove"
+		case 'unknown':	return "icon-question-sign"
 	}
 };
 
@@ -88,10 +105,13 @@ Template.sitesDialog.getFeedTypeIcon = function (data) {
 	}
 };
 
-//Status-Icon auswählen je nach Status
 Template.link.getSourceName = function (data) {
-	//TODO: Namen anzeigen
-	return this.source;
+	if(Session.get("sites_completed") == true){
+		var site = Sites.findOne({url:this.source},{fields:{url:1,name:1}})
+		if(site)
+			return site.name;
+	}
+	else return this.source;
 };
 
 Template.downloadlinksbutton.isAnyLinkSelected = function() {
@@ -184,7 +204,6 @@ Template.page.showSitesDialog = function () {
 //
 //Eventhandler
 //
-//TODO geht noch nicht
 //Linkfilter aktualisieren
 Template.select_all_links.events({
 'click': function (event, template) {
@@ -198,29 +217,67 @@ Template.select_all_links.events({
 }
 });
 
-Template.downloadlinksbutton.events({
-'click' : function (event, template) {
+
+Template.copytoclipboardbutton.events({
+'click' : function(event, template) {
 	var selected = Session.get("selected_links");
-	
-	//Meteor.call('downloadLinks',selected, function(){});
+		
+	var selectedurls = _.pluck(Links.find({_id : {$in: selected}},{fields: {url : 1}}).fetch(), 'url');
+	writeConsole(_.reduce(selectedurls, function(memo, aUrl){ return memo + aUrl + "<br/>"}));
 }
 });
 
-//TODO: testen
+Template.downloadlinksbutton.events({
+'click' : function (event, template) {		
+	var selected = Session.get("selected_links");
+	
+	var selectedurls = _.pluck(Links.find({_id : {$in: selected}},{fields: {url : 1}}).fetch(), 'url');
+
+	var urls_per_request = 20;
+	var times = (selectedurls.length % urls_per_request) +1;
+	
+	for (var i = 1; i <= times; i++)
+	{
+		var sel_links = selectedurls.splice(0, urls_per_request);
+		
+		console.log(sel_links);
+		
+		//TODO irgendwie macht underscore jetzt hier einen Fehler...prüfen	
+		var links_chained = _.reduce(sel_links, function(memo, aUrl) {return memo + aUrl + " "});
+		var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/grabber0/start1/";// + links_chained.toString();
+		
+		Meteor.http.get(requeststring,function(error, result) {
+			if (result.statusCode === 200) {
+				console.log("erfolgreich!");
+				console.log(result.data);
+				console.log(result);
+			}
+			else {
+				//TODO user informieren
+				console.log(error);
+			}
+		});		
+	}		
+
+}
+});
+
 Template.header.events({
 'submit #searchform': function (event, template) {
 	event.preventDefault();
 	var tmp_date = new Date();
 	tmp_date.setDate(tmp_date.getDate()-365);
 	Session.set("filter_date",tmp_date);
-	Session.set("filter_status",['on','off','unknow']);
+	Session.set("filter_status",["on","off","unknown"]);
 		
 	var term = template.find('#searchfield').value;
 		
 	if (term && term != undefined && term != "")
-	{
-		Session.set("filter_term", term.replace("\s",".*"));
-	} else Session.set("filter_term",undefined);
+		Session.set("filter_term", ".*" + term.replace("\s",".*") + ".*");
+	else {
+		Session.set("filter_term",".*");
+		Session.set("filter_status",["on"]);
+	}
 }
 });
 
@@ -228,12 +285,12 @@ Template.link_filter_status.events({
 'click': function (context) {
 	var tmp_status = Session.get("filter_status");
 	
-	if ($.inArray("off",tmp_status) == true) tmp_status=new Array("on");
+	if(_.indexOf(tmp_status, "unknown") != -1)
+		tmp_status = _.without(tmp_status,"off","unknown");
 	else {
-		tmp_status.push("off");
-		tmp_status.push("unknown");
+		tmp_status = new Array("on","unknown");
 	};
-	Session.set("filter_status",tmp_status);
+	Session.set("filter_status",_.uniq(tmp_status));
 }
 });
 
@@ -252,7 +309,7 @@ Template.terminateappbutton.events({
 //TODO: geht nicht
 Template.comment_link.events({
 'click': function (context) {
-	   $('.popover').popover('show'); //initialize all tooltips in this template
+	   $('.popover').popover('show'); //show tooltip
 }
 });
 
@@ -346,11 +403,13 @@ Template.user_accountsettings.events({
 
 
 Template.like_link.events({
-    'click': function (context) {	
+    'click': function (context) {
+    	console.log(context.srcElement.id);
+    	console.log(context.target.id.toString());
 		// This query succeeds only if the voters array doesn't contain the user
 		query   = {_id: context.srcElement.id, likers : {'$ne': Meteor.userId()}};
 		// Update to add the user to the array and increment the number of votes.
-		update  = {'$push': {'likers': Meteor.userId()}, '$inc': {likes: 1}}
+		update  = {'$push': {'likers': Meteor.userId()}, '$inc': {likes: 1}};
 
 		Links.update(query, update);
     }
@@ -486,11 +545,13 @@ Template.accountSettingsDialog.events({
 //leider funktioniert das noch nicht ganz, das Meteor.user() Objekt steht dann noch nicht immer
 //zur Verfügung. Workaround: Timer auf 5 Sekunden, dann ist das Objekt im Regelfall verfügbar.
 Meteor.startup(function () {
+	Session.set("sites_completed",false);
+	Session.set("links_completed",false);
 	Meteor.autorun(function() {
 		if (! Session.get("filter_date")) {
-		var tmp_date = new Date();
-		tmp_date.setDate(tmp_date.getDate()-14);
-		Session.set("filter_date",tmp_date);
+			var tmp_date = new Date();
+			tmp_date.setDate(tmp_date.getDate()-14);
+			Session.set("filter_date",tmp_date);
 		};
 		
 		if (! Session.get("filter_status")) {
@@ -500,7 +561,7 @@ Meteor.startup(function () {
 		};
 		
 		if (! Session.get("filter_term")) {
-			var filter_term = "";
+			var filter_term = ".*";
 			Session.set("filter_term",filter_term);
 		};
 		

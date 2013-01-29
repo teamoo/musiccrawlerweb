@@ -2,7 +2,9 @@
 
 // Publish filtered list to all clients
 Meteor.publish('links', function (filter_date, filter_status, filter_term) {
-	if (this.userId) return Links.find({date: {$gte: filter_date}, status: {$in: filter_status}, name: {$regex: filter_term, $options: 'i' }}, {fields: {_id:1, name:1, size:1, likes:1, comments:1, url:1, source:1, date:1, status:1}}, {sort: {$natural:-1}, limit:1000});
+	if (this.userId) {
+		return Links.find({date: {$gte: filter_date}, status: {$in: filter_status}, name: {$regex: filter_term, $options: 'i' }}, {fields: {_id:1, name:1, size:1, likes:1, comments:1, url:1, source:1, date:1, status:1}}, {sort: {$natural:-1}, limit:1000});
+	}
 });
 
 // Quellen
@@ -27,10 +29,10 @@ Meteor.publish("counts", function () {
   };
   
 	_.each(counts, function(elem, index) {
-		console.log(index);
-		console.log(elem);
+		//console.log(index);
+		//console.log(elem);
 		var tmp_date = new Date();
-		tmp_date.setDate(tmp_date.getDate()-index);	
+		tmp_date.setDate(tmp_date.getDate()-index);		
 	});  
 		
   var handle = Links.find({},{fields: {_id:1}}).observe({
