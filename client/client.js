@@ -4,12 +4,18 @@ Meteor.autosubscribe(function () {
   var filter_date = Session.get('filter_date');
   var filter_status = Session.get('filter_status');
   var filter_term = Session.get('filer_term');
-  if (filter_date && filter_status)
-    Meteor.subscribe('links', filter_date, filter_status, filter_term, function onComplete(){
+  if (filter_date && filter_status) {
+	Meteor.subscribe('links', filter_date, filter_status, filter_term, function onComplete(){
+		// set a session key to true to indicate that the subscription is completed.
+		Session.set('links_completed', true);
+	});
+    Meteor.subscribe('sites', function onComplete(){
          // set a session key to true to indicate that the subscription is completed.
-         Session.set('links_completed', true);
-});
-    Meteor.subscribe('sites');
+         Session.set('sites_completed', true);
+	});
+	
+	Meteor.subscribe('counts');
+  };	 
 });
 
 //Autorun: wenn sich die IP-Adresse ändert, JDOnlineStatus checken!

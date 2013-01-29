@@ -41,7 +41,7 @@ Accounts.onCreateUser(function (options, user) {
 	profile.pictureurl = result.data.data.url;
 	
 	//email und username werden direkt im Benutzer gesetzt, daher löschen wir diese Attribute auch aus dem Profil-Objekt
-	user.emails = profile.email;
+	user.emails.push(profile.email);
 	user.username = profile.username;
 	delete profile.username;
 	delete profile.email;

@@ -17,8 +17,23 @@ Meteor.publish("counts", function () {
   var self = this;
   var uuid = Meteor.uuid();
   var count = 0;
-
-  var handle = Links.find({},{fields: _id}).observe({
+  
+  var counts = {
+    1: 0,
+    14: 0,
+	30: 0,
+	90: 0,
+	365: 0
+  };
+  
+	_.each(counts, function(elem, index) {
+		console.log(index);
+		console.log(elem);
+		var tmp_date = new Date();
+		tmp_date.setDate(tmp_date.getDate()-index);	
+	});  
+		
+  var handle = Links.find({},{fields: {_id:1}}).observe({
     added: function () {
       count++;
       self.set("counts", uuid, {count: count});
@@ -31,7 +46,7 @@ Meteor.publish("counts", function () {
     }
     // don't care about moved or changed
   });
-
+	
   // Observe only returns after the initial added callbacks have
   // run.  Now mark the subscription as ready.
   self.complete();
