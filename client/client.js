@@ -76,8 +76,9 @@ Template.link.getStatusIcon = function (data) {
 Template.sitesDialog.getFeedTypeIcon = function (data) {
 	switch (this.type)
 	{
-		case 'feed': return "icon-rss"
-		case "facebook-group" : return "icon-facebook"
+		case "feed": return "icon-rss";
+		case "facebook-group" : return "icon-facebook";
+		default : return "icon-globe";
 	}
 };
 
@@ -386,7 +387,15 @@ Template.addSiteDialog.events({
 		} else {
 			template.find('.addsite').disabled = false;
 		};
-	}		
+	},
+	'submit #addsiteform': function(event, template) {
+		event.preventDefault();
+		var newsiteurl = template.find('#newsiteurl').value;
+		Meteor.call('checkSite', newsiteurl, function(err, result) {
+			console.log(result);
+			console.log(result.link);
+		});
+	},		
 });
 
 

@@ -8,7 +8,7 @@
 </body>
 
 <template name="page">
-					{{#if showAccountSettingsDialog}}
+				{{#if showAccountSettingsDialog}}
 				  {{> accountSettingsDialog}}
 				{{/if}}
 				
@@ -196,7 +196,6 @@
 		<th>Größe</th>
 		<th>Hinzugefügt</th>
 		</thead>
-		{{#if isLinksComplete }}
           	{{#if links}}
 			<tbody>
 			{{#each links}}
@@ -208,12 +207,6 @@
 				</table>
 				<p class="lead">Für den ausgewählten Zeitraum wurden keine Links gefunden.</p>
 			{{/if}}
-		{{else}}
-		<div class="progress progress-striped">
-			<div class="bar" style="width: 20%;"></div>
-		</div>
-         <img src="images/load.gif">
-		{{/if}}
 </template>
 
 <template name="select_all_links">
@@ -342,7 +335,7 @@
     <h3 align="center">Musik-Blog hinzufügen</h3>
   </div>
   <div class="modal-body">
-	<form class="form-horizontal">
+	<form class="form-horizontal" id="addsiteform">
 		<div class="input-append">
 			<span class="help-inline">URL der Seite, die wir nach Links durchsuchen sollen</span>
 			<input id="newsiteurl" class="input-xlarge siteurl" type="url" placeholder="http://www.electrotechnosuperblog.com" required>
