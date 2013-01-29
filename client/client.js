@@ -88,6 +88,21 @@ Template.link.getSourceName = function (data) {
 	return this.source;
 };
 
+Template.downloadlinksbutton.isAnyLinkSelected = function() {
+	if(Session.get("selected_links") && Session.get("selected_links").length) return true
+	else return false
+};
+
+Template.copytoclipboardbutton.isAnyLinkSelected = function() {
+	if(Session.get("selected_links") && Session.get("selected_links").length) return true
+	else return false
+};
+
+Template.link.isLinkSelected = function() {
+	if (_.contains(Session.get("selected_links"), this._id)) return true;
+	else return false;
+};
+
 //Player-Widget zurückgeben, wenn es einen embedabble player gibt
 Template.link.getPlayerWidget = function (data) {
 	//Soundcloud: <a href="http://soundcloud.com/matas/hobnotropic" class="sc-player">My new dub track</a>
@@ -167,34 +182,23 @@ Template.page.showSitesDialog = function () {
 //Linkfilter aktualisieren
 Template.select_all_links.events({
 'click': function (event, template) {
-	if (event.srcElement.checked == true) $('[type=checkbox]').prop("checked", true);
-	else $('[type=checkbox]').prop("checked", false);
+	if (event.srcElement.checked == true) {
+		var selected = _.pluck(Links.find({},{fields: {_id : 1}}).fetch(),'_id');
+		Session.set("selected_links",selected);
+	}
+	else Session.set("selected_links",[]);
+	//$('[type=checkbox]').prop("checked", true);
+	//else $('[type=checkbox]').prop("checked", false);
 }
 });
 
 Template.downloadlinksbutton.events({
 'click' : function (event, template) {
-	var selected = Array();
-	$('input:checkbox:checked[class=link_checkbox]').each(function() {
-		selected.push(this.id);
-	});
-	console.log(Links.find({_id : {$in : selected}}));
+	var selected = Session.get("selected_links");
+	
+	//Meteor.call('downloadLinks',selected, function(){});
 }
 });
-
-Template.link.rendered = function() {
-		$('input:checkbox').click(function() {
-		var buttonsChecked = $('input:checkbox:checked');
-		console.log(buttonsChecked.length);
-        if (buttonsChecked.length) $('.download').attr('disabled',false);
-        else $('.download').attr('disabled',true);
-    });
-};
-
-//TODO: bringt nichts
-Template.header.preserve({
-'input[id]': function (node) { return node.id; }
-})
 
 //TODO: testen
 Template.header.events({
@@ -210,7 +214,7 @@ Template.header.events({
 	if (term && term != undefined && term != "")
 	{
 		Session.set("filter_term", term.replace("\s",".*"));
-	} else Session.set("filter_term","");
+	} else Session.set("filter_term",undefined);
 }
 });
 
@@ -346,6 +350,28 @@ Template.like_link.events({
     }
 });
 
+Template.link.events({
+    'click .link_checkbox': function (event, template) {	
+		var selected = Session.get("selected_links");
+		if (event.srcElement.checked)
+		{
+			var idx = selected.indexOf(this._id)
+			if(idx==-1)
+			{
+				selected.push(this._id);
+				Session.set("selected_links",selected);
+			}
+		}
+		else {
+			var idx = selected.indexOf(this._id);
+			if(idx!=-1)	{
+				selected.splice(idx, 1);
+				Session.set("selected_links",selected);
+			}
+		}
+	}
+});
+
 Template.addLinkDialog.events({
   'click .addlink': function (event, template) {
 	//TODO: Link checken und anzeigen
@@ -454,30 +480,30 @@ Template.accountSettingsDialog.events({
 //leider funktioniert das noch nicht ganz, das Meteor.user() Objekt steht dann noch nicht immer
 //zur Verfügung. Workaround: Timer auf 5 Sekunden, dann ist das Objekt im Regelfall verfügbar.
 Meteor.startup(function () {
-	$('input:checkbox').click(function() {
-		var buttonsChecked = $('input:checkbox:checked');
-		console.log(buttonsChecked.length);
-        if (buttonsChecked.length) $('.download').attr('disabled',false);
-        else $('.download').attr('disabled',true);
-    });
-	
-	if (! Session.get("filter_date")) {
+	Meteor.autorun(function() {
+		if (! Session.get("filter_date")) {
 		var tmp_date = new Date();
 		tmp_date.setDate(tmp_date.getDate()-14);
 		Session.set("filter_date",tmp_date);
-    };
+		};
+		
+		if (! Session.get("filter_status")) {
+			var filter_status = new Array();
+			filter_status.push("on");
+			Session.set("filter_status",filter_status);
+		};
+		
+		if (! Session.get("filter_term")) {
+			var filter_term = "";
+			Session.set("filter_term",filter_term);
+		};
+		
+		if (! Session.get("selected_links")) {
+			var selected_links = [];
+			Session.set("selected_links",selected_links);
+		};
+	});
 	
-	if (! Session.get("filter_status")) {
-		var filter_status = new Array();
-		filter_status.push("on");
-		Session.set("filter_status",filter_status);
-    };
-	
-	if (! Session.get("filter_term")) {
-		var filter_term = "";
-		Session.set("filter_term",filter_term);
-    };
-
 	Meteor.setTimeout(
 		function () {		
 			//bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten

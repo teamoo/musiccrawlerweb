@@ -163,11 +163,20 @@
 </template>
 
 <template name="downloadlinksbutton">
-	<a class="btn btn-primary download" href="#" disabled="disabled"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+	{{#if isAnyLinkSelected}}
+		<a class="btn btn-primary download" href="#"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+	{{else}}
+		<a class="btn btn-primary download" href="#" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+	{{/if}}
+
 </template>
 
 <template name="copytoclipboardbutton">
-	<a class="btn btn download" href="#" disabled="disabled"><i class="icon-file"></i> Zwischenablage</a>
+	{{#if isAnyLinkSelected}}
+		<a class="btn btn download" href="#"><i class="icon-file"></i> Zwischenablage</a>
+	{{else}}
+		<a class="btn btn download" href="#" disabled><i class="icon-file"></i> Zwischenablage</a>
+	{{/if}}
 </template>
 
 
@@ -220,7 +229,11 @@
 <template name="link">
   <tr>
 	<td>
-		<input type="checkbox" value="" class="link_checkbox" id="{{_id}}">
+		{{#if isLinkSelected}}
+			<input type="checkbox" class="link_checkbox" id="{{_id}}" checked="checked">
+		{{else}}
+			<input type="checkbox" class="link_checkbox" id="{{_id}}">
+		{{/if}}
 	</td>
 	<td>
 		<i class="icon-refresh hand"></i>
