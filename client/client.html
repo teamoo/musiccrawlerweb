@@ -45,7 +45,7 @@
 </template>  
 
 <template name="terminateappbutton">
-	<a class="btn btn-danger" href="#">Anwendung beenden</a>
+	<a class="btn btn-danger">Anwendung beenden</a>
 </template>
 
 <template name="connectionLostWarning">
@@ -54,33 +54,33 @@
 		<p>Anscheinend hast du die Verbindung zum Server verloren. Wir versuchen dich automatisch wieder zu verbinden. Sollte dies innerhalb von 1 Minute nicht klappen, schließe bitte diese Seite und öffne sie erneut.</p>
 		<p>
 			{{> terminateappbutton}}
-			<a class="btn" href="#">Warten</a>
+			<a class="btn">Warten</a>
 		</p>
 	</div>
 </template>
 
 
 <template name="addsitebutton">
-	<li><a tabindex="-1" href="#"><i class="icon-plus"></i> Seite hinzufügen</a></li>
+	<li><a tabindex="-1"><i class="icon-plus"></i> Seite hinzufügen</a></li>
 </template>
 
 <template name="showsitesbutton">
-	<li><a tabindex="-1" href="#"><i class="icon-th-list"></i> Seiten anzeigen</a></li>
+	<li><a tabindex="-1"><i class="icon-th-list"></i> Seiten anzeigen</a></li>
 </template>
 
 <template name="header">
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
-			<a class="brand" href="#">MusicCrawler</a>
+			<a class="brand">MusicCrawler</a>
 			<ul class="nav" role="navigation">
 				<li class="dropdown">
-                      <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
+                      <a id="drop1" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
                       <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
 						{{> linkfilter_items}}
                       </ul>
                 </li>
 				<li class="dropdown">
-                      <a id="drop2" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Seiten <b class="caret"></b></a>
+                      <a id="drop2" role="button" class="dropdown-toggle" data-toggle="dropdown">Seiten <b class="caret"></b></a>
                       <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
                         {{> addsitebutton}}
                         <li class="divider"></li>
@@ -120,12 +120,12 @@
 </template>
 
 <template name="linkfilter_items">
-	<li><a tabindex="-1" href="#" id="1">Letzte 24 Stunden <span class="badge" id="1">{{getLinkCount}}</span></a></li>
-	<li><a tabindex="-1" href="#" id="14">Letzte 14 Tage <span class="badge" id="14">{{getLinkCount}}</span></a></li>
-    <li><a tabindex="-1" href="#" id="30">Letzte 30 Tage <span class="badge" id="30">{{getLinkCount}}</span></a></li>
-	<li><a tabindex="-1" href="#" id="90">Letzte 90 Tage <span class="badge" id="90">{{getLinkCount}}</span></a></li>
+	<li class="{{getClass}}"><a tabindex="-1" id="1">Letzte 24 Stunden <span class="badge" id="1">{{getLinkCount}}</span></a></li>
+	<li class="{{getClass}}"><a tabindex="-1" id="14">Letzte 14 Tage <span class="badge" id="14">{{getLinkCount}}</span></a></li>
+    <li class="{{getClass}}"><a tabindex="-1" id="30">Letzte 30 Tage <span class="badge" id="30">{{getLinkCount}}</span></a></li>
+	<li class="{{getClass}}"><a tabindex="-1" id="90">Letzte 90 Tage <span class="badge" id="90">{{getLinkCount}}</span></a></li>
     <li class="divider"></li>
-    <li><a tabindex="-1" href="#" id="365">Letztes Jahr </a></li>
+    <li class="{{getClass}}"><a tabindex="-1" id="365">Letztes Jahr </a></li>
 </template>
 
 <template name="user_info">
@@ -138,44 +138,44 @@
 
 <template name="user_loggedin">
 	{{#if loggingIn}}
-		<a class="btn" href="#"><i class="icon-user"></i> Einloggen...</a>
+		<a class="btn"><i class="icon-user"></i> Einloggen...</a>
 	{{else}}
-		<a class="btn" href="#" id="accountbtn" rel="popover" data-original-title="{{currentUser.profile.name}}" data-placement="bottom"><i class="icon-user"></i> {{currentUser.profile.first_name}}</a>
-		<a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
+		<a class="btn" id="accountbtn" rel="popover" data-original-title="{{currentUser.profile.name}}" data-placement="bottom"><i class="icon-user"></i> {{currentUser.profile.first_name}}</a>
+		<a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
 		<ul class="dropdown-menu pull-right">
 			{{> user_accountsettings}}
 			<li class="divider"></li>
-			<li><a href="#" id="logout"><i class="icon-off"></i> Abmelden</a></li>
+			<li><a id="logout"><i class="icon-off"></i> Abmelden</a></li>
 		</ul>
 	{{/if}}
 </template>
 
 <template name="user_loggedout">
-		<a class="btn" href="#" id="login"><i class="icon-user"></i> Login</a>
+		<a class="btn" id="login"><i class="icon-user"></i> Login</a>
 </template>
 
 <template name="user_accountsettings">
-	<li><a href="#"><i class="icon-wrench"></i> Einstellungen</a></li>
+	<li><a><i class="icon-wrench"></i> Einstellungen</a></li>
 </template>
 
 <template name="addlinkbutton">
-	<a class="btn" href="#"><i class="icon-plus"></i> Link hinzufügen</a>
+	<a class="btn"><i class="icon-plus"></i> Link hinzufügen</a>
 </template>
 
 <template name="downloadlinksbutton">
 	{{#if isAnyLinkSelected}}
-		<a class="btn btn-primary download" href="#"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+		<a class="btn btn-primary download"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
 	{{else}}
-		<a class="btn btn-primary download" href="#" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+		<a class="btn btn-primary download" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
 	{{/if}}
 
 </template>
 
 <template name="copytoclipboardbutton">
 	{{#if isAnyLinkSelected}}
-		<a class="btn btn download" href="#"><i class="icon-file"></i> Zwischenablage</a>
+		<a class="btn btn download"><i class="icon-file"></i> Zwischenablage</a>
 	{{else}}
-		<a class="btn btn download" href="#" disabled><i class="icon-file"></i> Zwischenablage</a>
+		<a class="btn btn download" disabled><i class="icon-file"></i> Zwischenablage</a>
 	{{/if}}
 </template>
 

@@ -1,38 +1,38 @@
 ﻿function writeConsole(content) {
- top.consoleRef=window.open('','Links',
-  'width=250,height=500'
-   +',menubar=0'
-   +',toolbar=0'
-   +',status=0'
-   +',scrollbars=0'
-   +',resizable=1')
- top.consoleRef.document.writeln(
-  '<html><head><title>Console</title></head>'
-   +'<body bgcolor=white onLoad="self.focus()">'
-   +content
-   +'</body></html>'
- );
- alert("Bitte JDownloader starten und alles markieren und kopieren.\nJDownloader erkennt dann die Links");
- top.consoleRef.document.close();
+	 top.consoleRef=window.open('','Links',
+	 'width=250,height=500'
+	  +',menubar=0'
+	  +',toolbar=0'
+	  +',status=0'
+	  +',scrollbars=0'
+	  +',resizable=1')
+	top.consoleRef.document.writeln(
+	 '<html><head><title>Console</title></head>'
+	  +'<body bgcolor=white onLoad="self.focus()">'
+	  +content
+	  +'</body></html>'
+	);
+	alert("Bitte JDownloader starten und alles markieren und kopieren.\nJDownloader erkennt dann die Links");
+	top.consoleRef.document.close();
 }
 // Always be subscribed to the currently filtered links
 Meteor.autosubscribe(function () {
-  var filter_date = Session.get('filter_date');
-  var filter_status = Session.get('filter_status');
-  var filter_term = Session.get('filter_term');
-  if (filter_date && filter_status) {
-  	Meteor.subscribe('sites', function onComplete(){
-  	     // set a session key to true to indicate that the subscription is completed.
-  	     Session.set('sites_completed', true);
-  	});
-  
+	var filter_date = Session.get('filter_date');
+	var filter_status = Session.get('filter_status');
+	var filter_term = Session.get('filter_term');
+	if (filter_date && filter_status) {
+	Meteor.subscribe('sites', function onComplete(){
+		 // set a session key to true to indicate that the subscription is completed.
+		 Session.set('sites_completed', true);
+	});
+
 	Meteor.subscribe('links', filter_date, filter_status, filter_term, function onComplete(){
 		// set a session key to true to indicate that the subscription is completed.
 		Session.set('links_completed', true);
 	});
-	
+
 	Meteor.subscribe('counts');
-  };	 
+	};	 
 });
 
 //Autorun: wenn sich die IP-Adresse ändert, JDOnlineStatus checken!
@@ -170,7 +170,7 @@ Template.page.notConnected = function(){
 };
 
 Template.page.showAccountSettingsDialog = function () {
-  return Session.get("showAccountSettingsDialog");
+	return Session.get("showAccountSettingsDialog");
 };
 
  var openAddLinkDialog = function () {
@@ -178,11 +178,7 @@ Template.page.showAccountSettingsDialog = function () {
 };
 
 Template.page.showAddLinkDialog = function () {
-  return Session.get("showAddLinkDialog");
-};
-
-Template.linklist.isLinksComplete = function () {
-  return Session.get("links_completed");
+	return Session.get("showAddLinkDialog");
 };
 
 var openAddSiteDialog = function () {
@@ -190,7 +186,7 @@ var openAddSiteDialog = function () {
 };
 
 Template.page.showAddSiteDialog = function () {
-  return Session.get("showAddSiteDialog");
+	return Session.get("showAddSiteDialog");
 };
 
 var openSitesDialog = function () {
@@ -198,132 +194,148 @@ var openSitesDialog = function () {
 };
 
 Template.page.showSitesDialog = function () {
-  return Session.get("showSitesDialog");
+	return Session.get("showSitesDialog");
 };
+
+Template.linkfilter_items.getClass = function() {
+	//TODO: geht noch nicht, aktives Item setzen
+	if (this.id == Session.get("selected_navitem")) return "active";
+	else return "";
+}
 
 //
 //Eventhandler
 //
 //Linkfilter aktualisieren
 Template.select_all_links.events({
-'click': function (event, template) {
-	if (event.srcElement.checked == true) {
-		var selected = _.pluck(Links.find({},{fields: {_id : 1}}).fetch(),'_id');
-		Session.set("selected_links",selected);
+	'click': function (event, template) {
+		if (event.srcElement.checked == true) {
+			var selected = _.pluck(Links.find({},{fields: {_id : 1}}).fetch(),'_id');
+			Session.set("selected_links",selected);
+		}
+		else Session.set("selected_links",[]);
+		//$('[type=checkbox]').prop("checked", true);
+		//else $('[type=checkbox]').prop("checked", false);
 	}
-	else Session.set("selected_links",[]);
-	//$('[type=checkbox]').prop("checked", true);
-	//else $('[type=checkbox]').prop("checked", false);
-}
 });
 
 
 Template.copytoclipboardbutton.events({
-'click' : function(event, template) {
-	var selected = Session.get("selected_links");
-		
-	var selectedurls = _.pluck(Links.find({_id : {$in: selected}},{fields: {url : 1}}).fetch(), 'url');
-	writeConsole(_.reduce(selectedurls, function(memo, aUrl){ return memo + aUrl + "<br/>"}));
-}
+	'click' : function(event, template) {
+		var selected = Session.get("selected_links");
+			
+		var selectedurls = _.pluck(Links.find({_id : {$in: selected}},{fields: {url : 1}}).fetch(), 'url');
+		writeConsole(_.reduce(selectedurls, function(memo, aUrl){ return memo + aUrl + "<br/>"}));
+	}
 });
 
 Template.downloadlinksbutton.events({
-'click' : function (event, template) {		
-	var selected = Session.get("selected_links");
-	
-	var selectedurls = _.pluck(Links.find({_id : {$in: selected}},{fields: {url : 1}}).fetch(), 'url');
+	'click' : function (event, template) {		
+		var selected = Session.get("selected_links");
+		
+		var selectedurls = _.pluck(Links.find({_id : {$in: selected}},{fields: {url : 1}}).fetch(), 'url');
 
-	var urls_per_request = 20;
-	var times = (selectedurls.length % urls_per_request) +1;
-	
-	for (var i = 1; i <= times; i++)
-	{
-		var sel_links = selectedurls.splice(0, urls_per_request);
+		var urls_per_request = 20;
+		var times = (selectedurls.length % urls_per_request) +1;
 		
-		console.log(sel_links);
-		
-		//TODO irgendwie macht underscore jetzt hier einen Fehler...prüfen	
-		var links_chained = _.reduce(sel_links, function(memo, aUrl) {return memo + aUrl + " "});
-		var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/grabber0/start1/";// + links_chained.toString();
-		
-		Meteor.http.get(requeststring,function(error, result) {
-			if (result.statusCode === 200) {
-				console.log("erfolgreich!");
-				console.log(result.data);
-				console.log(result);
-			}
-			else {
-				//TODO user informieren
-				console.log(error);
-			}
-		});		
-	}		
-
-}
+		for (var i = 1; i <= times; i++)
+		{
+			var sel_links = selectedurls.splice(0, urls_per_request);
+			
+			console.log(sel_links);
+			
+			//TODO irgendwie macht underscore jetzt hier einen Fehler...prüfen	
+			var links_chained = _.reduce(sel_links, function(memo, aUrl) {return memo + aUrl + " "});
+			var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/grabber0/start1/";// + links_chained.toString();
+			
+			Meteor.http.get(requeststring,function(error, result) {
+				if (result.statusCode === 200) {
+					console.log("erfolgreich!");
+					console.log(result.data);
+					console.log(result);
+				}
+				else {
+					//TODO user informieren
+					console.log(error);
+				}
+			});		
+		}		
+	}
 });
 
 Template.header.events({
-'submit #searchform': function (event, template) {
-	event.preventDefault();
-	var tmp_date = new Date();
-	tmp_date.setDate(tmp_date.getDate()-365);
-	Session.set("filter_date",tmp_date);
-	Session.set("filter_status",["on","off","unknown"]);
-		
-	var term = template.find('#searchfield').value;
-		
-	if (term && term != undefined && term != "")
-		Session.set("filter_term", ".*" + term.replace("\s",".*") + ".*");
-	else {
-		Session.set("filter_term",".*");
-		Session.set("filter_status",["on"]);
+	'submit #searchform': function (event, template) {
+		event.preventDefault();
+		var term = template.find('#searchfield').value;
+			
+		if (term && term != undefined && term != "")
+		{
+			var prev_filter_date = Session.get("filter_date");
+			Session.set("prev_filter_date",prev_filter_date);
+			var tmp_date = new Date();
+			tmp_date.setDate(tmp_date.getDate()-365);
+			Session.set("filter_date",tmp_date);
+			Session.set("filter_status",["on","off","unknown"]);
+			Session.set("filter_term", ".*" + term.replace("\s",".*") + ".*");
+		}
+		else {
+			Session.set("filter_term",".*");
+
+			if (Session.get("prev_filter_date")) Session.set("filter_date",Session.get("prev_filter_date"));
+			else {
+				var tmp_date = new Date();
+				tmp_date.setDate(tmp_date.getDate()-14);
+				Session.set("filter_date",tmp_date);
+			}
+			Session.set("filter_status",["on"]);
+		}
 	}
-}
 });
 
 Template.link_filter_status.events({
-'click': function (context) {
-	var tmp_status = Session.get("filter_status");
-	
-	if(_.indexOf(tmp_status, "unknown") != -1)
-		tmp_status = _.without(tmp_status,"off","unknown");
-	else {
-		tmp_status = new Array("on","unknown");
-	};
-	Session.set("filter_status",_.uniq(tmp_status));
-}
+	'click': function (context) {
+		var tmp_status = Session.get("filter_status");
+		
+		if(_.indexOf(tmp_status, "unknown") != -1)
+			tmp_status = _.without(tmp_status,"off","unknown");
+		else {
+			tmp_status = new Array("on","unknown");
+		};
+		Session.set("filter_status",_.uniq(tmp_status));
+	}
 });
 
 Template.terminateappbutton.events({
-'click': function (context) {
-	if ($.browser.opera || $.browser.mozilla) window.close(); 
-	else {
-			window.open('','_self','');
-			window.close();
-		};
+	'click': function (context) {
+		if ($.browser.opera || $.browser.mozilla) window.close(); 
+		else {
+				window.open('','_self','');
+				window.close();
+			};
 
-}
+	}
 });
 
 
 //TODO: geht nicht
 Template.comment_link.events({
-'click': function (context) {
-	   $('.popover').popover('show'); //show tooltip
-}
+	'click': function (context) {
+		   $('.popover').popover('show'); //show tooltip
+	}
 });
 
 Template.link.rendered = function() {
-   $('.popover').popover(); //initialize all tooltips in this template
+	$('.popover').popover(); //initialize all tooltips in this template
 };
 
 //Linkfilter(Date) aktualisieren
 Template.linkfilter_items.events({
-'click': function (context) {
-	var tmp_date = new Date();
-	tmp_date.setDate(tmp_date.getDate()-context.srcElement.id);
-	Session.set("filter_date",tmp_date);
-}
+	'click': function (context) {
+		var tmp_date = new Date();
+		tmp_date.setDate(tmp_date.getDate()-context.srcElement.id);
+		Session.set("filter_date",tmp_date);
+		Session.set("selected_filter",context.srcElement.id);
+	}
 });
 
 //Klick auf Login-Button
@@ -360,16 +372,16 @@ Template.user_loggedout.events({
 
 //Logout-Eventhandler  
 Template.user_loggedin.events({
-'click #logout': function () {
-  Meteor.logout(function (err) {
-	  if (err) {
-		//TODO: Error handling
-		console.log(err);
-	  } else {
-		//ggf. Session-Variablen zurücksetzen...
-	  }
-   });
-}
+	'click #logout': function () {
+	  Meteor.logout(function (err) {
+		  if (err) {
+			//TODO: Error handling
+			console.log(err);
+		  } else {
+			//ggf. Session-Variablen zurücksetzen...
+		  }
+	   });
+	}
 });
 
 Template.addlinkbutton.events({
@@ -438,19 +450,19 @@ Template.link.events({
 });
 
 Template.addLinkDialog.events({
-  'click .addlink': function (event, template) {
+	'click .addlink': function (event, template) {
 	//TODO: Link checken und anzeigen
 	var newurl;
 	
 	newurl = template.find(".linkurl").value;
 	//es wurde gespeichert, Dialog schließen
     Session.set("showAddLinkDialog", false);
-  },
-  'click .cancel': function () {
+	},
+	'click .cancel': function () {
 	//User hat abgebrochen, Dialog schließen
     Session.set("showAddLinkDialog", false);
-  },
-  'input #newlinkurl': function(event, template) {
+	},
+	'input #newlinkurl': function(event, template) {
 		if (!event.srcElement.validity.valid) {
 			template.find('.addlink').disabled = true;
 		} else {
@@ -460,19 +472,19 @@ Template.addLinkDialog.events({
 });
 
 Template.addSiteDialog.events({
-  'click .addsite': function (event, template) {
+	'click .addsite': function (event, template) {
 	//TODO: Link checken und anzeigen
 	var newurl;
 	
 	newurl = template.find(".siteurl").value;
 	//es wurde gespeichert, Dialog schließen
     Session.set("showAddSiteDialog", false);
-  },
-  'click .cancel': function () {
+	},
+	'click .cancel': function () {
 	//User hat abgebrochen, Dialog schließen
     Session.set("showAddSiteDialog", false);
-  },
-  'input #newsiteurl': function(event, template) {
+	},
+	'input #newsiteurl': function(event, template) {
 		if (!event.srcElement.validity.valid) {
 			template.find('.addsite').disabled = true;
 		} else {
@@ -491,18 +503,18 @@ Template.addSiteDialog.events({
 
 
 Template.sitesDialog.events({
-  'click .cancel': function () {
-	//User hat abgebrochen, Dialog schließen
-    Session.set("showSitesDialog", false);
-  },	
+	'click .cancel': function () {
+		//User hat abgebrochen, Dialog schließen
+		Session.set("showSitesDialog", false);
+	},
 });
 
 
 Template.accountSettingsDialog.events({
-  'click .save': function (event, template) {
-    var aip = template.find(".ip").value;
-    var aport = template.find(".port").value;
-    var aupdateip = template.find(".autoupdate").checked;
+	'click .save': function (event, template) {
+	var aip = template.find(".ip").value;
+	var aport = template.find(".port").value;
+	var aupdateip = template.find(".autoupdate").checked;
 
 	if (aupdateip === true)
 	{
@@ -516,10 +528,10 @@ Template.accountSettingsDialog.events({
 				Meteor.call("checkJDOnlineStatus", {ip : result.data.ip, port: aport} , 
 					function (err, isOnline) {
 					  if (err) {
-					    console.log(err);
+						console.log(err);
 					  }
 					  Session.set("JDOnlineStatus", isOnline); 
-				  	}
+					}
 				);
 			}
 		);
@@ -529,13 +541,13 @@ Template.accountSettingsDialog.events({
 		Meteor.users.update( { _id: Meteor.userId()}, {$set: {'profile.port' : aport, 'profile.ip': aip} } );
 	}
 	//es wurde gespeichert, Dialog schließen
-    Session.set("showAccountSettingsDialog", false);
-  },
+	Session.set("showAccountSettingsDialog", false);
+	},
 
-  'click .cancel': function () {
+	'click .cancel': function () {
 	//User hat abgebrochen, Dialog schließen
-    Session.set("showAccountSettingsDialog", false);
-  }
+	Session.set("showAccountSettingsDialog", false);
+	}
 });
 
 //
@@ -545,13 +557,18 @@ Template.accountSettingsDialog.events({
 //leider funktioniert das noch nicht ganz, das Meteor.user() Objekt steht dann noch nicht immer
 //zur Verfügung. Workaround: Timer auf 5 Sekunden, dann ist das Objekt im Regelfall verfügbar.
 Meteor.startup(function () {
-	Session.set("sites_completed",false);
-	Session.set("links_completed",false);
 	Meteor.autorun(function() {
+		Session.set("sites_completed",false);
+		Session.set("links_completed",false);
+	
 		if (! Session.get("filter_date")) {
 			var tmp_date = new Date();
 			tmp_date.setDate(tmp_date.getDate()-14);
 			Session.set("filter_date",tmp_date);
+		};
+		
+		if (! Session.get("selected_navitem")) {
+			Session.set("selected_navitem",14);
 		};
 		
 		if (! Session.get("filter_status")) {
