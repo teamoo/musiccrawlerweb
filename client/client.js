@@ -494,9 +494,9 @@ Template.addSiteDialog.events({
 	'submit #addsiteform': function(event, template) {
 		event.preventDefault();
 		var newsiteurl = template.find('#newsiteurl').value;
-		Meteor.call('checkSite', newsiteurl, function(err, result) {
+		Meteor.call('checkSite', newsiteurl, function(error, result) {
+			if (error) console.log(error);
 			console.log(result);
-			console.log(result.link);
 		});
 	},		
 });

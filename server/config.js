@@ -10,6 +10,6 @@ Accounts.config({forbidClientAccountCreation : false});
 //Facebook-Konfiguration anlegen
 //Accounts.loginServiceConfiguration.insert({
 //	service: "facebook",
-//	appId: "529875863713376",
-//	secret: "a2292cfb6f3ef055183df1635c38dcb0"
+//	appId: "402028639888899",
+//	secret: "190a4b1b849932d0da17bc3a6513b2a0"
 //});
