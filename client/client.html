@@ -8,19 +8,19 @@
 </body>
 
 <template name="page">
-				{{#if showAccountSettingsDialog}}
+				{{#if session "showAccountSettingsDialog"}}
 				  {{> accountSettingsDialog}}
 				{{/if}}
 				
-				{{#if showAddLinkDialog}}
+				{{#if session "showAddLinkDialog"}}
 				  {{> addLinkDialog}}
 				{{/if}}
 				
-				{{#if showAddSiteDialog}}
+				{{#if session "showAddSiteDialog"}}
 				  {{> addSiteDialog}}
 				{{/if}}
 				
-				{{#if showSitesDialog}}
+				{{#if session "showSitesDialog"}}
 				  {{> sitesDialog}}
 				{{/if}}
 				{{#if notConnected}}
@@ -29,7 +29,7 @@
 	<div class="container-fluid">
 		<div class="row-fluid">
 			<div class="span12">
-				{{>header}}
+				{{>navigation}}
 			</div>
 		</div>
 		<div class="row-fluid">
@@ -44,31 +44,24 @@
 	</div>
 </template>  
 
-<template name="terminateappbutton">
-	<a class="btn btn-danger">Anwendung beenden</a>
-</template>
-
 <template name="connectionLostWarning">
 	<div class="alert alert-error alert-block">
 		<h4 class="error heading">Achtung!</h4>
 		<p>Anscheinend hast du die Verbindung zum Server verloren. Wir versuchen dich automatisch wieder zu verbinden. Sollte dies innerhalb von 1 Minute nicht klappen, schließe bitte diese Seite und öffne sie erneut.</p>
 		<p>
-			{{> terminateappbutton}}
+			<a class="btn btn-danger" id="terminateappbutton">Anwendung beenden</a>
 			<a class="btn">Warten</a>
 		</p>
 	</div>
 </template>
 
-
-<template name="addsitebutton">
-	<li><a tabindex="-1"><i class="icon-plus"></i> Seite hinzufügen</a></li>
+<template name="progressBar">
+	<div class="progress progress-striped active">
+		<div class="bar" style="width: 40%;"></div>
+	</div>
 </template>
 
-<template name="showsitesbutton">
-	<li><a tabindex="-1"><i class="icon-th-list"></i> Seiten anzeigen</a></li>
-</template>
-
-<template name="header">
+<template name="navigation">
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			<a class="brand">MusicCrawler</a>
@@ -76,26 +69,36 @@
 				<li class="dropdown">
                       <a id="drop1" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
                       <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
-						{{> linkfilter_items}}
+							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="1">Letzte 24 Stunden <span class="badge" id="1">{{getLinkCount}}</span></a></li>
+							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="14">Letzte 14 Tage <span class="badge" id="14">{{getLinkCount}}</span></a></li>
+							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="30">Letzte 30 Tage <span class="badge" id="30">{{getLinkCount}}</span></a></li>
+							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="90">Letzte 90 Tage <span class="badge" id="90">{{getLinkCount}}</span></a></li>
+							<li class="divider"></li>
+							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="365">Letztes Jahr </a></li>
                       </ul>
                 </li>
 				<li class="dropdown">
                       <a id="drop2" role="button" class="dropdown-toggle" data-toggle="dropdown">Seiten <b class="caret"></b></a>
                       <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
-                        {{> addsitebutton}}
-                        <li class="divider"></li>
-                        {{> showsitesbutton}}
+                        	<li><a tabindex="-1" id="addsitebutton"><i class="icon-plus"></i> Seite hinzufügen</a></li>
+							<li class="divider"></li>
+							<li><a tabindex="-1" id="showsitesbutton"><i class="icon-th-list"></i> Seiten anzeigen</a></li>
                       </ul>
                 </li>
 				<li class="divider-vertical"></li>
-				{{> addlinkbutton}}
-				{{> copytoclipboardbutton}}
-				{{> downloadlinksbutton}}
+				<a class="btn" id="addlinkbutton"><i class="icon-plus"></i> Link hinzufügen</a>
+				{{#if isAnyLinkSelected}}
+					<a class="btn" id="copybutton"><i class="icon-file"></i> Zwischenablage</a>
+					<a class="btn btn-primary" id="downloadbutton"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+				{{else}}
+					<a class="btn" id="copybutton" disabled><i class="icon-file"></i> Zwischenablage</a>
+					<a class="btn btn-primary" id="downloadbutton" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+				{{/if}}
 			</ul>
 			<ul class="nav pull-right">
 				<li>
 					<form class="navbar-search pull-right" id="searchform">
-						<input type="text" class="search-query" placeholder="Titel, Interpret, Album..." id="searchfield">
+						<input type="text" class="search-query" placeholder="Titel, Interpret, Album..." id="searchfield" value="{{getLastSearchTerm}}">
 					</form>
 				</li>
 				<li class="divider-vertical"></li>
@@ -107,25 +110,6 @@
 			</ul>
 		</div>
 	</div>
-</template>
-
-<template name="comment">
-	<div class="span4 well">
-		<form accept-charset="UTF-8" action="" method="">
-			<textarea class="span4" id="new_comment" name="new_comment"
-			placeholder="Kommentar eingeben" rows="5"></textarea>
-			<button class="btn btn-info" type="submit">Posten</button>
-		</form>
-	</div>
-</template>
-
-<template name="linkfilter_items">
-	<li class="{{getClass}}"><a tabindex="-1" id="1">Letzte 24 Stunden <span class="badge" id="1">{{getLinkCount}}</span></a></li>
-	<li class="{{getClass}}"><a tabindex="-1" id="14">Letzte 14 Tage <span class="badge" id="14">{{getLinkCount}}</span></a></li>
-    <li class="{{getClass}}"><a tabindex="-1" id="30">Letzte 30 Tage <span class="badge" id="30">{{getLinkCount}}</span></a></li>
-	<li class="{{getClass}}"><a tabindex="-1" id="90">Letzte 90 Tage <span class="badge" id="90">{{getLinkCount}}</span></a></li>
-    <li class="divider"></li>
-    <li class="{{getClass}}"><a tabindex="-1" id="365">Letztes Jahr </a></li>
 </template>
 
 <template name="user_info">
@@ -143,7 +127,7 @@
 		<a class="btn" id="accountbtn" rel="popover" data-original-title="{{currentUser.profile.name}}" data-placement="bottom"><i class="icon-user"></i> {{currentUser.profile.first_name}}</a>
 		<a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
 		<ul class="dropdown-menu pull-right">
-			{{> user_accountsettings}}
+			<li><a id="showsettings"><i class="icon-wrench"></i> Einstellungen</a></li>
 			<li class="divider"></li>
 			<li><a id="logout"><i class="icon-off"></i> Abmelden</a></li>
 		</ul>
@@ -154,43 +138,11 @@
 		<a class="btn" id="login"><i class="icon-user"></i> Login</a>
 </template>
 
-<template name="user_accountsettings">
-	<li><a><i class="icon-wrench"></i> Einstellungen</a></li>
-</template>
-
-<template name="addlinkbutton">
-	<a class="btn"><i class="icon-plus"></i> Link hinzufügen</a>
-</template>
-
-<template name="downloadlinksbutton">
-	{{#if isAnyLinkSelected}}
-		<a class="btn btn-primary download"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
-	{{else}}
-		<a class="btn btn-primary download" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
-	{{/if}}
-
-</template>
-
-<template name="copytoclipboardbutton">
-	{{#if isAnyLinkSelected}}
-		<a class="btn btn download"><i class="icon-file"></i> Zwischenablage</a>
-	{{else}}
-		<a class="btn btn download" disabled><i class="icon-file"></i> Zwischenablage</a>
-	{{/if}}
-</template>
-
-
-<template name="progressBar">
-	<div class="progress progress-striped active">
-		<div class="bar" style="width: 40%;"></div>
-	</div>
-</template>
-
 <template name="linklist">
   <table class="table table-condensed table-striped">
 	<thead>
 		<th>
-			{{> select_all_links}}
+			<input type="checkbox" value="" id="select_all">
 		</th>
 		<th></th>
 		<th><i class="icon-volume-up"></i></th>
@@ -199,7 +151,7 @@
 		<th></th>
 		<th></th>
 		<th>
-			{{> link_filter_status}}
+			<i class="icon-filter hand" id="filter_links"></i> Status
 		</th>
 		<th>Quelle</th>
 		<th>Größe</th>
@@ -218,12 +170,14 @@
 			{{/if}}
 </template>
 
-<template name="select_all_links">
-	<input type="checkbox" value="" id="select_all">
-</template>
-
-<template name="link_filter_status">
-	<i class="icon-filter hand"></i> Status
+<template name="comment">
+	<div class="span4 well">
+		<form accept-charset="UTF-8" action="" method="">
+			<textarea class="span4" id="new_comment" name="new_comment"
+			placeholder="Kommentar eingeben" rows="5"></textarea>
+			<button class="btn btn-info" type="submit">Posten</button>
+		</form>
+	</div>
 </template>
 
 <template name="link">
@@ -236,16 +190,16 @@
 		{{/if}}
 	</td>
 	<td>
-		<i class="icon-refresh hand"></i>
+		<i class="icon-refresh hand" id="{{_id}}"></i>
 	</td>
 	<td>
 		{{{getPlayerWidget}}}
 	</td>
-    <td>{{name}}</td>
+    <td><a class="linkname" data-mode="inline" data-name="linkname" data-type="text" data-pk="{{_id}}">{{name}}</a></td>
     <td>{{url}}</td>
 	<td>
 		{{#if comments}}
-			{{> comment_link}}
+			<i class="icon-comment hand" id="{{_id}}"></i>
 			<div class="popover left" id="{{_id}}_comments" date-title="Kommentare" data-trigger:"hover">
 				<div class="arrow"></div>
 				<h3 class="popover-title">Titel</h3>
@@ -256,7 +210,7 @@
 				</div>
 			</div>
 		{{else}}
-			{{> comment_link_white}}
+			<i class="icon-comment icon-white hand" id="{{_id}}"></i>
 			<div class="popover left" id="{{_id}}">
 				<div class="arrow"></div>
 				<h3 class="popover-title">Titel</h3>
@@ -267,8 +221,8 @@
 		{{/if}}
 	</td>
 	<td>
-	{{> like_link}}
-	{{#if likes}}{{likes}}{{else}}0{{/if}}
+		<i class="icon-thumbs-up hand like" id="{{_id}}"></i>
+		{{#if likes}}{{likes}}{{else}}0{{/if}}
 	</td>
 	<td>
 		<i class="{{getStatusIcon}}"></i>
@@ -279,21 +233,9 @@
   </tr>
 </template>
 
-<template name="comment_link">
-	<i class="icon-comment hand" id="{{_id}}"></i>
-</template>
-
-<template name="comment_link_white">
-	<i class="icon-comment icon-white hand" id="{{_id}}"></i>
-</template>
-
-<template name="like_link">
-	<i class="icon-thumbs-up hand" id="{{_id}}"></i>
-</template>
-
 <template name="accountSettingsDialog">
 <div class="mask"> </div>
-<div id="accountSettingsModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="accountSettingsModal" class="modal">
   <div class="modal-header">
 	<button type="button" class="close cancel" aria-hidden="true">&times;</button>
     <h3 align="center">Kontoeinstellungen</h3>
@@ -324,12 +266,12 @@
 
 <template name="addLinkDialog">
 <div class="mask"> </div>
-<div id="addLinkModal" class="modal" tabindex="-1">
+<div id="addLinkModal" class="modal">
   <div class="modal-header">
 	<button type="button" class="close cancel">&times;</button>
     <h3 align="center">Link hinzufügen</h3>
   </div>
-  <div class="modal-body">
+  <div class="modal-body" id="addlinkform">
 	<form class="form-inline">
 		<div class="input-append">
 			<input id="newlinkurl" class="input-xlarge linkurl" type="url" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required>
@@ -337,12 +279,17 @@
 		</div>
 	</form>
   </div>
+  <div class="modal-footer">
+    {{#if error}}
+        <div class="alert alert-error">{{error}}</div>
+    {{/if}}
+  </div>
 </div>
 </template>
 
 <template name="addSiteDialog">
 <div class="mask"> </div>
-<div id="addSiteModal" class="modal" tabindex="-1">
+<div id="addSiteModal" class="modal">
   <div class="modal-header">
 	<button type="button" class="close cancel">&times;</button>
     <h3 align="center">Musik-Blog hinzufügen</h3>
@@ -356,12 +303,15 @@
 		</div>
 	</form>
   </div>
+  <div class="modal-footer">
+    {{{session "status"}}}
+  </div>
 </div>
 </template>
 
 <template name="sitesDialog">
 <div class="mask"> </div>
-<div id="showSitesModal" class="modal" tabindex="-1">
+<div id="showSitesModal" class="modal">
   <div class="modal-header">
 	<button type="button" class="close cancel">&times;</button>
     <h3 align="center">Musik-Blogs</h3>
@@ -369,6 +319,7 @@
   <div class="modal-body">
 		<table class="table table-striped table-condensed">
 		<thead>
+			<th><i class="icon-trash"></i></th>
 			<th>Name</th>
 			<th>URL</th>
 			<th>Typ</th>
@@ -377,7 +328,18 @@
 		<tbody>
 			{{#each sites}}
 				<tr>
-					<td>{{name}}</td>
+					<td>
+						{{#if isOwner}}
+							<i class="icon-trash"></i>
+						{{/if}}
+					</td>
+					<td>
+						{{#if isOwner}}
+							<a class="sitename" data-mode="inline" data-name="name" data-type="text" data-pk="{{_id}}">{{name}}</a>
+						{{else}}
+							{{name}}
+						{{/if}}
+					</td>
 					<td>{{feedurl}}</td>
 					<td><i class="{{getFeedTypeIcon}}"></i></td>
 					<td>
@@ -390,8 +352,5 @@
 		</tbody>
 		</table>
   </div>
-  <div class="modal-footer">
-  </div>
 </div>
 </template>
-

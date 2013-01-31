@@ -25,8 +25,27 @@ body {
 	padding: 40px;
 }
 
-
 #showSitesModal {
     width: 900px; /* SET THE WIDTH OF THE MODAL */
     margin: -250px 0 0 -450px; /* CHANGE MARGINS TO ACCOMODATE THE NEW WIDTH (original = margin: -250px 0 0 -280px;) */
+}
+
+.icon-refreshing {
+	background:transparent url("/ajax-loader.gif");
+    background-position: center center;
+}
+
+.icon-loader {
+	background:transparent url("/ajax-loader2.gif");
+    background-position: center center;
+}
+
+.icon-rss {
+	background:transparent url("/rss.gif");
+    background-position: center center;
+}
+
+.icon-facebook {
+	background:transparent url("/facebook.gif");
+    background-position: center center;
 }
