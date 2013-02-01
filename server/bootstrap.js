@@ -11,7 +11,10 @@ Meteor
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:10",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 432537600
 		});
 		Links.insert({
@@ -23,7 +26,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:10",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -35,7 +41,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:18",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 785278566
 		});
 		Links.insert({
@@ -47,7 +56,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:19",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -59,7 +71,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:19",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -71,7 +86,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:20",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 348441805
 		});
 		Links.insert({
@@ -83,7 +101,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:20",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -95,7 +116,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:21",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 580177101
 		});
 		Links.insert({
@@ -107,7 +131,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:21",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -119,7 +146,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:22",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -131,7 +161,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:23",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -143,7 +176,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:37:23",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -155,7 +191,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:00",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -167,7 +206,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:00",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -179,7 +221,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:01",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -191,7 +236,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:02",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -203,7 +251,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:03",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -215,7 +266,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:03",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -227,7 +281,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:03",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -239,7 +296,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:03",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -251,7 +311,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:03",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -263,7 +326,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:08",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -275,7 +341,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:08",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -287,7 +356,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:09",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -299,7 +371,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:09",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -311,7 +386,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:09",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -323,7 +401,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:10",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -335,7 +416,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:11",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -347,7 +431,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:11",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -359,7 +446,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:12",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -371,7 +461,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:12",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 		Links.insert({
@@ -383,7 +476,10 @@ password : "",
 		    source : "http://www.bestclubsound.com",
 		    date_discovered : "2013-01-21 19:38:12",
 		    date_published : null,
-password : "",
+		    password : "",
+		    comments : null,
+		    likes : 0,
+		    likers : null,
 		    size : 0
 		});
 	    }
