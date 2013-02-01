@@ -1,7 +1,11 @@
 ﻿//Publishing - Meteor Collections, die Clients subscriben können
 
 // Publish filtered list to all clients
-Meteor.publish('links', function(filter_date, filter_status, filter_term) {
+Meteor.publish('links', function(filter_date, filter_status, filter_term, filter_limit) {
+    var links_page_size = 50;
+    
+    var thelimit = links_page_size * filter_limit;
+    
     if (this.userId)
 	return Links.find({
 	    date : {
@@ -31,7 +35,7 @@ Meteor.publish('links', function(filter_date, filter_status, filter_term) {
 	    sort : {
 		date_published : -1
 	    },
-	    limit : 1000
+	    limit : thelimit
 	});
 });
 
