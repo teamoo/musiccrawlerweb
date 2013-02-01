@@ -1,4 +1,4 @@
-﻿// Always be subscribed to the currently filtered links
+﻿// Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
 Meteor.autosubscribe(function() {
     var filter_date = Session.get('filter_date');
     var filter_status = Session.get('filter_status');
@@ -29,10 +29,14 @@ Meteor.autosubscribe(function() {
 // vollständig gestartet ist
 // leider funktioniert das noch nicht ganz, das Meteor.user() Objekt steht dann
 // noch nicht immer
-// zur Verfügung. Workaround: Timer auf 5 Sekunden, dann ist das Objekt im
+// zur Verfügung. Workaround: Timer auf 3 Sekunden, dann ist das Objekt im
 // Regelfall verfügbar.
 Meteor.startup(function() {
-    Meteor.autorun(function() {
+    //Autorun: reaktiver Kontext
+	//TODO: Die variblen sollten auch außerhalb setzbar sein, testen
+	Meteor.autorun(function() {
+	
+	//Session Variablen initialisieren
 	Session.set("sites_completed", false);
 	Session.set("links_completed", false);
 	Session.set("status", undefined);
@@ -63,7 +67,7 @@ Meteor.startup(function() {
 	    Session.set("selected_links", selected_links);
 	}
     });
-
+	//TODO das muss eigentlich auch nicht in einen reaktiven Kontext glaube ich...testen
     Meteor.setTimeout(function() {
 	// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP
 	// updaten
@@ -110,52 +114,52 @@ Handlebars.registerHelper('dateFormat', function(context, block) {
     return "kein Datum"; // moment plugin not available. return data as is.;
 });
 
+// Template-Helper für handlebars
+// Session Objekt in Handlebars direkt nutzen
 Handlebars.registerHelper('session', function(input) {
     return Session.get(input);
 });
 
 //
-// Handlebar-Funktionen
+// Handlebars-Funktionen
 //
 // Connected-Status nutzen für Fehlermeldungsanzeige
 Template.page.notConnected = function() {
     return !Meteor.status().connected;
 };
-
+// CSS-Klasse setzen bei dem aktiven Menüeintrag
 Template.navigation.getClass = function() {
     // TODO: geht noch nicht, aktives Item setzen
     if (this.id == Session.get("selected_navitem"))
 	return "active";
     return "";
 };
+// Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
 Template.navigation.isAnyLinkSelected = function() {
     if (Session.get("selected_links") && Session.get("selected_links").length)
 	return true;
     return false;
 };
-
+// Funktion um den letzten Suchbegriff wieder ins Input Feld einzutragen
 Template.navigation.getLastSearchTerm = function() {
     var lastterm = Session.get("filter_term");
     if (lastterm && lastterm != "" && lastterm != ".*")
 	return lastterm;
     return undefined;
 };
-
-// Links-Outlet: alle Links, die gerade in der subscription sind
+// Links-Outlet: alle Links, die gerade in der Subscription sind
 Template.linklist.links = function() {
     // var links = Links.find({});
     // if (links.count() == 0) return false;
     return Links.find({});
 };
-
 // Link-Größe von Kilobyte in MB umwandeln
 Template.link.getSizeinMB = function(data) {
     if (this.size && this.size > 0)
 	return Math.round(this.size / 1048576) + " MB";
     return undefined;
 };
-
-// Status-Icon auswählen je nach Status
+// Status-Icon auswählen je nach Status des Links
 Template.link.getStatusIcon = function(data) {
     switch (this.status) {
     case 'on':
@@ -166,13 +170,13 @@ Template.link.getStatusIcon = function(data) {
 	return "icon-question-sign";
     }
 };
-
+// Funktion um zu bestimmen, ob ein Link ausgewählt ist
 Template.link.isLinkSelected = function() {
     if (_.contains(Session.get("selected_links"), this._id))
 	return true;
     return false;
 };
-
+// Funktion, die anhand der Source-URL im Link Objekt den zugehörigen Namen raussucht
 Template.link.getSourceName = function(data) {
     if (Session.get("sites_completed") == true) {
 	var site = Sites.findOne({
@@ -188,7 +192,6 @@ Template.link.getSourceName = function(data) {
     } else
 	return this.source;
 };
-
 // TODO Player-Widget zurückgeben, wenn es einen embedabble player gibt
 Template.link.getPlayerWidget = function(data) {
     // Soundcloud: <a href="http://soundcloud.com/matas/hobnotropic"
@@ -226,11 +229,11 @@ Template.link.getPlayerWidget = function(data) {
     } else
 	return "<i class=\"icon-ban-circle\"></i>";
 };
-
+// Funktion um alle Seiten ins Template zu geben (die subscription)
 Template.sitesDialog.sites = function() {
     return Sites.find({});
 };
-
+// Funktion, um den Feed-Typ per Icon zu symbolisieren
 Template.sitesDialog.getFeedTypeIcon = function(data) {
     switch (this.type) {
     case "feed":
@@ -242,17 +245,18 @@ Template.sitesDialog.getFeedTypeIcon = function(data) {
     }
 };
 // TODO testen
+// Funktion um zu überprüfen, ob eine Seite von einem User erstellt wurde
 Template.sitesDialog.isOwner = function(data) {
     if (this.creator === Meteor.user().profile.id)
 	return true;
     return false;
 };
-
+// Funktion, um ein Eingabeelement auszuwählen und den Focus drauf zu setzen
 var activateInput = function(input) {
     input.focus();
     input.select();
 };
-
+// Session Variablen, um Dialoge anzuzeigen
 var openAccountSettingsDialog = function() {
     Session.set("showAccountSettingsDialog", true);
 };
@@ -272,6 +276,7 @@ var openSitesDialog = function() {
 //
 // Eventhandler
 //
+// Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
 Template.connectionLostWarning.events({
     'click #terminateappbutton' : function(context) {
 	if ($.browser.opera || $.browser.mozilla)
@@ -332,26 +337,31 @@ Template.user_loggedin.events({
 		// TODO: Error handling
 		console.log(err);
 	    } else {
-		// ggf. Session-Variablen zurücksetzen...
+		//TODO  ggf. Session-Variablen zurücksetzen...
 	    }
 	});
     },
+	//Accounteinstellungen anzeigen
     'click #showsettings' : function(event) {
 	openAccountSettingsDialog();
 	return false;
     }
 });
 
+//Eventhandler für die Navigationsleiste
 Template.navigation.events({
+	//Seite hinzufügen Dialog öffnen
     'click #addsitebutton' : function(event) {
 	openAddSiteDialog();
 	activateInput($("#newsiteurl"));
 	return false;
     },
+	//Seiten anzeigen Dialog öffnen
     'click #showsitesbutton' : function(event) {
 	openSitesDialog();
 	return false;
     },
+	//Links downloaden Aktion ausführen
     'click #downloadbutton' : function(event, template) {
 	var selected = Session.get("selected_links");
 
@@ -394,6 +404,7 @@ Template.navigation.events({
 	    });
 	}
     },
+	//Link-URLs kopieren Aktion ausführen
     'click #copybutton' : function(event, template) {
 	var selected = Session.get("selected_links");
 
@@ -450,8 +461,9 @@ Template.navigation.events({
 	Session.set("filter_limit",1);
     }
 });
-
+//Events für das Template der Linkliste
 Template.linklist.events = ({
+	//Links filtern (alle / auch unbekannte)
     'click #filter_links' : function(event, template) {
 	var tmp_status = Session.get("filter_status");
 
@@ -463,6 +475,7 @@ Template.linklist.events = ({
 	Session.set("filter_status", _.uniq(tmp_status));
 	Session.set("filter_limit",1);
     },
+	//alle Links anhaken, die gerade zu sehen sind
     'click #select_all' : function(event, template) {
 	if (event.srcElement.checked == true) {
 	    var selected = _.pluck(Links.find({}, {
@@ -473,18 +486,17 @@ Template.linklist.events = ({
 	    Session.set("selected_links", selected);
 	} else
 	    Session.set("selected_links", []);
-	// $('[type=checkbox]').prop("checked", true);
-	// else $('[type=checkbox]').prop("checked", false);
     }
 });
-
+//UI-Effekte aktivieren, wenn ein Link gerendered wurde
 Template.link.rendered = function() {
     // TODO: popover geht nicht
     $('.popover').popover();
     $('.linkname').editable();
 };
-
+//Events für die einzelnen Link-Objekte
 Template.link.events({
+	//Anhaken eines Links
     'click .link_checkbox' : function(event, template) {
 	var selected = Session.get("selected_links");
 	if (event.srcElement.checked) {
@@ -503,6 +515,7 @@ Template.link.events({
 	    if (!selected.length) $('#select_all').prop("checked",false);
 	}
     },
+	//Link-Status aktualisieren
     'click .icon-refresh' : function(event, template) {
 	event.srcElement.className = "icon-refreshing";
 
@@ -513,7 +526,7 @@ Template.link.events({
 		url : 1
 	    }
 	}).fetch(), 'url');
-
+	//TODO implementieren
 	Meteor.call("refreshLink", refreshurl, function(error, result) {
 	    // TODO error handling
 	    if (error)
@@ -523,6 +536,7 @@ Template.link.events({
 
 	// event.srcElement.className = "icon-refresh";
     },
+	//X-Editable Formular - Namensänderung übernehmen
     'submit .form-inline' : function(event, template) {
 	event.preventDefault();
 	var newName = template.find('.editable-input input').value;
@@ -534,9 +548,12 @@ Template.link.events({
 	    }
 	});
     },
+	//TODO funktioniert noch nicht
+	//Kommentare für einen Linkanzeigen
     'click .icon-comment' : function(context) {
 	$('.popover').popover('show'); // show tooltip
     },
+	//Link liken
     'click .like' : function(context) {
 	// This query succeeds only if the voters array doesn't contain the user
 	query = {
@@ -558,13 +575,15 @@ Template.link.events({
 	Links.update(query, update);
     }
 });
-
+//Events im Link hinzufügen Dialog
 Template.addLinkDialog.events({
+	//Dialog schließen
     'click .cancel' : function() {
 	// User hat abgebrochen, Dialog schließen
 	Session.set("showAddLinkDialog", false);
 	Session.set("status", undefined);
     },
+	//Link validieren - ist das eine gültige URL
     'input #newlinkurl' : function(event, template) {
 	if (!event.srcElement.validity.valid) {
 	    template.find('.addlink').disabled = true;
@@ -572,11 +591,13 @@ Template.addLinkDialog.events({
 	    template.find('.addlink').disabled = false;
 	}
     },
+	//Link in die Datenbank aufnehmen, bzw. vorher prüfen
     'submit #addlinkform' : function(event, template) {
 	event.preventDefault();
 	Session.set("status",
 		'<i class="icon-loader"></i> Seite wird überprüft');
 	var newlinkurl = template.find("#newlinkurl").value;
+	//TODO implementieren
 	Meteor.call('checkLink', newlinkurl, function(error, result) {
 	    // TODO error handling
 	    if (error)
@@ -587,14 +608,16 @@ Template.addLinkDialog.events({
 	});
     }
 });
-
+//Events für den Seite hinzufügen Dialog
 Template.addSiteDialog
 	.events({
-	    'click .cancel' : function() {
 		// User hat abgebrochen, Dialog schließen
+	    'click .cancel' : function() {
+		
 		Session.set("showAddSiteDialog", false);
 		Session.set("status", undefined);
 	    },
+		// Seiten-URL validieren
 	    'input #newsiteurl' : function(event, template) {
 		if (!event.srcElement.validity.valid) {
 		    template.find('.addsite').disabled = true;
@@ -602,6 +625,7 @@ Template.addSiteDialog
 		    template.find('.addsite').disabled = false;
 		}
 	    },
+		//Seite prüfen und hinzufügen
 	    'submit #addsiteform' : function(event, template) {
 		event.preventDefault();
 		Session
@@ -624,17 +648,19 @@ Template.addSiteDialog
 		});
 	    }
 	});
-
+//Wenn der Seitendialog gerendered wurde, UI Widgets aktivieen
 Template.sitesDialog.rendered = function() {
     $('.sitename').editable();
 };
-
+//Events des Seiten anzeigen Dialogs
 Template.sitesDialog.events({
-    'click .cancel' : function() {
 	// User hat abgebrochen, Dialog schließen
+    'click .cancel' : function() {
+	
 	Session.set("showSitesDialog", false);
     },
-    'submit .form-inline' : function(event, template) {
+    // Hilfsfunktion, um die Eingaben in X-Editable in der Meteor DB einzutragen
+	'submit .form-inline' : function(event, template) {
 	event.preventDefault();
 	var newName = template.find('.editable-input input').value;
 	Sites.update({
@@ -646,8 +672,9 @@ Template.sitesDialog.events({
 	});
     }
 });
-
+//Events des Einstellungs-Dialogs
 Template.accountSettingsDialog.events({
+	//IP-Adresse aktualisieren Button - IP checken und anzeigen
     'click #refreship' : function(event, template) {
 	var aport = Meteor.user().profile.port;
 	Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
@@ -677,12 +704,14 @@ Template.accountSettingsDialog.events({
 		    });
 		});
     },
+	//IP-Feld für Eingbae aktivieren/deaktivieren, je nachdem ob autoupdate eingeschaltet ist
     'click #autoupdate' : function(event, template) {
 	if (template.find("#autoupdate").checked)
 	    $('#ip').prop("disabled", true);
 	else
 	    $('#ip').prop("disabled", false);
     },
+	//eingaben speichern und IP nochmal updaten, falls der User was komisches eingegeben hat
     'click .save' : function(event, template) {
 	var aip = template.find("#ip").value;
 	var aport = template.find("#port").value;
@@ -738,7 +767,7 @@ Template.accountSettingsDialog.events({
 	Session.set("showAccountSettingsDialog", false);
     }
 });
-
+//Hilfsfunktion für die Kopierenfunktion von Links - alle Link URLs in einem neuen Fenster anzeigen
 function writeConsole(content) {
     top.consoleRef = window.open('', 'Links', 'width=250,height=500'
 	    + ',menubar=0' + ',toolbar=0' + ',status=0' + ',scrollbars=0'
