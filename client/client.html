@@ -8,6 +8,9 @@
 </body>
 
 <template name="page">
+				{{#if notConnected}}
+					{{> connectionLostWarning}}
+				{{/if}}
 				{{#if session "showAccountSettingsDialog"}}
 				  {{> accountSettingsDialog}}
 				{{/if}}
@@ -22,9 +25,6 @@
 				
 				{{#if session "showSitesDialog"}}
 				  {{> sitesDialog}}
-				{{/if}}
-				{{#if notConnected}}
-					{{> connectionLostWarning}}
 				{{/if}}
 	<div class="container-fluid">
 		<div class="row-fluid">
@@ -59,6 +59,7 @@
 	<div class="progress progress-striped active">
 		<div class="bar" style="width: 40%;"></div>
 	</div>
+	<div class="mask"> </div>
 </template>
 
 <template name="navigation">
@@ -89,10 +90,10 @@
 				<a class="btn" id="addlinkbutton"><i class="icon-plus"></i> Link hinzufügen</a>
 				{{#if isAnyLinkSelected}}
 					<a class="btn" id="copybutton"><i class="icon-file"></i> Zwischenablage</a>
-					<a class="btn btn-primary" id="downloadbutton"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+					<a class="btn btn-primary" id="downloadbutton"><i class="jd-icon"></i> Download (via JDownloader)</a>
 				{{else}}
 					<a class="btn" id="copybutton" disabled><i class="icon-file"></i> Zwischenablage</a>
-					<a class="btn btn-primary" id="downloadbutton" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+					<a class="btn btn-primary" id="downloadbutton" disabled><i class="jd-icon"></i> Download (via JDownloader)</a>
 				{{/if}}
 			</ul>
 			<ul class="nav pull-right">
@@ -196,7 +197,7 @@
 		{{{getPlayerWidget}}}
 	</td>
     <td><a class="linkname" data-mode="inline" data-name="linkname" data-type="text" data-pk="{{_id}}">{{name}}</a></td>
-    <td>{{url}}</td>
+    <td><a href="{{url}}" target="_blank">{{url}}</a></td>
 	<td>
 		{{#if comments}}
 			<i class="icon-comment hand" id="{{_id}}"></i>
@@ -243,21 +244,31 @@
   <div class="modal-body">
 	<form class="form-horizontal">
 		<span class="help-inline">IP-Adresse:</span>
-		<div class="input-append">
-			<span class="input-medium uneditable-input ip">{{currentUser.profile.ip}}</span>
-			<button class="btn btn-link" type="button">Aktualisieren</button>
-		</div>
+			{{#if currentUser.profile.autoupdateip}}
+				<input class="input-medium" id="ip" type="text" value={{currentUser.profile.ip}} disabled>
+			{{else}}
+				<input class="input-medium" id="ip" type="text" value={{currentUser.profile.ip}}>
+			{{/if}}
+			<button class="btn btn-link" type="button" id="refreship">Aktualisieren</button>
 		<span class="help-inline">Port:</span>
-		<input class="input-mini port" type="text" value={{currentUser.profile.port}}>
+		<input class="input-mini" id="port" type="text" value={{currentUser.profile.port}}>
 		<label class="checkbox">
-		<input class="autoupdate" type="checkbox" checked={{currentUser.profile.autoupdateip}}>
+		<br/>
+		{{#if currentUser.profile.autoupdateip}}
+			<input id="autoupdate" type="checkbox" checked="checked">
+		{{else}}
+			<input id="autoupdate" type="checkbox">
+		{{/if}}
 		IP-Adresse automatisch updaten?
 		</label>
-		<span class="help-inline">Status:</span>
-		<input class="input-mini port" type="text" value={{session "JDOnlineStatus"}}>
 	</form>
   </div>
   <div class="modal-footer">
+	{{#if session "JDOnlineStatus"}}
+		<p class="pull-left">Dein JDownloader ist <strong>online</strong>.</p>
+	{{else}}
+		<p class="pull-left">Dein JDownloader ist <strong>offline</strong>.</p>
+	{{/if}}
     <button class="btn cancel" data-dismiss="modal" aria-hidden="true">Schließen</button>
     <button class="btn btn-primary save">Speichern</button>
   </div>
@@ -271,15 +282,15 @@
 	<button type="button" class="close cancel">&times;</button>
     <h3 align="center">Link hinzufügen</h3>
   </div>
-  <div class="modal-body" id="addlinkform">
-	<form class="form-inline">
+  <div class="modal-body">
+	<form class="form-inline" id="addlinkform">
 		<div class="input-append">
 			<input id="newlinkurl" class="input-xlarge linkurl" type="url" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required>
 			<button class="btn addlink" type="button" disabled>Hinzufügen</button>
 		</div>
 	</form>
   </div>
-  <div class="modal-footer">
+  <div class="modal-footer status">
     {{#if error}}
         <div class="alert alert-error">{{error}}</div>
     {{/if}}
@@ -303,7 +314,7 @@
 		</div>
 	</form>
   </div>
-  <div class="modal-footer">
+  <div class="modal-footer status">
     {{{session "status"}}}
   </div>
 </div>

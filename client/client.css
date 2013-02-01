@@ -41,11 +41,50 @@ body {
 }
 
 .icon-rss {
-	background:transparent url("/rss.gif");
+	background:transparent url("/rss.png");
     background-position: center center;
 }
 
 .icon-facebook {
-	background:transparent url("/facebook.gif");
+	background:transparent url("/facebook.png");
     background-position: center center;
+}
+
+.icon-ok-green {
+	background:transparent url("/ok-green.png");
+    background-position: center center;
+	width: 24px;
+	height: 24px;
+	line-height: 24px;
+}
+
+.icon-remove-red {
+	background:transparent url("/remove-red.png");
+    background-position: center center;
+	width: 24px;
+	height: 24px;
+	line-height: 24px;
+}
+
+.jd-icon {
+	background:transparent url("/JD.png");
+    background-position: center center;
+}
+
+.status  {
+	padding-top: 0 px;
+	padding-bottom: 0px;
+	min-height: 32px;
+}
+
+.statustext {
+	margin-bottom: 0px;
+}
+
+#addlinkform {
+	margin-bottom: 0px;
+}
+
+#addsiteform {
+	margin-bottom: 0px;
 }

@@ -4,20 +4,21 @@ Meteor.autosubscribe(function() {
     var filter_status = Session.get('filter_status');
     var filter_term = Session.get('filter_term');
     if (filter_date && filter_status) {
-	Meteor.subscribe('sites', function onComplete() {
-	    // set a session key to true to indicate that the subscription is
-	    // completed.
-	    Session.set('sites_completed', true);
-	});
+		Meteor.subscribe('sites', 
+			function onComplete() {
+			// set a session key to true to indicate that the subscription is
+			// completed.
+			Session.set('sites_completed', true);
+			});
 
-	Meteor.subscribe('links', filter_date, filter_status, filter_term,
-		function onComplete() {
-		    // set a session key to true to indicate that the
-		    // subscription is completed.
-		    Session.set('links_completed', true);
-		});
+		Meteor.subscribe('links', filter_date, filter_status, filter_term,
+			function onComplete() {
+				// set a session key to true to indicate that the
+				// subscription is completed.
+				Session.set('links_completed', true);
+			});
 
-	Meteor.subscribe('counts');
+		Meteor.subscribe('counts');
     }
 });
 
@@ -32,71 +33,61 @@ Meteor.autosubscribe(function() {
 // Regelfall verfügbar.
 Meteor.startup(function() {
     Meteor.autorun(function() {
-	Session.set("sites_completed", false);
-	Session.set("links_completed", false);
-	Session.set("status",undefined);
-	
-	if (!Session.get("filter_date")) {
-	    var tmp_date = new Date();
-	    tmp_date.setDate(tmp_date.getDate() - 14);
-	    Session.set("filter_date", tmp_date);
-	}
-	if (!Session.get("selected_navitem")) {
-	    Session.set("selected_navitem", 14);
-	}
-	if (!Session.get("filter_status")) {
-	    var filter_status = new Array();
-	    filter_status.push("on");
-	    Session.set("filter_status", filter_status);
-	}
-	if (!Session.get("filter_term")) {
-	    var filter_term = ".*";
-	    Session.set("filter_term", filter_term);
-	}
-	if (!Session.get("selected_links")) {
-	    var selected_links = [];
-	    Session.set("selected_links", selected_links);
-	}
-    });
-
-    Meteor.setTimeout(function() {
-	// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP
-	// updaten
-	if (Meteor.userId() && Meteor.user().profile.autoupdateip) {
-	    // TODO refactoring, wird noch woanders benutzt
-	    if (Meteor.user().profile.autoupdateip == true) {
-		Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
-			function(error, result) {
-			    if (error)
-				// TODO error handling
-				throw result.error;
-			    Meteor.user().profile.ip = result.data.ip;
-			});
-	    }
-	    // unabhängig von autoupdate schauen wir, ob die gewünschte IP
-	    // online ist
-	    Meteor.call("checkJDOnlineStatus", Meteor.user().profile.ip, Meteor
-		    .user().profile.port, function(err, isOnline) {
-		if (err) {
-		    // TODO eror handling
-		    console.log(err);
+		Session.set("sites_completed", false);
+		Session.set("links_completed", false);
+		Session.set("status",undefined);
+		
+		if (!Session.get("filter_date")) {
+			var tmp_date = new Date();
+			tmp_date.setDate(tmp_date.getDate() - 14);
+			Session.set("filter_date", tmp_date);
 		}
-		Session.set("JDOnlineStatus", isOnline);
-	    });
-		
+		if (!Session.get("selected_navitem")) {
+			Session.set("selected_navitem", 14);
+		}
+		if (!Session.get("filter_status")) {
+			var filter_status = new Array();
+			filter_status.push("on");
+			Session.set("filter_status", filter_status);
+		}
+		if (!Session.get("filter_term")) {
+			var filter_term = ".*";
+			Session.set("filter_term", filter_term);
+		}
+		if (!Session.get("selected_links")) {
+			var selected_links = [];
+			Session.set("selected_links", selected_links);
+		}
+		});
 
-		
-	    // TODO Link Counts holen...
-	}
+		Meteor.setTimeout(function() {
+		// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP
+		// updaten
+		if (Meteor.userId() && Meteor.user().profile.autoupdateip) {
+			// TODO refactoring, wird noch woanders benutzt
+			if (Meteor.user().profile.autoupdateip == true) {
+			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
+				function(error, result) {
+					if (error)
+					// TODO error handling
+					throw result.error;
+					Meteor.user().profile.ip = result.data.ip;
+				});
+			}
+			// unabhängig von autoupdate schauen wir, ob die gewünschte IP
+			// online ist
+			Meteor.call("checkJDOnlineStatus", Meteor.user().profile.ip, Meteor
+				.user().profile.port, function(err, isOnline) {
+			if (err) {
+				// TODO eror handling
+				console.log(err);
+			}
+			Session.set("JDOnlineStatus", isOnline);
+			});
+			// TODO Link Counts holen...
+		}
     }, 3000);
 });
-
-// Autorun: wenn sich die IP-Adresse ändert, JDOnlineStatus checken!
-// Meteor.autorun(function(handle) {
-// if (!Session.equals("shouldAlert", true)) return;
-// handle.stop();
-// alert("Oh no!");
-// });
 
 // Template-Helper für handlebars
 // format an ISO date using Moment.js
@@ -106,11 +97,11 @@ Meteor.startup(function() {
 // usage: {{dateFormat creation_date format="MMMM YYYY"}}
 Handlebars.registerHelper('dateFormat', function(context, block) {
 	if (window.moment) {
-	moment().lang('de');
-	var f = block.hash.format || "MMM Do, YYYY";
-	if (context && moment(context).isValid())
-	    return moment(context).format(f);
-	return "kein Datum";
+		moment().lang('de');
+		var f = block.hash.format || "MMM Do, YYYY";
+		if (context && moment(context).isValid())
+			return moment(context).format(f);
+		return "kein Datum";
     }
     return "kein Datum"; // moment plugin not available. return data as is.;
 });
@@ -130,18 +121,19 @@ Template.page.notConnected = function() {
 Template.navigation.getClass = function() {
     // TODO: geht noch nicht, aktives Item setzen
     if (this.id == Session.get("selected_navitem"))
-	return "active";
+		return "active";
     return "";
 };
 Template.navigation.isAnyLinkSelected = function() {
     if (Session.get("selected_links") && Session.get("selected_links").length)
-	return true;
+		return true;
     return false;
 };
 
 Template.navigation.getLastSearchTerm = function() {
 	var lastterm = Session.get("filter_term");
-	if (lastterm && lastterm != "" && lastterm != ".*") return lastterm;
+	if (lastterm && lastterm != "" && lastterm != ".*")
+		return lastterm;
 	return undefined;
 };
 
@@ -154,9 +146,8 @@ Template.linklist.links = function() {
 
 // Link-Größe von Kilobyte in MB umwandeln
 Template.link.getSizeinMB = function(data) {
-    if (this.size && this.size > 0) {
-	return Math.round(this.size / 1048576) + " MB";
-    }
+    if (this.size && this.size > 0)
+		return Math.round(this.size / 1048576) + " MB";
     return undefined;
 };
 
@@ -174,7 +165,7 @@ Template.link.getStatusIcon = function(data) {
 
 Template.link.isLinkSelected = function() {
     if (_.contains(Session.get("selected_links"), this._id))
-	return true;
+		return true;
     return false;
 };
 
@@ -248,7 +239,7 @@ Template.sitesDialog.getFeedTypeIcon = function(data) {
 //TODO testen
 Template.sitesDialog.isOwner = function(data) {
     if (this.creator === Meteor.user().profile.id)
-	return true;
+		return true;
     return false;
 };
 
@@ -348,11 +339,13 @@ Template.user_loggedin.events({
 
 Template.navigation.events({
 	'click #addsitebutton' : function(event) {
-	openAddSiteDialog();
+		openAddSiteDialog();
+	    activateInput($("#newsiteurl"));
+		return false;
     },
     'click #showsitesbutton' : function(event) {
-	openSitesDialog();
-	return false;
+		openSitesDialog();
+		return false;
     },
 	'click #downloadbutton' : function(event, template) {
 		var selected = Session.get("selected_links");
@@ -412,8 +405,10 @@ Template.navigation.events({
 			return memo + aUrl + "<br/>";
 		}));
     },
-    'click #addlinkbutton' : function(event) {
+    'click #addlinkbutton' : function(event, template) {
 		openAddLinkDialog();
+		activateInput($('#newlinkurl'));
+		return false;
     },
 	'click .linkfilter' : function(event, template) {
 		event.preventDefault();
@@ -564,7 +559,7 @@ Template.addLinkDialog.events({
     'submit #addlinkform' : function(event, template) {
 		event.preventDefault();
 		Session.set("status", '<i class="icon-loader"></i> Seite wird überprüft');
-		var newlinkurl = template.find(".linkurl").value;
+		var newlinkurl = template.find("#newlinkurl").value;
 		Meteor.call('checkLink', newlinkurl, function(error, result) {
 			// TODO error handling
 			if (error)
@@ -590,14 +585,16 @@ Template.addSiteDialog.events({
     },
     'submit #addsiteform' : function(event, template) {
 		event.preventDefault();
-		Session.set("status", '<i class="icon-loader"></i> Seite wird überprüft');
+		Session.set("status", '<p class="pull-left statustext"><small><i class="icon-loader"></i> Seite wird überprüft</small></p>');
 		var newsiteurl = template.find('#newsiteurl').value;
 		Meteor.call('createSite', newsiteurl, function(error, result) {
 			// TODO error handling
+			// TODO erorr number special, dann anderes zeichen
 			if (error)
-			Session.set("status",'<i class="icon-remove"></i> ' + error.detail);
+			Session.set("status",'<p class="pull-left statustext"><i class="icon-remove-red"></i> <small>' + error.details + "</small></p>");
+			console.log(error);
 			if (result)
-			Session.set("status",'<i class="icon-ok"></i> ' + result);
+			Session.set("status",'<p class="pull-left statustext"><i class="icon-ok-green"></i> <small>' + result + "</small></p>");
 		});
     }
 });
@@ -619,10 +616,44 @@ Template.sitesDialog.events({
 });
 
 Template.accountSettingsDialog.events({
+	'click #refreship' : function(event, template) {
+		var aport = Meteor.user().profile.port;
+		Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
+		    function(error, result) {
+			if (error)
+			    // TODO error handling
+			    throw error;
+			Meteor.users.update({
+			    _id : Meteor.userId()
+			}, {
+			    $set : {
+				'profile.ip' : result.data.ip,
+			    }
+			});
+			template.find("#ip").value = result.data.ip;
+			// neue IP nutzen und checken, ob hier ein JD läuft...
+			//
+			Meteor.call("checkJDOnlineStatus", {
+			    ip : result.data.ip,
+			    port : aport
+			}, function(error2, isOnline) {
+			    if (error2) {
+				// TODO error handling
+				console.log(error2);
+			    }
+			    Session.set("JDOnlineStatus", isOnline);
+			});
+		    });
+	},
+	'click #autoupdate' : function(event, template) {
+		if (template.find("#autoupdate").checked)
+			$('#ip').prop("disabled",true);
+		else $('#ip').prop("disabled", false);
+	},
     'click .save' : function(event, template) {
-	var aip = template.find(".ip").value;
-	var aport = template.find(".port").value;
-	var aupdateip = template.find(".autoupdate").checked;
+	var aip = template.find("#ip").value;
+	var aport = template.find("#port").value;
+	var aupdateip = template.find("#autoupdate").checked;
 
 	if (aupdateip === true) {
 	    Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
@@ -660,7 +691,8 @@ Template.accountSettingsDialog.events({
 	    }, {
 		$set : {
 		    'profile.port' : aport,
-		    'profile.ip' : aip
+		    'profile.ip' : aip,
+			'profile.autoupdateip' : aupdateip
 		}
 	    });
 	}
