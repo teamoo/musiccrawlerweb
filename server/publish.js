@@ -5,7 +5,7 @@ Meteor.publish('links', function(filter_date, filter_status, filter_term, filter
     var links_page_size = 50;
     
     var thelimit = links_page_size * filter_limit;
-    //TODO die neuen Date Felder hier einbauen, wenn neue Daten drin sind.
+    //TODO date austauschen durch date_created, wenn ddp-pre mal fertig ist
     if (this.userId)
 	return Links.find({
 	    date : {
@@ -35,7 +35,7 @@ Meteor.publish('links', function(filter_date, filter_status, filter_term, filter
 	    }
 	}, {
 	    sort : {
-		date_published : -1
+		date_discovered : -1
 	    },
 	    limit : thelimit
 	});
@@ -57,63 +57,4 @@ Meteor.publish('sites', function() {
 		date_created : 1
 	    }
 	});
-});
-
-// TODO: ausarbeiten
-// Anzahl Links in den einzelnen Sub-Collections
-Meteor.publish("counts", function() {
-    if (this.userId) {    
-    
-	var self = this;
-	var uuid = Meteor.uuid();
-	var count = 0;
-
-	var counts = {
-	    1 : 0,
-	    14 : 0,
-	    30 : 0,
-	    90 : 0,
-	    365 : 0
-	};
-
-	_.each(counts, function(elem, index) {
-	    //console.log(index);
-	    //console.log(elem);
-	    var tmp_date = new Date();
-	    tmp_date.setDate(tmp_date.getDate() - index);
-	    //console.log(Links.find({date:{$lte: tmp_date}}).fetch());
-	});
-
-	var handle = Links.find({}, {
-	    fields : {
-		_id : 1
-	    }
-	}).observe({
-	    added : function() {
-		count++;
-		self.set("counts", uuid, {
-		    365:count
-		});
-		self.flush();
-	    },
-	    removed : function() {
-		count--;
-		self.set("counts", uuid, {
-		    365:count
-		});
-		self.flush();
-	    }
-	// don't care about moved or changed
-	});
-
-	// Observe only returns after the initial added callbacks have
-	// run. Now mark the subscription as ready.
-	self.complete();
-	self.flush();
-
-	// stop observing the cursor when client unsubs
-	self.onStop(function() {
-	    handle.stop();
-	});
-    }
 });

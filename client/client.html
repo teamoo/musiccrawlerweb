@@ -169,7 +169,7 @@
   <table class="table table-condensed table-striped">
 	<thead>
 		<th>
-			<input type="checkbox" value="" id="select_all">
+			<input type="checkbox" id="select_all">
 		</th>
 		<th></th>
 		<th><i class="icon-volume-up"></i></th>
@@ -264,6 +264,7 @@
 	</form>
   </div>
   <div class="modal-footer">
+  	{{{session "status"}}}
 	{{#if session "JDOnlineStatus"}}
 		<p class="pull-left">Dein JDownloader ist <strong style="color:green">online</strong>.</p>
 	{{else}}

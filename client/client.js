@@ -18,8 +18,6 @@ Meteor.autosubscribe(function() {
 		    // subscription is completed.
 		    Session.set('links_completed', true);
 		});
-
-	Meteor.subscribe('counts');
     }
 });
 
@@ -240,7 +238,7 @@ Template.sitesDialog.getFeedTypeIcon = function(data) {
 };
 // Funktion um zu überprüfen, ob eine Seite von einem User erstellt wurde
 Template.sitesDialog.isOwner = function() {
-    if (this.creator === Meteor.userId())
+    if (this.creator === Meteor.users.find({_id : Meteor.userId()}).fetch()[0].profile.id)
 	return true;
     return false;
 };
@@ -523,7 +521,7 @@ Template.page.rendered = function() {
 Template.linklist.events = ({
 	//Links filtern (alle / auch unbekannte)
     'click #filter_links' : function(event, template) {
-    event.preventDefault()
+    event.preventDefault();
 	var tmp_status = Session.get("filter_status");
 
 	if (_.indexOf(tmp_status, "unknown") != -1)
@@ -545,7 +543,6 @@ Template.linklist.events = ({
 	    Session.set("selected_links", selected);
 	} else
 	    Session.set("selected_links", []);
-	return false;
     }
 });
 //UI-Effekte aktivieren, wenn ein Link gerendered wurde
@@ -598,11 +595,13 @@ Template.link.events({
 	//Link-Status aktualisieren
     'click .icon-refresh' : function(event, template) {
 	event.srcElement.className = "icon-refreshing";
-
-	Meteor.call("refreshLink", this.url, function(error, result) {
+	
+	var theurl = this.url
+	
+	Meteor.call("refreshLink", theurl, function(error, result) {
 	    if (error)
 	    {
-	    	console.log("Fehler beim refreshen des Links " + this.url);
+	    	console.log("Fehler beim refreshen des Links " + theurl);
 	    	event.srcElement.className = "icon-remove";
 	    }
 		if (result)
@@ -755,6 +754,9 @@ Template.sitesDialog.events({
 Template.accountSettingsDialog.events({
 	//IP-Adresse aktualisieren Button - IP checken und anzeigen
     'click #refreship' : function(event, template) {
+    Session.set("status",
+    	'<p class="pull-left"><i class="icon-refreshing"></i></p>');
+    
 	var aport = Meteor.user().profile.port;
 	Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
 		function(error, result) {
@@ -779,6 +781,7 @@ Template.accountSettingsDialog.events({
 			    console.log("Fehler beim ermitteln des Online-Status");
 			}
 			Session.set("JDOnlineStatus", isOnline);
+		    Session.set("status",undefined);
 		    });
 		});
     },
