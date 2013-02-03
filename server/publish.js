@@ -5,7 +5,7 @@ Meteor.publish('links', function(filter_date, filter_status, filter_term, filter
     var links_page_size = 50;
     
     var thelimit = links_page_size * filter_limit;
-    
+    //TODO die neuen Date Felder hier einbauen, wenn neue Daten drin sind.
     if (this.userId)
 	return Links.find({
 	    date : {
@@ -27,7 +27,9 @@ Meteor.publish('links', function(filter_date, filter_status, filter_term, filter
 		comments : 1,
 		url : 1,
 		source : 1,
+		date : 1,
 		date_published : 1,
+		date_discovered : 1,
 		status : 1,
 		creator : 1
 	    }
@@ -60,7 +62,8 @@ Meteor.publish('sites', function() {
 // TODO: ausarbeiten
 // Anzahl Links in den einzelnen Sub-Collections
 Meteor.publish("counts", function() {
-    if (this.userId) {
+    if (this.userId) {    
+    
 	var self = this;
 	var uuid = Meteor.uuid();
 	var count = 0;
@@ -74,10 +77,11 @@ Meteor.publish("counts", function() {
 	};
 
 	_.each(counts, function(elem, index) {
-	    // console.log(index);
-	    // console.log(elem);
+	    //console.log(index);
+	    //console.log(elem);
 	    var tmp_date = new Date();
 	    tmp_date.setDate(tmp_date.getDate() - index);
+	    //console.log(Links.find({date:{$lte: tmp_date}}).fetch());
 	});
 
 	var handle = Links.find({}, {
@@ -88,14 +92,14 @@ Meteor.publish("counts", function() {
 	    added : function() {
 		count++;
 		self.set("counts", uuid, {
-		    count : count
+		    365:count
 		});
 		self.flush();
 	    },
 	    removed : function() {
 		count--;
 		self.set("counts", uuid, {
-		    count : count
+		    365:count
 		});
 		self.flush();
 	    }

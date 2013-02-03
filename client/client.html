@@ -8,9 +8,6 @@
 </body>
 
 <template name="page">
-				{{#if notConnected}}
-					{{> connectionLostWarning}}
-				{{/if}}
 				{{#if session "showAccountSettingsDialog"}}
 				  {{> accountSettingsDialog}}
 				{{/if}}
@@ -29,7 +26,10 @@
 	<div class="container-fluid">
 		<div class="row-fluid">
 			<div class="span12">
-				{{>navigation}}
+				{{> navigation}}
+				{{#if notConnected}}
+					{{> connectionLostWarning}}
+				{{/if}}
 			</div>
 		</div>
 		<div class="row-fluid">
@@ -38,6 +38,13 @@
 					{{> linklist}}
 				{{else}}
 					<p class="lead">Bitte logge dich ein, um auf MusicCrawler zuzugreifen.</p>
+				{{/if}}
+			</div>
+		</div>
+		<div class="row-fluid">
+			<div class="span12">
+				{{#if session "progress"}}
+					{{> progressBar}}
 				{{/if}}
 			</div>
 		</div>
@@ -56,59 +63,78 @@
 </template>
 
 <template name="progressBar">
-	<div class="progress progress-striped active">
-		<div class="bar" style="width: 40%;"></div>
-	</div>
-	<div class="mask"> </div>
+	{{#if session "progressActive"}}
+		<div class="progress progress-striped active {{session "progressState"}}">
+			<div class="bar" style="width: {{session "progress"}}%;"></div>
+		</div>
+	{{else}}
+		<div class="progress {{session "progressState"}}">
+			<div class="bar" style="width: {{session "progress"}}%;"></div>
+		</div>
+	{{/if}}
 </template>
 
 <template name="navigation">
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
-			<a class="brand">MusicCrawler</a>
-			<ul class="nav" role="navigation">
-				<li class="dropdown">
-                      <a id="drop1" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
-                      <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
-							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="1">Letzte 24 Stunden <span class="badge" id="1">{{getLinkCount}}</span></a></li>
-							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="14">Letzte 14 Tage <span class="badge" id="14">{{getLinkCount}}</span></a></li>
-							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="30">Letzte 30 Tage <span class="badge" id="30">{{getLinkCount}}</span></a></li>
-							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="90">Letzte 90 Tage <span class="badge" id="90">{{getLinkCount}}</span></a></li>
-							<li class="divider"></li>
-							<li class="linkfilter {{getClass}}"><a tabindex="-1" id="365">Letztes Jahr </a></li>
-                      </ul>
-                </li>
-				<li class="dropdown">
-                      <a id="drop2" role="button" class="dropdown-toggle" data-toggle="dropdown">Seiten <b class="caret"></b></a>
-                      <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
-                        	<li><a tabindex="-1" id="addsitebutton"><i class="icon-plus"></i> Seite hinzufügen</a></li>
-							<li class="divider"></li>
-							<li><a tabindex="-1" id="showsitesbutton"><i class="icon-th-list"></i> Seiten anzeigen</a></li>
-                      </ul>
-                </li>
-				<li class="divider-vertical"></li>
-				<a class="btn" id="addlinkbutton"><i class="icon-plus"></i> Link hinzufügen</a>
-				{{#if isAnyLinkSelected}}
-					<a class="btn" id="copybutton"><i class="icon-file"></i> Zwischenablage</a>
-					<a class="btn btn-primary" id="downloadbutton"><i class="jd-icon"></i> Download (via JDownloader)</a>
-				{{else}}
-					<a class="btn" id="copybutton" disabled><i class="icon-file"></i> Zwischenablage</a>
-					<a class="btn btn-primary" id="downloadbutton" disabled><i class="jd-icon"></i> Download (via JDownloader)</a>
-				{{/if}}
-			</ul>
-			<ul class="nav pull-right">
-				<li>
-					<form class="navbar-search pull-right" id="searchform">
-						<input type="text" class="search-query" placeholder="Titel, Interpret, Album..." id="searchfield" value="{{getLastSearchTerm}}">
-					</form>
-				</li>
-				<li class="divider-vertical"></li>
-				<li>
-					<div class="btn-group">
-						{{> user_info}}		  
-					</div>
-				</li>
-			</ul>
+			<a class="brand" style="margin-left:-15px">MusicCrawler</a>
+			{{#if currentUser}}
+				<ul class="nav" role="navigation">
+					<li class="dropdown">
+	                      <a id="drop1" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
+	                      	<ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
+	                      			<li class="linkfilter"><a tabindex="-1" id="1">Letzte 24 Stunden <span class="badge" id="1">0</span></a></li>
+	                      			<li class="linkfilter"><a tabindex="-1" id="14">Letzte 14 Tage <span class="badge" id="14">0</span></a></li>
+	                      			<li class="linkfilter"><a tabindex="-1" id="30">Letzte 30 Tage <span class="badge" id="30">0</span></a></li>
+	                      			<li class="linkfilter"><a tabindex="-1" id="90">Letzte 90 Tage <span class="badge" id="90">0</span></a></li>
+	                      			<li class="divider"></li>
+	                      			<li class="linkfilter"><a tabindex="-1" id="365">Letztes Jahr <span class="badge" id="365">0</span></a></li>
+	                      	</ul>
+	                </li>
+					<li class="dropdown">
+	                      <a id="drop2" role="button" class="dropdown-toggle" data-toggle="dropdown">Seiten <b class="caret"></b></a>
+	                      <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
+	                      		<li><a tabindex="-1" id="addsitebutton"><i class="icon-plus"></i> Seite hinzufügen</a></li>
+	                      		<li class="divider"></li>
+	                      		<li><a tabindex="-1" id="showsitesbutton"><i class="icon-th-list"></i> Seiten anzeigen <span class="badge">{{getSiteCount}}</span></a></li>
+	                      </ul>
+	                </li>
+					<li class="divider-vertical"></li>
+					<a class="btn" id="addlinkbutton"><i class="icon-plus"></i> Link hinzufügen</a>
+					{{#if isAnyLinkSelected}}
+						<a class="btn" id="copybutton"><i class="icon-file"></i> Zwischenablage</a>
+						{{#if session "JDOnlineStatus"}}
+							<a class="btn btn-primary" id="downloadbutton"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+						{{else}}
+							<a class="btn btn-primary" id="downloadbutton" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+						{{/if}}
+					{{else}}
+						<a class="btn" id="copybutton" disabled><i class="icon-file"></i> Zwischenablage</a>
+						<a class="btn btn-primary" id="downloadbutton" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+					{{/if}}
+				</ul>
+				<ul class="nav pull-right">
+					<li>
+						<form class="navbar-search pull-right" id="searchform">
+							<input type="text" class="search-query" placeholder="Titel, Interpret, Album..." id="searchfield" value="{{getLastSearchTerm}}">
+						</form>
+					</li>
+					<li class="divider-vertical"></li>
+					<li>
+						<div class="btn-group">
+							{{> user_info}}		  
+						</div>
+					</li>
+				</ul>
+			{{else}}
+				<ul class="nav pull-right">
+					<li>
+						<div class="btn-group">
+							{{> user_info}}		  
+						</div>
+					</li>
+				</ul>
+			{{/if}}
 		</div>
 	</div>
 </template>
@@ -171,16 +197,6 @@
 			{{/if}}
 </template>
 
-<template name="comment">
-	<div class="span4 well">
-		<form accept-charset="UTF-8" action="" method="">
-			<textarea class="span4" id="new_comment" name="new_comment"
-			placeholder="Kommentar eingeben" rows="5"></textarea>
-			<button class="btn btn-info" type="submit">Posten</button>
-		</form>
-	</div>
-</template>
-
 <template name="link">
   <tr>
 	<td>
@@ -200,36 +216,20 @@
     <td><a href="{{url}}" target="_blank">{{url}}</a></td>
 	<td>
 		{{#if comments}}
-			<i class="icon-comment hand" id="{{_id}}"></i>
-			<div class="popover left" id="{{_id}}_comments" date-title="Kommentare" data-trigger:"hover">
-				<div class="arrow"></div>
-				<h3 class="popover-title">Titel</h3>
-				<div class="popover-content">
-					{{#each comments}}
-						{{message}}
-					{{/each}}
-				</div>
-			</div>
+			<i class="icon-comment hand" rel="popover" id="{{_id}}_comments"></i>
 		{{else}}
-			<i class="icon-comment icon-white hand" id="{{_id}}"></i>
-			<div class="popover left" id="{{_id}}">
-				<div class="arrow"></div>
-				<h3 class="popover-title">Titel</h3>
-				<div class="popover-content">
-					<p>Text...</p>
-				</div>
-			</div>
+			<i class="icon-comment icon-white hand" rel="popover" id="{{_id}}_comments"></i>
 		{{/if}}
 	</td>
 	<td>
 		<i class="icon-thumbs-up hand like" id="{{_id}}"></i>
 		{{#if likes}}{{likes}}{{else}}0{{/if}}
 	</td>
-	<td>
+	<td style="text-align: center;">
 		<i class="{{getStatusIcon}}"></i>
 	</td>
 	<td>{{getSourceName}}</td>
-	<td>{{getSizeinMB}}</td>
+	<td style="text-align: right">{{getSizeinMB}}</td>
 	<td>	{{dateFormat date format="DD. MMM YYYY"}}</td>
   </tr>
 </template>
@@ -265,9 +265,9 @@
   </div>
   <div class="modal-footer">
 	{{#if session "JDOnlineStatus"}}
-		<p class="pull-left">Dein JDownloader ist <strong>online</strong>.</p>
+		<p class="pull-left">Dein JDownloader ist <strong style="color:green">online</strong>.</p>
 	{{else}}
-		<p class="pull-left">Dein JDownloader ist <strong>offline</strong>.</p>
+		<p class="pull-left">Dein JDownloader ist <strong style="color:red">offline</strong>.</p>
 	{{/if}}
     <button class="btn cancel" data-dismiss="modal" aria-hidden="true">Schließen</button>
     <button class="btn btn-primary save">Speichern</button>
@@ -291,9 +291,7 @@
 	</form>
   </div>
   <div class="modal-footer status">
-    {{#if error}}
-        <div class="alert alert-error">{{error}}</div>
-    {{/if}}
+	    {{{session "status"}}}
   </div>
 </div>
 </template>
@@ -310,7 +308,7 @@
 		<div class="input-append">
 			<span class="help-inline">URL der Seite, die wir nach Links durchsuchen sollen</span>
 			<input id="newsiteurl" class="input-xlarge siteurl" type="url" placeholder="http://www.electrotechnosuperblog.com" required>
-			<button class="btn btn-primary addsite" disabled>Seite hinzufügen</button>
+			<button class="btn addsite" disabled>Seite hinzufügen</button>
 		</div>
 	</form>
   </div>
@@ -341,7 +339,7 @@
 				<tr>
 					<td>
 						{{#if isOwner}}
-							<i class="icon-trash"></i>
+							<i class="icon-trash hand"></i>
 						{{/if}}
 					</td>
 					<td>

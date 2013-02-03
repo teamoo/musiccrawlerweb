@@ -1,3 +1,20 @@
+body {
+	padding-top: 20px;
+}
+
+.container-fluid {
+	padding-left:  0px;
+	padding-right: 0px;
+}
+
+.btn-group {
+	padding-right: 10px;
+}
+
+.alert {
+	margin-top: 20px;
+}
+
 .mask {
     position: absolute;
     width: 100%;
@@ -19,10 +36,6 @@
 
 .siteurl {
 	width: 375px;
-}
-
-body {
-	padding: 40px;
 }
 
 #showSitesModal {
@@ -66,11 +79,6 @@ body {
 	line-height: 24px;
 }
 
-.jd-icon {
-	background:transparent url("/JD.png");
-    background-position: center center;
-}
-
 .status  {
 	padding-top: 0 px;
 	padding-bottom: 0px;
@@ -86,5 +94,9 @@ body {
 }
 
 #addsiteform {
+	margin-bottom: 0px;
+}
+
+.newcommentform {
 	margin-bottom: 0px;
 }
