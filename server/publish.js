@@ -8,9 +8,9 @@ Meteor.publish('links', function(filter_date, filter_status, filter_term, filter
     //TODO date austauschen durch date_created, wenn ddp-pre mal fertig ist
     if (this.userId)
 	return Links.find({
-	    date : {
-		$gte : filter_date
-	    },
+	    //date_discovered : {
+		//$gte : filter_date
+	    //},
 	    status : {
 		$in : filter_status
 	    },
