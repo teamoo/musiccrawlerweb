@@ -184,17 +184,12 @@
 		<th>Größe</th>
 		<th>Hinzugefügt</th>
 		</thead>
-          	{{#if links}}
 			<tbody>
 			{{#each links}}
 				{{> link}}
 			{{/each}}
 			</tbody>
 			</table>
-			{{else}}
-				</table>
-				<p class="lead">Für den ausgewählten Zeitraum wurden keine Links gefunden.</p>
-			{{/if}}
 </template>
 
 <template name="link">
