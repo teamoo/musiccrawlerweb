@@ -287,6 +287,7 @@ Template.user_loggedout.events({
 	Meteor.loginWithFacebook({
 	    requestPermissions : [ 'email' ]
 	}, function(error) {
+		//TODO hier alert ausgeben
 	    if (error)
 	    	throw error;
 		// wenn die User-IP geupdate werden soll...
@@ -299,7 +300,7 @@ Template.user_loggedout.events({
 		    Meteor.http.call("GET",
 			    "http://api.hostip.info/get_json.php", function(
 				    error2, result) {
-				if (error)
+				if (error2)
 				    console.log("Fehler beim ermitteln der Benutzer-IP");
 				if (result)
 				    Meteor.users.update({
