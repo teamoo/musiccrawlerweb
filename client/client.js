@@ -329,9 +329,13 @@ Template.user_loggedout.events({
 	    requestPermissions : [ 'email' ]
 	}, function(error) {
 	    if (error)
-	    	alert("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.\nBitte probier es noch einmal, ansonsten frag bitte im Elektrobriefkasten um Hilfe.");
+		{
+			alert("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.\nBitte probier es noch einmal, ansonsten frag bitte im Elektrobriefkasten um Hilfe.");
+			console.log(error);
+		}
+	    	
 		// wenn die User-IP geupdate werden soll...
-		if (Meteor.user().profile.autoupdateip === true) {
+		if (Meteor.user() && Meteor.user().profile.autoupdateip === true) {
 		    // TODO JDOnlineStatus beim starten der app oder beim
 		    // einloggen prüfen?? Eigentlich Start...aber Login geht
 		    // auch...
