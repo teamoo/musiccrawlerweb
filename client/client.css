@@ -100,3 +100,9 @@ body {
 .newcommentform {
 	margin-bottom: 0px;
 }
+
+textarea#new_comment, #postcomment {
+	margin-left: -6px;
+	margin-top: 5px;
+	margin-bottom: 0px;
+}

@@ -1,23 +1,29 @@
 ﻿// Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
+SearchResults = new Meteor.Collection(null);
+
+SearchResults.find().observe({
+});
+
 Meteor.autosubscribe(function() {
     var filter_date = Session.get('filter_date');
     var filter_status = Session.get('filter_status');
     var filter_term = Session.get('filter_term');
     var filter_limit = Session.get('filter_limit');
-    if (filter_date && filter_status && filter_limit) {
-      
-	Meteor.subscribe('sites', function onComplete() {
-	    // set a session key to true to indicate that the subscription is
-	    // completed.
-	    Session.set('sites_completed', true);
-	});
-
-	Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit,
-		function onComplete() {
-		    // set a session key to true to indicate that the
-		    // subscription is completed.
-		    Session.set('links_completed', true);
+	
+	
+    if (filter_date && filter_status && filter_limit) { 
+		Meteor.subscribe('sites', function onComplete() {
+			// set a session key to true to indicate that the subscription is
+			// completed.
+			Session.set('sites_completed', true);
 		});
+
+		Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit,
+			function onComplete() {
+				// set a session key to true to indicate that the
+				// subscription is completed.
+				Session.set('links_completed', true);
+			});
     }
 });
 
@@ -68,7 +74,7 @@ Meteor.startup(function() {
 	// updaten
 		if (Meteor.userId() && Meteor.user().profile.autoupdateip) {
 		    // TODO refactoring, wird noch woanders benutzt
-		    if (Meteor.user().profile.autoupdateip == true) {
+		    if (Meteor.user().profile.autoupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
 				function(error, result) {
 				    if (error)
@@ -133,18 +139,41 @@ Template.navigation.getLastSearchTerm = function() {
     var lastterm = Session.get("filter_term");
     if (lastterm && lastterm != "" && lastterm != ".*")
 	return lastterm.replace(/\.\*/g,"");
+	SearchResults.remove({_id : /.*/gi});
     return undefined;
 };
 // Funktion um die Anzahl der Seiten als badge anzuzeigen
 Template.navigation.getSiteCount = function() {
     return Sites.find({}).count();
 };
+
+Template.page.linksFound = function() {
+	if (Links.findOne()) return true;
+	if (Session.get("links_completed") === true)
+	{
+		Session.set("filter_term_external",Session.get("filter_term").replace(/\.\*/gi,""))
+		//TODO do a soundcloud API Call asynchonously, also maybe muzon.ws
+		for (var i = 1; i <= 10; i++) {
+			SearchResults.insert({source: "SoundCloud", name: "Testresult" + i, url : "http://www." + i + ".com", duration:10+i});
+		}
+	}
+	return false;
+};
+
+Template.page.searchresultsFound = function() {
+	if (SearchResults.findOne()) return true;
+	return false;
+};
+
 // Links-Outlet: alle Links, die gerade in der Subscription sind
 Template.linklist.links = function() {
-    //var links = Links.find({});
-    //if (links.count() == 0) return false;
-    return Links.find({});
+	return Links.find({});
 };
+
+Template.searchresultlist.searchresults = function() {
+	return SearchResults.find({});
+};
+
 // Link-Größe von Kilobyte in MB umwandeln
 Template.link.getSizeinMB = function() {
     if (this.size && this.size > 0)
@@ -170,18 +199,29 @@ Template.link.isLinkSelected = function() {
 };
 // Funktion, die anhand der Source-URL im Link Objekt den zugehörigen Namen raussucht
 Template.link.getSourceName = function() {
-    if (Session.get("sites_completed") == true) {
-	var site = Sites.findOne({
-	    url : this.source
-	}, {
-	    fields : {
-		url : 1,
-		name : 1
-	    }
-	});
-	if (site)
-	    return site.name;
-    } else
+    if (Session.get("sites_completed") === true) {
+		if (this.source && this.source !== null)
+		{
+			var site = Sites.findOne({
+			url : this.source
+			}, {
+				fields : {
+				url : 1,
+				name : 1
+				}
+			});
+			if (site)
+				return site.name;
+		}
+		else if (this.creator && this.creator !== null && Metor.userId())
+		{
+			//TODO a.b geht noch nicht, daher iterieren wir noch über alle user, bis wir den richtigen haben...
+			//var creator = Meteor.users.findOne({profile.id : this.creator});
+			Meteor.users.find().forEach(function(aUser) {
+				if (aUser.profile.id === this.creator) return aUser.profile.name;
+			});
+		}
+    }
 	return this.source;
 };
 // TODO Player-Widget zurückgeben, wenn es einen embedabble player gibt
@@ -238,9 +278,10 @@ Template.sitesDialog.getFeedTypeIcon = function(data) {
 };
 // Funktion um zu überprüfen, ob eine Seite von einem User erstellt wurde
 Template.sitesDialog.isOwner = function() {
-    if (this.creator === Meteor.users.find({_id : Meteor.userId()}).fetch()[0].profile.id)
-	return true;
-    return false;
+	if (!Meteor.user()) return false;
+    if (this.creator === Meteor.user().profile.id);
+		return true;
+	return false;
 };
 // Funktion, um ein Eingabeelement auszuwählen und den Focus drauf zu setzen
 var activateInput = function(input) {
@@ -283,13 +324,12 @@ Template.connectionLostWarning.events({
 Template.user_loggedout.events({
     'click #login' : function() {
 	// wir loggen den User mit Facebook ein, erbitten Zugriff auf seine
-	// eMail-Adresse
+	// eMail-Addresse
 	Meteor.loginWithFacebook({
 	    requestPermissions : [ 'email' ]
 	}, function(error) {
-		//TODO hier alert ausgeben
 	    if (error)
-	    	throw error;
+	    	alert("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.\nBitte probier es noch einmal, ansonsten frag bitte im Elektrobriefkasten um Hilfe.");
 		// wenn die User-IP geupdate werden soll...
 		if (Meteor.user().profile.autoupdateip === true) {
 		    // TODO JDOnlineStatus beim starten der app oder beim
@@ -322,10 +362,9 @@ Template.user_loggedin.events({
     'click #logout' : function() {
 	Meteor.logout(function(error) {
 	    if (error) {
-			console.log("Fehler beim ausloggen.");
-	    } else {
-		//TODO  ggf. Session-Variablen zurücksetzen...
-	    }
+			alert("Fehler beim Ausloggen","Beim Ausloggen ist ein unerwarteter Fehler aufgetreten.");
+		}
+			
 	});
     },
 	//Accounteinstellungen anzeigen
@@ -420,7 +459,7 @@ Template.navigation.events({
 		    	console.log(Session.get("progress"));
 		    	if (Session.get("progress") >= 99)
 		    	{
-		    		if (Session.get("progressState") == "progress-warning")
+		    		if (Session.get("progressState") === "progress-warning")
 		    			Session.set("progressState","progress-danger");
 		    		else Session.set("progresState","progress-success"); 
 		    		Session.set("progress",100);
@@ -484,7 +523,7 @@ Template.navigation.events({
 	    Session.set("filter_term", ".*");
 
 	    if (Session.get("prev_filter_date"))
-		Session.set("filter_date", Session.get("prev_filter_date"));
+			Session.set("filter_date", Session.get("prev_filter_date"));
 	    else {
 		var tmp_date = new Date();
 		tmp_date.setDate(tmp_date.getDate() - 14);
@@ -493,18 +532,19 @@ Template.navigation.events({
 	    Session.set("filter_status", [ "on" ]);
 	}
 	Session.set("filter_limit",1);
+	SearchResults.remove({_id : /.*/gi});
 	return false;
     }
 });
-
+//TODO infinite scroll justieren, anpassen an Fensterbreite, die bestimmt die itemHeight
 Template.page.rendered = function() {
 	topMenuHeight = 90;
-	itemBadgeSize = 30;
+	factorHeight = 1;
 	itemHeight = 29;
 	
 	badgeHeight = itemBadgeSize * itemHeight;
 	
-	currentBadge = 1
+	currentBadge = 1;
 	
 	$(window).scroll(function(){
 	   // Get container scroll position
@@ -535,7 +575,7 @@ Template.linklist.events = ({
     },
 	//alle Links anhaken, die gerade zu sehen sind
     'click #select_all' : function(event, template) {
-	if (event.srcElement.checked == true) {
+	if (event.srcElement.checked === true) {
 	    var selected = _.pluck(Links.find({}, {
 		fields : {
 		    _id : 1
@@ -548,16 +588,24 @@ Template.linklist.events = ({
 });
 //UI-Effekte aktivieren, wenn ein Link gerendered wurde
 Template.link.rendered = function() {
-    // TODO: popover geht nicht
     $('.linkname').editable();
 		    
     Links.find().forEach(function(link) {
-    	htmlstr ="<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4'></textarea><button class='btn btn-small btn-primary' type='submit'>Posten</button></form>";
-       	var commentsstr = "<p class='author'><small>Thimo</p><p>Testkommentar1</small></p><br/><p><small>Testkommentar2</p><br/></small><p>Seit ihr alle komisch Mensch, ich find das super.</p><br/>";
-       	//for (comment in thelinks.comments) {
-       	//	commentsstr = commentsstr + "<p><small>" + comment.creator + ":" + comment.message + "</small></p>"
-     
-            	$("#"+link._id+'_comments').popover({animation:true,placement:"bottom",trigger:"click",title:"Kommentare",html:true,content:commentsstr+htmlstr,delay: { show: 300, hide: 100 }});
+    	htmlstr ="<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4'></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
+        var commentsstr = "";
+		if (link.comments && link.comments !== null)
+		{
+			//TODO comments auslesen
+			for ( var i = 0; i <= link.comments.length; i++) {
+				comment = link.comments[i];
+				console.log(comment +link._id);
+				//commentsstr = commentsstr + "<p><small>" + comment.message + ":" + comment.message + "</small></p>"
+			};
+		}
+		//TODO else geht noch nicht
+		else commentsstr = "<small>noch keine Kommentare vorhanden</small>";
+		
+        $("#"+link._id+'_comments').popover({animation:true,placement:"bottom",trigger:"click",title:"Kommentare",html:true,content:commentsstr+htmlstr,delay: { show: 300, hide: 100 }});
     });
 };
 
@@ -580,13 +628,13 @@ Template.link.events({
 	var selected = Session.get("selected_links");
 	if (event.srcElement.checked) {
 	    var idx = selected.indexOf(this._id);
-	    if (idx == -1) {
+	    if (idx === -1) {
 		selected.push(this._id);
 		Session.set("selected_links", selected);
 	    }
 	} else {
 	    var idx = selected.indexOf(this._id);
-	    if (idx != -1) {
+	    if (idx !== -1) {
 		selected.splice(idx, 1);
 		Session.set("selected_links", selected);
 	    }
@@ -616,13 +664,14 @@ Template.link.events({
     'submit .form-inline' : function(event, template) {
 	event.preventDefault();
 	var newName = template.find('.editable-input input').value;
-	Links.update({
-	    _id : this._id
-	}, {
-	    $set : {
-		name : newName
-	    }
-	});
+	if (Meteor.userId())
+		Links.update({
+			_id : this._id
+		}, {
+			$set : {
+			name : newName
+			}
+		});
     },
 	//TODO nur 1 Kommentarbox zulassen, die anderen hiden....
 	//Kommentare für einen Linkanzeigen

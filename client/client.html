@@ -35,7 +35,17 @@
 		<div class="row-fluid">
 			<div class="span12">
 				{{#if currentUser}}
-					{{> linklist}}
+					{{# if linksFound}}
+						{{> linklist}}
+					{{else}}
+						<p class="lead">Für den ausgewählten Zeitraum oder Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
+						{{#if searchresultsFound}}
+							<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
+							{{> searchresultlist}}
+						{{else}}
+							<p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
+						{{/if}}
+					{{/if}}	
 				{{else}}
 					<p class="lead">Bitte logge dich ein, um auf MusicCrawler zuzugreifen.</p>
 				{{/if}}
@@ -130,7 +140,7 @@
 				<ul class="nav pull-right">
 					<li>
 						<div class="btn-group">
-							{{> user_info}}		  
+							{{> user_info}}
 						</div>
 					</li>
 				</ul>
@@ -166,30 +176,30 @@
 </template>
 
 <template name="linklist">
-  <table class="table table-condensed table-striped">
-	<thead>
-		<th>
-			<input type="checkbox" id="select_all">
-		</th>
-		<th></th>
-		<th><i class="icon-volume-up"></i></th>
-		<th>Name</th>
-		<th>URL</th>
-		<th></th>
-		<th></th>
-		<th>
-			<i class="icon-filter hand" id="filter_links"></i> Status
-		</th>
-		<th>Quelle</th>
-		<th>Größe</th>
-		<th>Hinzugefügt</th>
+	<table class="table table-condensed table-striped">
+		<thead>
+			<th>
+				<input type="checkbox" id="select_all">
+			</th>
+			<th></th>
+			<th><i class="icon-volume-up"></i></th>
+			<th>Name</th>
+			<th>URL</th>
+			<th></th>
+			<th></th>
+			<th>
+				<i class="icon-filter hand" id="filter_links"></i> Status
+			</th>
+			<th>Quelle</th>
+			<th>Größe</th>
+			<th>Hinzugefügt</th>
 		</thead>
-			<tbody>
+		<tbody>
 			{{#each links}}
 				{{> link}}
 			{{/each}}
-			</tbody>
-			</table>
+		</tbody>
+	</table>
 </template>
 
 <template name="link">
@@ -225,7 +235,32 @@
 	</td>
 	<td>{{getSourceName}}</td>
 	<td style="text-align: right">{{getSizeinMB}}</td>
-	<td>	{{dateFormat date format="DD. MMM YYYY"}}</td>
+	<td>	{{dateFormat date_discovered format="DD. MMM YYYY"}}</td>
+  </tr>
+</template>
+
+<template name="searchresultlist">
+	<table class="table table-condensed">
+	<thead>
+		<th>Quelle</th>
+		<th>Name</th>
+		<th>Duration</th>
+		<th></th>
+	</thead>
+	{{#each searchresults}}
+		{{> searchresult}}
+	{{/each}}
+	</table>
+</template>
+
+<template name="searchresult">
+  <tr>
+	<td>
+		{{source}}
+	</td>
+    <td><a href="{{url}}" target="_blank">{{name}}</a></td>
+	<td>{{duration}}</td>	
+	<td><a class="btn btn-small"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</a></td>
   </tr>
 </template>
 
