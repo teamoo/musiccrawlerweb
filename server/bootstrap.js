@@ -1012,7 +1012,7 @@ Meteor
 		});
 		Sites
 			.insert({
-			    name : "Electrobriefkasten Facebook Gruppe",
+			    name : "Elektrobriefkasten",
 			    url : "https://www.facebook.com/groups/137328326321645",
 			    feedurl : "https://www.facebook.com/groups/137328326321645",
 			    domain : "facebook.com",

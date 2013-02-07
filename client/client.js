@@ -1,15 +1,11 @@
-﻿// Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
+﻿//lokale Collection für Suchergebnisse, damit wir auch diese mit reactivity anzeigen können.
 SearchResults = new Meteor.Collection(null);
-
-SearchResults.find().observe({
-});
-
+// Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
 Meteor.autosubscribe(function() {
     var filter_date = Session.get('filter_date');
     var filter_status = Session.get('filter_status');
     var filter_term = Session.get('filter_term');
     var filter_limit = Session.get('filter_limit');
-	
 	
     if (filter_date && filter_status && filter_limit) { 
 		Meteor.subscribe('sites', function onComplete() {
@@ -37,6 +33,9 @@ Meteor.autosubscribe(function() {
 // zur Verfügung. Workaround: Timer auf 3 Sekunden, dann ist das Objekt im
 // Regelfall verfügbar.
 Meteor.startup(function() {	
+	SC.initialize({
+	  client_id: 'cd2bef92bf104b828e604d3a7d6d8bd1'
+	});  
 	//Session Variablen initialisieren
 	Session.set("sites_completed", false);
 	Session.set("links_completed", false);
@@ -68,6 +67,8 @@ Meteor.startup(function() {
 	    var selected_links = [];
 	    Session.set("selected_links", selected_links);
 	}
+	
+	activateInput($('#searchfield'));
 	
     Meteor.setTimeout(function() {
 	// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP
@@ -109,7 +110,8 @@ Handlebars.registerHelper('dateFormat', function(context, block) {
 	moment().lang('de');
 	var f = block.hash.format || "MMM Do, YYYY";
 	if (context && moment(context).isValid())
-	    return moment(context).format(f);
+	    //return moment(context).format(f);
+		return moment(context).fromNow();
 	return "kein Datum";
     }
     return "kein Datum"; // moment plugin not available. return data as is.;
@@ -149,13 +151,28 @@ Template.navigation.getSiteCount = function() {
 
 Template.page.linksFound = function() {
 	if (Links.findOne()) return true;
+	Session.set("loading_results",true);
 	if (Session.get("links_completed") === true)
 	{
+		var tracks;
 		Session.set("filter_term_external",Session.get("filter_term").replace(/\.\*/gi,""))
-		//TODO do a soundcloud API Call asynchonously, also maybe muzon.ws
-		for (var i = 1; i <= 10; i++) {
-			SearchResults.insert({source: "SoundCloud", name: "Testresult" + i, url : "http://www." + i + ".com", duration:10+i});
-		}
+		
+		//TODO die scheinen quatsch zu schicken
+		//if (Session.get("filter_term_external") && Session.get("filter_term_external") != "")
+		//	Meteor.call('searchMuzon', encodeURIComponent(Session.get("filter_term_external")), function(error, result) {
+		//		if (result) console.log(result);
+		//	});
+		
+		//TODO in Produktion wieder anschalten, title scheint manchmal nicht zur Verfügung zu stehen, abfangen
+		if (Session.get("filter_term_external") && Session.get("filter_term_external") != "")
+			//SC.get('/tracks', {limit: 10, q: Session.get("filter_term_external")}, function(tracks) {
+				if (tracks) {
+					for (var i = 0; i <= tracks.length; i++) {
+						SearchResults.insert({source: "SoundCloud", name: tracks[i].title, url : tracks[i].permalink_url, duration: moment(tracks[i].duration).format('mm:ss') + " min."});
+					};
+				}
+				Session.set("loading_results",false);
+			//});
 	}
 	return false;
 };
@@ -235,7 +252,12 @@ Template.link.getPlayerWidget = function() {
 
     // This is the oEmbed endpoint for Vimeo (we're using JSON)
     // (Vimeo also supports oEmbed discovery. See the PHP example.)
-
+	if (this.source === "SoundCloud")
+	{
+		//return "<i class=\" icon-play\"><a href=\"" + this.url
+		//+ "\" class=\"sc-player\"></a></i>";
+	}
+	
     if (this.status !== 'off') {
 	if (this.hoster === "soundcloud.com")
 	    return "<i class=\" icon-play\"><a href=\"" + this.url
@@ -384,7 +406,12 @@ Template.navigation.rendered = function() {
 	$('li.linkfilter').removeClass("active");
 	var activenumber = parseInt(Session.get("selected_navitem"));
 	$('li.linkfilter #' + activenumber).parent().addClass("active");
-
+	
+	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337, Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>"
+	
+	strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
+	//TODO positioning
+	$('#brand').popover({animation:true,placement:"bottom-right",trigger:"click",title:"Impressum",html:true,content:straddress+strdonatebutton,delay: { show: 300, hide: 100 }});
 };
 
 //Eventhandler für die Navigationsleiste
@@ -393,7 +420,7 @@ Template.navigation.events({
     'click #addsitebutton' : function(event) {
     event.preventDefault();
 	openAddSiteDialog();
-	activateInput($("#newsiteurl"));
+	Meteor.setTimeout(function(){activateInput($("#newsiteurl"))},250);
 	return false;
     },
 	//Seiten anzeigen Dialog öffnen
@@ -423,6 +450,8 @@ Template.navigation.events({
 		var times = parseInt(Math.ceil(selectedurls.length / urls_per_request));
 		var progressstep = 95 / (times*2);
 		
+		var errorcount = 0;
+		
 		for ( var i = 1; i <= times; i++) {
 			Session.set("progressState","progress-info");
 			var oldprogress = Session.get("progress");
@@ -450,6 +479,21 @@ Template.navigation.events({
 		        // TODO error handling, wenn es mehrfach fehlschlägt, dann abbrechen
 		        if (error)
 		        {
+					//testen
+					errorcount++;
+					if (errorcount > 2)
+					{
+						Session.set("progressState","progress-danger");
+						Session.set("progress",100);
+						Session.set("progressActive",false);
+						Meteor.setTimeout(function() {
+		    			Session.set("progress",undefined);
+		    			Session.set("progressState",undefined);
+						},3500);
+						console.log(error);
+						break;
+					}
+					
 		        	console.log(error);
 		        	Session.set("progressState","progress-warning");
 		        }
@@ -497,7 +541,7 @@ Template.navigation.events({
     'click #addlinkbutton' : function(event, template) {
 	event.preventDefault();
 	openAddLinkDialog();
-	activateInput($('#newlinkurl'));
+	Meteor.setTimeout(function(){activateInput($("#newlinkurl"))},250);
 	return false;
     },
     'click .linkfilter' : function(event, template) {
@@ -588,22 +632,33 @@ Template.linklist.events = ({
 	    Session.set("selected_links", selected);
 	} else
 	    Session.set("selected_links", []);
-    }
+    },
 });
+
+Template.linklist.rendered = function() {
+	$('#filter_links').tooltip({title: "nur Links mit Status (online) oder alle Links anzeigen",placement:"left"});
+	$('#select_all').tooltip({title: "alle Links zum Download auswählen",placement:"right"});
+};
 //UI-Effekte aktivieren, wenn ein Link gerendered wurde
 Template.link.rendered = function() {
     $('.linkname').editable();
-		    
+	
+	$('.refreshlink').tooltip({title:"Linkinformationen (Größe, Titel, Online-Status) aktualisieren",placement:"right"});
+	$('.like').tooltip({title:"Gefällt mir",placement:"left"});
+	$('.icon-comment').tooltip({title:"Kommentar(e) anzeigen/hinzufügen",placement:"left"});
+	$('.icon-ok').tooltip({title:"verfügbar",placement:"left"});
+	$('.icon-question-sign').tooltip({title:"unbekannt",placement:"left"});
+	$('.icon-remove').tooltip({title:"nicht verfügbar",placement:"left"});
+	
     Links.find().forEach(function(link) {
     	htmlstr ="<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4'></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
         var commentsstr = "";
-		if (link.comments && link.comments !== null)
+		if (link.comments && link.comments !== null && link.comments.length)
 		{
 			//TODO comments auslesen
 			for ( var i = 0; i <= link.comments.length; i++) {
-				comment = link.comments[i];
-				console.log(comment +link._id);
-				//commentsstr = commentsstr + "<p><small>" + comment.message + ":" + comment.message + "</small></p>"
+				var aComment = link.comments[i];
+				//commentsstr = commentsstr + "<p><small>" + aComment.creator + ":" + aComment.message + "</small></p>"
 			};
 		}
 		//TODO else geht noch nicht
@@ -612,6 +667,24 @@ Template.link.rendered = function() {
         $("#"+link._id+'_comments').popover({animation:true,placement:"bottom",trigger:"click",title:"Kommentare",html:true,content:commentsstr+htmlstr,delay: { show: 300, hide: 100 }});
     });
 };
+
+Template.accountSettingsDialog.rendered = function() {
+	$('#refreship').tooltip({title:"Wenn du auf 'Aktualisieren' klickst, wird die IP-Adresse des Rechners ermittelt, an dem du gerade bist und gespeichert. Du kannst dann Links auf diesem Rechner empfangen, wenn JDownloader läuft hast und der Port offen ist.",placement:"bottom"});
+	$('#port').tooltip({title:"Bitte gebe den Port an, über den JDownloader Remote aus dem Internet erreichbar ist. (Standard: 10025)", placement:"bottom"});
+	$('#autoupdate').tooltip({title:"Wenn du diese Option aktivierst, wird beim Starten dieser App automatisch deine IP-Adresse aktualisiert. Setz diese Option, wenn du keine feste IP-Adresse hast oder JDownloader immer auf dem Rechner nutzt, auf dem du auch diese App aufrufst.", placement:"left"});
+	$('#jdon').tooltip({title:"Dein JDownloader kann Links empfangen.",placement:"bottom"});
+	$('#jdoff').tooltip({title:"Dein JDownloader kann keine Links empfangen. Bitte überprüfe, ob der angebene Port aus dem Internet erreichbar ist. Wenn du einen Proxy-Server nutzt, musst du die IP-Adresse ggf. manuell eintragen.",placement:"bottom"});
+};
+//TODO das muss noch formatiert werden
+Template.user_loggedin.rendered = function() {
+	if (Meteor.userId() && Meteor.user() && Meteor.user().profile)
+	{
+		htmlstr = "<img class='img-polaroid' src=" + Meteor.user().profile.pictureurl + "></img><p class='pull-left'><small>" + Meteor.user().emails[0] + "</small><br/><small>" + Meteor.user().profile.ip + " : " + Meteor.user().profile.port + "</small></p>"
+		//hiden, wen wir was anderes anklicken
+		//TODO positioning
+		$('#accountbtn').popover({animation:true,placement:"bottom-left",trigger:"click",title:Meteor.username,html:true,content:htmlstr,delay: { show: 300, hide: 100 }});
+	}
+}
 
 //Events für die einzelnen Link-Objekte
 Template.link.events({
@@ -632,7 +705,7 @@ Template.link.events({
 	var selected = Session.get("selected_links");
 	if (event.srcElement.checked) {
 	    var idx = selected.indexOf(this._id);
-	    if (idx === -1) {
+		if (idx === -1) {
 		selected.push(this._id);
 		Session.set("selected_links", selected);
 	    }
@@ -679,9 +752,8 @@ Template.link.events({
     },
 	//TODO nur 1 Kommentarbox zulassen, die anderen hiden....
 	//Kommentare für einen Linkanzeigen
-    'click .icon-comment' : function(context) {
-            
-	$('#'+context.srcElement.id+"_comments").popover('show'); // show tooltip
+    'click .icon-comment' : function(context) {       
+	$('#'+context.srcElement.id+"_comments").popover('show');
     },
 	//Link liken
     'click .like' : function(context) {
@@ -734,8 +806,13 @@ Template.addLinkDialog.events({
     	Session.set("status",'<p class="pull-left statustext"><i class="icon-remove-red"></i> <small>' + error.details + "</small></p>");
 	
     if (result)
-    	Session.set("status",'<p class="pull-left statustext"><i class="icon-ok-green"></i> <small>' + "Link hinzugefügt!</small></p>");
-
+	{
+		Session.set("status",'<p class="pull-left statustext"><i class="icon-ok-green"></i> <small>' + "Link hinzugefügt!</small></p>");
+		Meteor.setTimeout(function() {
+			Session.set("showAddSiteDialog", false);
+			Session.set("status", undefined);
+		},3500);	
+	}
 	});
 	}
 });
@@ -767,19 +844,30 @@ Template.addSiteDialog
 		Meteor.call('createSite', newsiteurl, function(error, result) {
 		    // TODO erorr number special, dann anderes zeichen
 		    if (error)
-			Session.set("status",
+				Session.set("status",
 				'<p class="pull-left statustext"><i class="icon-remove-red"></i> <small>'
 					+ error.details + "</small></p>");
 		    if (result)
-			Session.set("status",
+			{
+				Session.set("status",
 				'<p class="pull-left statustext"><i class="icon-ok-green"></i> <small>'
 					+ "Seite hinzugefügt!</small></p>");
+					
+				Meteor.setTimeout(function() {
+		    		Session.set("showAddSiteDialog", false);	
+					Session.set("status", undefined);
+		    	},3500);			
+			}
 		});
 	    }
 	});
 //Wenn der Seitendialog gerendered wurde, UI Widgets aktivieen
 Template.sitesDialog.rendered = function() {
     $('.sitename').editable();
+	
+	$('.icon-trash').tooltip({title:"Seite aus der Datenbank löschen",placement:"top"});
+	$('.icon-facebook').tooltip({title:"Facebook-Gruppe",placement:"left"});
+	$('.icon-rss').tooltip({title:"RSS-Feed",placement:"left"});
 };
 //Events des Seiten anzeigen Dialogs
 Template.sitesDialog.events({

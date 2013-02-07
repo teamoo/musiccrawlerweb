@@ -39,15 +39,19 @@
 						{{> linklist}}
 					{{else}}
 						<p class="lead">Für den ausgewählten Zeitraum oder Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
-						{{#if searchresultsFound}}
-							<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
-							{{> searchresultlist}}
+						{{#if session "loading_results"}}
+							<p class="lead">externe Suchergebnisse werden geladen...</p>
 						{{else}}
-							<p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
+							{{#if searchresultsFound}}
+								<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
+								{{> searchresultlist}}
+							{{else}}
+								<p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
+							{{/if}}
 						{{/if}}
 					{{/if}}	
 				{{else}}
-					<p class="lead">Bitte logge dich ein, um auf die App zuzugreifen.</p>
+					<p class="lead">Bitte logge dich ein, um auf das Tool zuzugreifen.</p>
 				{{/if}}
 			</div>
 		</div>
@@ -88,7 +92,7 @@
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			{{#if currentUser}}
-				<a class="brand" style="margin-left:-15px">MusicCrawler</a>
+				<a class="brand" id="brand" style="margin-left:-15px">MusicCrawler</a>
 				<ul class="nav" role="navigation">
 					<li class="dropdown">
 	                      <a id="drop1" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
@@ -212,7 +216,7 @@
 		{{/if}}
 	</td>
 	<td>
-		<i class="icon-refresh hand" id="{{_id}}"></i>
+		<i class="icon-refresh hand refreshlink" id="{{_id}}"></i>
 	</td>
 	<td>
 		{{{getPlayerWidget}}}
@@ -243,8 +247,9 @@
 	<table class="table table-condensed">
 	<thead>
 		<th>Quelle</th>
+		<th>
 		<th>Name</th>
-		<th>Duration</th>
+		<th>Dauer</th>
 		<th></th>
 	</thead>
 	{{#each searchresults}}
@@ -258,6 +263,7 @@
 	<td>
 		{{source}}
 	</td>
+	<td>{{getPlayerWidget}}</td>
     <td><a href="{{url}}" target="_blank">{{name}}</a></td>
 	<td>{{duration}}</td>	
 	<td><a class="btn btn-small"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</a></td>
@@ -296,9 +302,9 @@
   <div class="modal-footer">
   	{{{session "status"}}}
 	{{#if session "JDOnlineStatus"}}
-		<p class="pull-left">Dein JDownloader ist <strong style="color:green">online</strong>.</p>
+		<p class="pull-left jdstatustext">Dein JDownloader ist <strong id="jdon" style="color:green">online</strong>.</p>
 	{{else}}
-		<p class="pull-left">Dein JDownloader ist <strong style="color:red">offline</strong>.</p>
+		<p class="pull-left jdstatustext">Dein JDownloader ist <strong id="jdoff" style="color:red">offline</strong>.</p>
 	{{/if}}
     <button class="btn cancel" data-dismiss="modal" aria-hidden="true">Schließen</button>
     <button class="btn btn-primary save">Speichern</button>
@@ -380,7 +386,7 @@
 							{{name}}
 						{{/if}}
 					</td>
-					<td>{{feedurl}}</td>
+					<td>{{url}}</td>
 					<td><i class="{{getFeedTypeIcon}}"></i></td>
 					<td>
 						{{#if active}}
