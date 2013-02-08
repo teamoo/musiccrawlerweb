@@ -35,21 +35,25 @@
 		<div class="row-fluid">
 			<div class="span12">
 				{{#if currentUser}}
-					{{# if linksFound}}
-						{{> linklist}}
-					{{else}}
-						<p class="lead">Für den ausgewählten Zeitraum oder Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
-						{{#if session "loading_results"}}
-							<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
+					{{#if session "links_completed"}}
+						{{# if linksFound}}
+							{{> linklist}}
 						{{else}}
-							{{#if searchresultsFound}}
-								<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
-								{{> searchresultlist}}
+							<p class="lead">Für den ausgewählten Zeitraum oder Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
+							{{#if session "loading_results"}}
+								<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
 							{{else}}
-								<p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
+								{{#if searchresultsFound}}
+									<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
+									{{> searchresultlist}}
+								{{else}}
+									<p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
+								{{/if}}
 							{{/if}}
 						{{/if}}
-					{{/if}}	
+					{{else}}
+						<p class="lead"><i class="icon-loader"></i> Daten werden geladen...</p>
+					{{/if}}
 				{{else}}
 					<p class="lead">Bitte logge dich ein, um auf das Tool zuzugreifen.</p>
 				{{/if}}
@@ -92,7 +96,7 @@
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			{{#if currentUser}}
-				<a class="brand" id="brand" style="margin-left:-15px">MusicCrawler</a>
+				<a class="brand hand" id="brand" style="margin-left:-15px">MusicCrawler</a>
 				<ul class="nav" role="navigation">
 					<li class="dropdown">
 	                      <a id="drop1" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
@@ -197,6 +201,9 @@
 			<th>Quelle</th>
 			<th>Größe</th>
 			<th>Hinzugefügt</th>
+			{{#if isAdmin}}
+				<th></th>
+			{{/if}}
 		</thead>
 		<tbody>
 			{{#each links}}
@@ -240,6 +247,9 @@
 	<td>{{getSourceName}}</td>
 	<td style="text-align: right">{{getSizeinMB}}</td>
 	<td>	{{dateFormat date_discovered format="DD. MMM YYYY"}}</td>
+	{{#if isAdmin}}	
+		<td><i class="icon-trash hand"></i></td>
+  	{{/if}}
   </tr>
 </template>
 
@@ -396,7 +406,7 @@
 							<i class="icon-ok-sign"></i>
 						{{/if}}
 					</td>
-					<td><i class="icon-search" id="{{_id}}"></i></td>
+					<td><i class="icon-search hand" id="{{_id}}"></i></td>
 				</tr>
 			{{/each}}
 		</tbody>

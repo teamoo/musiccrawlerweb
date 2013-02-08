@@ -171,14 +171,14 @@ Template.page.linksFound = function() {
 			Session.set("filter_term_external",Session.get("filter_term").replace(/\.\*/gi,""))
 		
 		
-			//SC.get('/tracks', {limit: 10, q: Session.get("filter_term_external")}, function(tracks) {
+			SC.get('/tracks', {limit: 10, q: Session.get("filter_term_external")}, function(tracks) {
 				if (tracks) {
 					for (var i = 0; i <= tracks.length; i++) {
 						SearchResults.insert({source: "SoundCloud", name: tracks[i].title, url : tracks[i].permalink_url, duration: moment(tracks[i].duration).format('mm:ss') + " min."});
 					};
 				}
 				Session.set("loading_results",false);
-			//});
+			});
 		}
 	}
 	return false;
@@ -196,6 +196,20 @@ Template.linklist.links = function() {
 
 Template.searchresultlist.searchresults = function() {
 	return SearchResults.find({});
+};
+
+
+Template.link.isAdmin = function() {
+    var admin = Meteor.user().profile.admin;
+    
+    if (admin) return admin;
+    return false;
+};
+Template.linklist.isAdmin = function() {
+    var admin = Meteor.user().profile.admin;
+    
+    if (admin) return admin;
+    return false;
 };
 
 // Link-Größe von Kilobyte in MB umwandeln
@@ -237,7 +251,7 @@ Template.link.getSourceName = function() {
 			if (site)
 				return site.name;
 		}
-		else if (this.creator && this.creator !== null && Metor.userId())
+		if (this.creator && this.creator !== null)
 		{
 			//TODO a.b geht noch nicht, daher iterieren wir noch über alle user, bis wir den richtigen haben...
 			//var creator = Meteor.users.findOne({profile.id : this.creator});
@@ -498,7 +512,7 @@ Template.navigation.events({
 		    			Session.set("progressState",undefined);
 						},3500);
 						console.log(error);
-						break;
+						return;
 					}
 					
 		        	console.log(error);
@@ -912,6 +926,7 @@ Template.sitesDialog.events({
 	'submit .form-inline' : function(event, template) {
 	event.preventDefault();
 	var newName = template.find('.editable-input input').value;
+	console.log(this._id);
 	Sites.update({
 	    _id : this._id
 	}, {
