@@ -40,7 +40,7 @@
 					{{else}}
 						<p class="lead">Für den ausgewählten Zeitraum oder Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
 						{{#if session "loading_results"}}
-							<p class="lead">externe Suchergebnisse werden geladen...</p>
+							<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
 						{{else}}
 							{{#if searchresultsFound}}
 								<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
@@ -323,7 +323,7 @@
 	<form class="form-inline" id="addlinkform">
 		<div class="input-append">
 			<input id="newlinkurl" class="input-xlarge linkurl" type="url" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required>
-			<button class="btn addlink" type="button" disabled>Hinzufügen</button>
+			<button class="btn addlink" disabled>Hinzufügen</button>
 		</div>
 	</form>
   </div>
@@ -368,8 +368,10 @@
 			<th><i class="icon-trash"></i></th>
 			<th>Name</th>
 			<th>URL</th>
+			<th>zuletzt durchsucht</th>
 			<th>Typ</th>
 			<th>aktiv</th>
+			<th></th>
 		</thead>
 		<tbody>
 			{{#each sites}}
@@ -387,12 +389,14 @@
 						{{/if}}
 					</td>
 					<td>{{url}}</td>
+					<td>{{dateFormat last_crawled format="DD. MMM YYYY"}}</td>
 					<td><i class="{{getFeedTypeIcon}}"></i></td>
 					<td>
 						{{#if active}}
 							<i class="icon-ok-sign"></i>
 						{{/if}}
 					</td>
+					<td><i class="icon-search" id="{{_id}}"></i></td>
 				</tr>
 			{{/each}}
 		</tbody>

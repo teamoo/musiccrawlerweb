@@ -151,12 +151,8 @@ Template.navigation.getSiteCount = function() {
 
 Template.page.linksFound = function() {
 	if (Links.findOne()) return true;
-	Session.set("loading_results",true);
 	if (Session.get("links_completed") === true)
-	{
-		var tracks;
-		Session.set("filter_term_external",Session.get("filter_term").replace(/\.\*/gi,""))
-		
+	{		
 		//TODO die scheinen quatsch zu schicken
 		//if (Session.get("filter_term_external") && Session.get("filter_term_external") != "")
 		//	Meteor.call('searchMuzon', encodeURIComponent(Session.get("filter_term_external")), function(error, result) {
@@ -165,6 +161,16 @@ Template.page.linksFound = function() {
 		
 		//TODO in Produktion wieder anschalten, title scheint manchmal nicht zur Verfügung zu stehen, abfangen
 		if (Session.get("filter_term_external") && Session.get("filter_term_external") != "")
+		{
+			Session.set("loading_results",true);
+		
+			//if we don't receive results within x seconds, let's set it to no results found
+			Meteor.setTimeout(function(){Session.set("loading_results",false)},8000);
+		
+			var tracks;
+			Session.set("filter_term_external",Session.get("filter_term").replace(/\.\*/gi,""))
+		
+		
 			//SC.get('/tracks', {limit: 10, q: Session.get("filter_term_external")}, function(tracks) {
 				if (tracks) {
 					for (var i = 0; i <= tracks.length; i++) {
@@ -173,6 +179,7 @@ Template.page.linksFound = function() {
 				}
 				Session.set("loading_results",false);
 			//});
+		}
 	}
 	return false;
 };
@@ -555,6 +562,7 @@ Template.navigation.events({
 	
 	Session.set("filter_limit", 1);
     },
+	//TODO: auto suggest for search terms
     'submit #searchform' : function(event, template) {
 	event.preventDefault();
 	var term = template.find('#searchfield').value;
@@ -797,26 +805,36 @@ Template.addLinkDialog.events({
     'click .addlink' : function(event, template) {
 	event.preventDefault();
 	Session.set("status",
-		'<p class="pull-left statustext"><small><i class="icon-loader"></i> Link wird überprüft</small></p>');
+		'<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird überprüft</small></p>');
 	var newlinkurl = template.find("#newlinkurl").value;
 	//TODO timeout scheint bei post nicht zu funktionieren
 	Meteor.call('createLink', newlinkurl, function(error, result) {
-    // TODO erorr number special, dann anderes zeichen
     if (error)
-    	Session.set("status",'<p class="pull-left statustext"><i class="icon-remove-red"></i> <small>' + error.details + "</small></p>");
+		switch (error.error) {
+			case 409:
+				//TODO error-warning sign,test
+				Session.set("status",
+					'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>'
+					+ " " + error.details + "</small></p>");
+			default:
+				Session.set("status",
+					'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>'
+					+ " " + error.details + "</small></p>");
+		}
 	
     if (result)
 	{
-		Session.set("status",'<p class="pull-left statustext"><i class="icon-ok-green"></i> <small>' + "Link hinzugefügt!</small></p>");
+		Session.set("status",'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + "Link hinzugefügt!</small></p>");
 		Meteor.setTimeout(function() {
 			Session.set("showAddSiteDialog", false);
 			Session.set("status", undefined);
 		},3500);	
 	}
 	});
+	return false;
 	}
 });
-//Events für den Seite hinzufügen Dialog
+//Events für den "Seite hinzufügen"-Dialog
 Template.addSiteDialog
 	.events({
 		// User hat abgebrochen, Dialog schließen
@@ -839,19 +857,26 @@ Template.addSiteDialog
 		Session
 			.set(
 				"status",
-				'<p class="pull-left statustext"><small><i class="icon-loader"></i> Seite wird überprüft</small></p>');
+				'<p class="pull-left statustext"><i class="icon-loader"></i><small>' + " " +  'Seite wird überprüft</small></p>');
 		var newsiteurl = template.find('#newsiteurl').value;
 		Meteor.call('createSite', newsiteurl, function(error, result) {
-		    // TODO erorr number special, dann anderes zeichen
 		    if (error)
-				Session.set("status",
-				'<p class="pull-left statustext"><i class="icon-remove-red"></i> <small>'
-					+ error.details + "</small></p>");
+				switch (error.error) {
+					case 409:
+						//TODO error-warning sign,test
+						Session.set("status",
+						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>'
+						+ " " + error.details + "</small></p>");
+					default:
+						Session.set("status",
+						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>'
+						+ " " + error.details + "</small></p>");
+				}
 		    if (result)
 			{
 				Session.set("status",
-				'<p class="pull-left statustext"><i class="icon-ok-green"></i> <small>'
-					+ "Seite hinzugefügt!</small></p>");
+				'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>'
+					+ " " + "Seite hinzugefügt!</small></p>");
 					
 				Meteor.setTimeout(function() {
 		    		Session.set("showAddSiteDialog", false);	
@@ -859,6 +884,7 @@ Template.addSiteDialog
 		    	},3500);			
 			}
 		});
+		return false;
 	    }
 	});
 //Wenn der Seitendialog gerendered wurde, UI Widgets aktivieen
@@ -868,6 +894,8 @@ Template.sitesDialog.rendered = function() {
 	$('.icon-trash').tooltip({title:"Seite aus der Datenbank löschen",placement:"top"});
 	$('.icon-facebook').tooltip({title:"Facebook-Gruppe",placement:"left"});
 	$('.icon-rss').tooltip({title:"RSS-Feed",placement:"left"});
+	
+	$('.icon-search').tooltip({title:"Seite erneut durchsuchen",placement:"left"});
 };
 //Events des Seiten anzeigen Dialogs
 Template.sitesDialog.events({
@@ -876,6 +904,10 @@ Template.sitesDialog.events({
 	
 	Session.set("showSitesDialog", false);
     },
+	'click .icon-search' : function() {
+		event.srcElement.className = "icon-time";
+		//TODO: implementieren
+	},
     // Hilfsfunktion, um die Eingaben in X-Editable in der Meteor DB einzutragen
 	'submit .form-inline' : function(event, template) {
 	event.preventDefault();
