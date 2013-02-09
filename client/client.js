@@ -6,6 +6,7 @@ Meteor.autosubscribe(function() {
     var filter_status = Session.get('filter_status');
     var filter_term = Session.get('filter_term');
     var filter_limit = Session.get('filter_limit');
+    var loading_results = Session.get("loading_results");
 	
     if (filter_date && filter_status && filter_limit) { 
 		Meteor.subscribe('sites', function onComplete() {
@@ -66,6 +67,9 @@ Meteor.startup(function() {
 	if (!Session.get("selected_links")) {
 	    var selected_links = [];
 	    Session.set("selected_links", selected_links);
+	}
+	if (!Session.get("loading_results")) {
+	    Session.set("loading_results",true);
 	}
 	
 	activateInput($('#searchfield'));
@@ -160,25 +164,27 @@ Template.page.linksFound = function() {
 		//	});
 		
 		//TODO in Produktion wieder anschalten, title scheint manchmal nicht zur Verfügung zu stehen, abfangen
-		if (Session.get("filter_term_external") && Session.get("filter_term_external") != "")
+		Session.set("loading_results",true);
+		
+		//if we don't receive results within x seconds, let's set it to no results found
+		//TODO geht noch nicht
+		Meteor.setTimeout(function(){Session.set("loading_results",false)},8000);
+		
+		var tracks;
+		Session.set("filter_term_external",Session.get("filter_term").replace(/\.\*/gi,""))
+		
+		if (Session.get("filter_term_external") !== "")
 		{
-			Session.set("loading_results",true);
-		
-			//if we don't receive results within x seconds, let's set it to no results found
-			Meteor.setTimeout(function(){Session.set("loading_results",false)},8000);
-		
-			var tracks;
-			Session.set("filter_term_external",Session.get("filter_term").replace(/\.\*/gi,""))
-		
-		
-			SC.get('/tracks', {limit: 10, q: Session.get("filter_term_external")}, function(tracks) {
-				if (tracks) {
+			//TODO scheint mehrfach aufgerufen zu werden...das müssen wir verhindern.
+			//SC.get('/tracks', {limit: 10, q: Session.get("filter_term_external")}, function(tracks) {
+				if (tracks && tracks.length) {
 					for (var i = 0; i <= tracks.length; i++) {
+						console.log(tracks[i]);
 						SearchResults.insert({source: "SoundCloud", name: tracks[i].title, url : tracks[i].permalink_url, duration: moment(tracks[i].duration).format('mm:ss') + " min."});
 					};
 				}
 				Session.set("loading_results",false);
-			});
+			//});
 		}
 	}
 	return false;
@@ -198,7 +204,6 @@ Template.searchresultlist.searchresults = function() {
 	return SearchResults.find({});
 };
 
-
 Template.link.isAdmin = function() {
     var admin = Meteor.user().profile.admin;
     
@@ -206,6 +211,12 @@ Template.link.isAdmin = function() {
     return false;
 };
 Template.linklist.isAdmin = function() {
+    var admin = Meteor.user().profile.admin;
+    
+    if (admin) return admin;
+    return false;
+};
+Template.sitesDialog.isAdmin = function() {
     var admin = Meteor.user().profile.admin;
     
     if (admin) return admin;
@@ -253,14 +264,17 @@ Template.link.getSourceName = function() {
 		}
 		if (this.creator && this.creator !== null)
 		{
+			var aCreator = this.creator;
 			//TODO a.b geht noch nicht, daher iterieren wir noch über alle user, bis wir den richtigen haben...
 			//var creator = Meteor.users.findOne({profile.id : this.creator});
-			Meteor.users.find().forEach(function(aUser) {
-				if (aUser.profile.id === this.creator) return aUser.profile.name;
+			Meteor.users.find().forEach(function(aUser) {		
+				if (aUser.profile['id'] == aCreator) {
+					return aUser.profile['first_name'];
+				}
 			});
 		}
     }
-	return this.source;
+	//return this.source;
 };
 // TODO Player-Widget zurückgeben, wenn es einen embedabble player gibt
 Template.link.getPlayerWidget = function() {
@@ -763,9 +777,10 @@ Template.link.events({
     'submit .form-inline' : function(event, template) {
 	event.preventDefault();
 	var newName = template.find('.editable-input input').value;
+	//TODO workaround über URL, später sollte wieder _id genutzt werden, wenn ddp-pre1 geht
 	if (Meteor.userId())
 		Links.update({
-			_id : this._id
+			url : this.url
 		}, {
 			$set : {
 			name : newName
@@ -780,8 +795,9 @@ Template.link.events({
 	//Link liken
     'click .like' : function(context) {
 	// This query succeeds only if the voters array doesn't contain the user
+	//TODO workaround bis ddp-pre1 geht, dann wieder über _id
 	query = {
-	    _id : this._id,
+	    url : this.url,
 	    likers : {
 		'$ne' : Meteor.userId()
 	    }
@@ -797,6 +813,10 @@ Template.link.events({
 	    }
 	};
 	Links.update(query, update);
+    },
+    //TODO ddp-pre1 workaround
+    'click .icon-trash' : function(event, template) {
+    	Links.remove({url:this.url});
     }
 });
 //Events im Link hinzufügen Dialog
@@ -926,17 +946,18 @@ Template.sitesDialog.events({
 	'submit .form-inline' : function(event, template) {
 	event.preventDefault();
 	var newName = template.find('.editable-input input').value;
-	console.log(this._id);
+	//TODO workaround bis ddp-pre1 fertig ist
 	Sites.update({
-	    _id : this._id
+	    url : this.url
 	}, {
 	    $set : {
 		name : newName
 	    }
 	});
     },
+    //TODO ddp-pre1 workaround
     'click .icon-trash' : function(event, template) {
-    	Sites.remove({_id:this._id});
+    	Sites.remove({url:this.url});
     }
 });
 //Events des Einstellungs-Dialogs

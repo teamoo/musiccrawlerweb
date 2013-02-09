@@ -381,7 +381,11 @@
 			<th>zuletzt durchsucht</th>
 			<th>Typ</th>
 			<th>aktiv</th>
-			<th></th>
+			<th>
+				{{#if isAdmin}}
+					<i class="icon-search hand" id="crawl_all"></i>
+				{{/if}}
+			</th>
 		</thead>
 		<tbody>
 			{{#each sites}}

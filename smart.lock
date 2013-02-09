@@ -1,8 +1,8 @@
 {
   "meteor": {
     "git": "https://github.com/meteor/meteor.git",
-    "branch": "devel",
-    "commit": "06f1308b4be2fbceb3b776a44be186cb6fd5141f"
+    "branch": "master",
+    "commit": "4d98d8cb4e5a95e9e98953f44c872c9332a042a3"
   },
   "dependencies": {
     "basePackages": {
@@ -12,8 +12,8 @@
       "handlebar-helpers": {
         "version": "0.0.5"
       },
-      "bafa": {
-        "version": "0.3.0"
+      "x-editable-bootstrap": {
+        "version": "0.1.0"
       }
     },
     "packages": {
@@ -27,10 +27,15 @@
         "tag": "v0.0.5",
         "commit": "bedecf71d04097773b359ccbf6e5bd97fcb53f8e"
       },
-      "bafa": {
-        "git": "https://github.com/jackp/BAFA.git",
-        "tag": "v0.3.0",
-        "commit": "cf8c9b0be42b21cb0203c6d08926529c4e00b0c6"
+      "x-editable-bootstrap": {
+        "git": "https://github.com/nate-strauser/meteor-x-editable-bootstrap.git",
+        "tag": "v0.1.0",
+        "commit": "d699fdcbd467b4d72d6aeb8a0d40f7a38950945b"
+      },
+      "bootstrap-updated": {
+        "git": "https://github.com/Charuru/bootstrap-updated.git",
+        "tag": "v1.0.1",
+        "commit": "bdd5fcc8e134e62bcbb9d11aad8270534ffb6493"
       }
     }
   }

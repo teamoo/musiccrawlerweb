@@ -1,6 +1,6 @@
 {
   "meteor": {
-    "branch": "ddp-pre1"
+    "branch": "master"
   },
   "packages": {
     "moment": "1.7.0",

@@ -1002,8 +1002,8 @@ Meteor
 			});
 		Sites.insert({
 		    name : "4 DJs online",
-		    url : "http://www.4djsonline.com",
-		    feedurl : "http://www.4djsonline.com/feeds/posts/default",
+		    url : "http://4djsonline.com",
+		    feedurl : "http://4djsonline.com/feeds/posts/default",
 		    domain : "4djsonline.com",
 		    active : true,next_crawl : null,			date_created : new Date(),
 		    last_crawled : null,
@@ -1013,8 +1013,8 @@ Meteor
 		Sites
 			.insert({
 			    name : "Elektrobriefkasten",
-			    url : "https://www.facebook.com/groups/137328326321645",
-			    feedurl : "https://www.facebook.com/groups/137328326321645",
+			    url : "https://facebook.com/groups/137328326321645",
+			    feedurl : "https://facebook.com/groups/137328326321645",
 			    domain : "facebook.com",
 			    active : true,next_crawl : null,			date_created : new Date(),
 			    last_crawled : null,
