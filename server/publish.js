@@ -4,7 +4,7 @@
 Meteor.publish('links', function(filter_date, filter_status, filter_term, filter_limit) {    
     var thelimit = itemBadgeSize * filter_limit;
 	
-    //TODO date wieder einschalten, sobald wir mit Date Objekten arbeiten können
+    //DDPPRE: date wieder einschalten, sobald wir mit Date Objekten arbeiten können
     if (this.userId)
 	return Links.find({
 	    //date_discovered : {

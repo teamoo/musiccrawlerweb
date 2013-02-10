@@ -101,12 +101,12 @@
 					<li class="dropdown">
 	                      <a id="drop1" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
 	                      	<ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
-	                      			<li class="linkfilter"><a tabindex="-1" id="1">Letzte 24 Stunden <span class="badge" id="1">0</span></a></li>
-	                      			<li class="linkfilter"><a tabindex="-1" id="14">Letzte 14 Tage <span class="badge" id="14">0</span></a></li>
-	                      			<li class="linkfilter"><a tabindex="-1" id="30">Letzte 30 Tage <span class="badge" id="30">0</span></a></li>
-	                      			<li class="linkfilter"><a tabindex="-1" id="90">Letzte 90 Tage <span class="badge" id="90">0</span></a></li>
+	                      			<li class="linkfilter"><a tabindex="-1" id="1">Letzte 24 Stunden <span class="badge" id="1">{{session "links_count_1"}}</span></a></li>
+	                      			<li class="linkfilter"><a tabindex="-1" id="14">Letzte 14 Tage <span class="badge" id="14">{{session "links_count_14"}}</span></a></li>
+	                      			<li class="linkfilter"><a tabindex="-1" id="30">Letzte 30 Tage <span class="badge" id="30">{{session "links_count_30"}}</span></a></li>
+	                      			<li class="linkfilter"><a tabindex="-1" id="90">Letzte 90 Tage <span class="badge" id="90">{{session "links_count_90"}}</span></a></li>
 	                      			<li class="divider"></li>
-	                      			<li class="linkfilter"><a tabindex="-1" id="365">Letztes Jahr <span class="badge" id="365">0</span></a></li>
+	                      			<li class="linkfilter"><a tabindex="-1" id="365">Letztes Jahr <span class="badge" id="365">{{session "links_count_365"}}</span></a></li>
 	                      	</ul>
 	                </li>
 					<li class="dropdown">

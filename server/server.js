@@ -12,7 +12,6 @@ Accounts
 			}
 		    });
 
-	    // TODO: Fehlerbehandlung
 	    if (result.error)
 		throw result.error;
 
@@ -31,7 +30,6 @@ Accounts
 				}
 			    });
 
-	    // TODO: Fehlerbehandlung
 	    if (result.error)
 		throw result.error;
 

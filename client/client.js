@@ -21,7 +21,15 @@ Meteor.autosubscribe(function() {
 				// subscription is completed.
 				Session.set('links_completed', true);
 			});
-    }
+    };
+    
+    var timespans = [1,14,30,90,365];
+    
+    timespans.forEach(function(timespan) {
+    	Meteor.call("getLinksCount", timespan, function(error, count) {
+    	    Session.set("links_count_"+timespan, count);
+    	});
+    });
 });
 
 //
@@ -42,7 +50,7 @@ Meteor.startup(function() {
 	Session.set("links_completed", false);
 	Session.set("status", undefined);
 	Session.set("showAccountSettingsDialog",false);
-
+	
 	if (!Session.get("filter_date")) {
 	    var tmp_date = new Date();
 	    tmp_date.setDate(tmp_date.getDate() - 14);
@@ -72,6 +80,12 @@ Meteor.startup(function() {
 	    Session.set("loading_results",true);
 	}
 	
+	var timespans = [1,14,30,90,365];
+	
+	timespans.forEach(function(timespan) {
+		Session.set("links_count_"+timespan, 0);
+	});
+	
 	activateInput($('#searchfield'));
 	
     Meteor.setTimeout(function() {
@@ -98,7 +112,6 @@ Meteor.startup(function() {
 			    	console.log("Fehler beim prüfen des Online-Status");
 			    Session.set("JDOnlineStatus", isOnline);
 			});
-		    // TODO Link Counts holen...
 		}
     }, 3000);
 });
@@ -110,6 +123,7 @@ Meteor.startup(function() {
 // YYYY")
 // usage: {{dateFormat creation_date format="MMMM YYYY"}}
 Handlebars.registerHelper('dateFormat', function(context, block) {
+	//TODO da ist noch was im argen...
     if (window.moment) {
 	moment().lang('de');
 	var f = block.hash.format || "MMM Do, YYYY";
@@ -393,10 +407,6 @@ Template.user_loggedout.events({
 	    	
 		// wenn die User-IP geupdate werden soll...
 		if (Meteor.user() && Meteor.user().profile.autoupdateip === true) {
-		    // TODO JDOnlineStatus beim starten der app oder beim
-		    // einloggen prüfen?? Eigentlich Start...aber Login geht
-		    // auch...
-
 		    // dann rufen wir die neue IP ab und speichern sie im Profil
 		    Meteor.http.call("GET",
 			    "http://api.hostip.info/get_json.php", function(
@@ -465,115 +475,119 @@ Template.navigation.events({
 	return false;
     },
 	//Links downloaden Aktion ausführen
-    //TODO: bei allen Buttons darf nix passieren, wenn die disabled sind...irgendwie passiert hier aber doch was...komisch
+
     'click #downloadbutton' : function(event, template) {
-		event.preventDefault();
-		Session.set("progressActive",true);
-		Session.set("progress",5);
-		
 		var selected = Session.get("selected_links");
-	
-		var selectedurls = _.pluck(Links.find({
-		    _id : {
-			$in : selected
-		    }
-		}, {
-		    fields : {
-			url : 1
-		    }
-		}).fetch(), 'url');
-	
-		var urls_per_request = 20;
-		var times = parseInt(Math.ceil(selectedurls.length / urls_per_request));
-		var progressstep = 95 / (times*2);
 		
-		var errorcount = 0;
-		
-		for ( var i = 1; i <= times; i++) {
-			Session.set("progressState","progress-info");
-			var oldprogress = Session.get("progress");
-			Session.set("progress", parseInt(oldprogress + progressstep));
-		
-		    var sel_links = selectedurls.splice(0, urls_per_request);
-	
-		    var links_chained = _.reduce(sel_links, function(memo, aUrl) {
-			return String(memo + " " + aUrl);
-		    });
-
-			var grabberoption;
+		if (selected.length > 0 && Session.get("JDOnlineStatus") === true) {
+			Session.set("progressActive",true);
+			Session.set("progress",5);
 			
-			if (links_chained.match(/youtube|vimeo/i))
-				grabberoption = "grabber1";
-			else grabberoption = "grabber0";
-
-		    var requeststring = "http://" + Meteor.user().profile.ip + ":"
-		    	    + Meteor.user().profile.port
-		    	    + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
-		    
-		    requeststring = requeststring.replace("?","%3F").replace("=","%3D");
-		    
-		    Meteor.call("sendLinks", requeststring, function(error, result) {
-		        // TODO error handling, wenn es mehrfach fehlschlägt, dann abbrechen
-		        if (error)
-		        {
-					//testen
-					errorcount++;
-					if (errorcount > 2)
-					{
-						Session.set("progressState","progress-danger");
-						Session.set("progress",100);
-						Session.set("progressActive",false);
-						Meteor.setTimeout(function() {
-		    			Session.set("progress",undefined);
-		    			Session.set("progressState",undefined);
-						},3500);
-						console.log(error);
-						return;
-					}
-					
-		        	console.log(error);
-		        	Session.set("progressState","progress-warning");
-		        }
-		    	if (result)
-		    	{	
-		    		console.log(result);	    	
-		    	}
-		    	
-		    	var oldprogress = Session.get("progress");
-		    	Session.set("progress", parseInt(oldprogress + progressstep));
-		    	console.log(Session.get("progress"));
-		    	if (Session.get("progress") >= 99)
-		    	{
-		    		if (Session.get("progressState") === "progress-warning")
-		    			Session.set("progressState","progress-danger");
-		    		else Session.set("progresState","progress-success"); 
-		    		Session.set("progress",100);
-		    		Session.set("progressActive",false);
-		    		Meteor.setTimeout(function() {
-		    			Session.set("progress",undefined);
-		    			Session.set("progressState",undefined);
-		    		},3500);
-		    	}
-		    		
-		    });   
+			var selectedurls = _.pluck(Links.find({
+			    _id : {
+				$in : selected
+			    }
+			}, {
+			    fields : {
+				url : 1
+			    }
+			}).fetch(), 'url');
+		
+			var urls_per_request = 20;
+			var times = parseInt(Math.ceil(selectedurls.length / urls_per_request));
+			var progressstep = 95 / (times*2);
+			
+			var errorcount = 0;
+			
+			for ( var i = 1; i <= times; i++) {
+				Session.set("progressState","progress-info");
+				var oldprogress = Session.get("progress");
+				Session.set("progress", parseInt(oldprogress + progressstep));
+			
+			    var sel_links = selectedurls.splice(0, urls_per_request);
+		
+			    var links_chained = _.reduce(sel_links, function(memo, aUrl) {
+				return String(memo + " " + aUrl);
+			    });
+	
+				var grabberoption;
+				
+				if (links_chained.match(/youtube|vimeo/i))
+					grabberoption = "grabber1";
+				else grabberoption = "grabber0";
+	
+			    var requeststring = "http://" + Meteor.user().profile.ip + ":"
+			    	    + Meteor.user().profile.port
+			    	    + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
+			    
+			    requeststring = requeststring.replace("?","%3F").replace("=","%3D");
+			    
+			    Meteor.call("sendLinks", requeststring, function(error, result) {
+			        if (error)
+			        {
+						errorcount++;
+						
+						console.log(errorcount);
+						
+						if (errorcount > 2)
+						{
+							console.log("DOUBLEERROR");
+							Session.set("progressState","progress-danger");
+							Session.set("progress",100);
+							Session.set("progressActive",false);
+							Meteor.setTimeout(function() {
+			    			Session.set("progress",undefined);
+			    			Session.set("progressState",undefined);
+							},3500);
+							console.log(error);
+							return;
+						}
+						
+			        	console.log(error);
+			        	Session.set("progressState","progress-warning");
+			        }
+			    	if (result)
+			    	{	
+			    		console.log(result);	    	
+			    	}
+			    	
+			    	var oldprogress = Session.get("progress");
+			    	Session.set("progress", parseInt(oldprogress + progressstep));
+			    	if (Session.get("progress") >= 99)
+			    	{
+			    		if (Session.get("progressState") === "progress-warning")
+			    			Session.set("progressState","progress-danger");
+			    		else Session.set("progresState","progress-success"); 
+			    		Session.set("progress",100);
+			    		Session.set("progressActive",false);
+			    		Meteor.setTimeout(function() {
+			    			Session.set("progress",undefined);
+			    			Session.set("progressState",undefined);
+			    		},3500);
+			    	}
+			    });   
+			}
 		}
     },
 	//Link-URLs kopieren Aktion ausführen
     'click #copybutton' : function(event, template) {
-	var selected = Session.get("selected_links");
-
-	var selectedurls = _.pluck(Links.find({
-	    _id : {
-		$in : selected
-	    }
-	}, {
-	    fields : {
-		url : 1
-	    }
-	}).fetch(), 'url');
-	writeConsole(_.reduce(selectedurls, function(memo, aUrl) {
-	    return memo + aUrl + "<br/>";
-	}));
+		var selected = Session.get("selected_links");
+		
+		if (selected.length > 0)
+		{
+			var selectedurls = _.pluck(Links.find({
+			    _id : {
+				$in : selected
+			    }
+			}, {
+			    fields : {
+				url : 1
+			    }
+			}).fetch(), 'url');
+			writeConsole(_.reduce(selectedurls, function(memo, aUrl) {
+			    return memo + aUrl + "<br/>";
+			}));
+		}
     },
     'click #addlinkbutton' : function(event, template) {
 	event.preventDefault();
@@ -691,6 +705,7 @@ Template.link.rendered = function() {
     Links.find().forEach(function(link) {
     	htmlstr ="<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4'></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
         var commentsstr = "";
+        
 		if (link.comments && link.comments !== null && link.comments.length)
 		{
 			//TODO comments auslesen
@@ -699,7 +714,6 @@ Template.link.rendered = function() {
 				//commentsstr = commentsstr + "<p><small>" + aComment.creator + ":" + aComment.message + "</small></p>"
 			};
 		}
-		//TODO else geht noch nicht
 		else commentsstr = "<small>noch keine Kommentare vorhanden</small>";
 		
         $("#"+link._id+'_comments').popover({animation:true,placement:"bottom",trigger:"click",title:"Kommentare",html:true,content:commentsstr+htmlstr,delay: { show: 300, hide: 100 }});
@@ -717,7 +731,7 @@ Template.accountSettingsDialog.rendered = function() {
 Template.user_loggedin.rendered = function() {
 	if (Meteor.userId() && Meteor.user() && Meteor.user().profile)
 	{
-		htmlstr = "<img class='img-polaroid' src=" + Meteor.user().profile.pictureurl + "></img><p class='pull-left'><small>" + Meteor.user().emails[0] + "</small><br/><small>" + Meteor.user().profile.ip + " : " + Meteor.user().profile.port + "</small></p>"
+		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><p class='pull-left' style='font-size:12px'><small>   " + Meteor.user().username + "<br/>   " + Meteor.user().emails[0] + "<br/>   " + Meteor.user().profile.ip + " : " + Meteor.user().profile.port + "</small></p>"
 		//hiden, wen wir was anderes anklicken
 		//TODO positioning
 		$('#accountbtn').popover({animation:true,placement:"bottom-left",trigger:"click",title:Meteor.username,html:true,content:htmlstr,delay: { show: 300, hide: 100 }});
@@ -779,7 +793,7 @@ Template.link.events({
     'submit .form-inline' : function(event, template) {
 	event.preventDefault();
 	var newName = template.find('.editable-input input').value;
-	//TODO workaround über URL, später sollte wieder _id genutzt werden, wenn ddp-pre1 geht
+	//DDPPRE: workaround über URL, später sollte wieder _id genutzt werden, wenn ddp-pre1 geht
 	if (Meteor.userId())
 		Links.update({
 			url : this.url
@@ -797,7 +811,7 @@ Template.link.events({
 	//Link liken
     'click .like' : function(context) {
 	// This query succeeds only if the voters array doesn't contain the user
-	//TODO workaround bis ddp-pre1 geht, dann wieder über _id
+	//DDPPRE: workaround bis ddp-pre1 geht, dann wieder über _id
 	query = {
 	    url : this.url,
 	    likers : {
@@ -948,7 +962,7 @@ Template.sitesDialog.events({
 	'submit .form-inline' : function(event, template) {
 	event.preventDefault();
 	var newName = template.find('.editable-input input').value;
-	//TODO workaround bis ddp-pre1 fertig ist
+	//DDPPRE: workaround bis ddp-pre1 fertig ist
 	Sites.update({
 	    url : this.url
 	}, {
@@ -957,7 +971,7 @@ Template.sitesDialog.events({
 	    }
 	});
     },
-    //TODO ddp-pre1 workaround
+    //DDPPRE: ddp-pre1 workaround
     'click .icon-trash' : function(event, template) {
     	Sites.remove({url:this.url});
     }
