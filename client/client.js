@@ -465,7 +465,9 @@ Template.navigation.events({
 	return false;
     },
 	//Links downloaden Aktion ausführen
+    //TODO: bei allen Buttons darf nix passieren, wenn die disabled sind...irgendwie passiert hier aber doch was...komisch
     'click #downloadbutton' : function(event, template) {
+		event.preventDefault();
 		Session.set("progressActive",true);
 		Session.set("progress",5);
 		
