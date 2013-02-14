@@ -42,14 +42,14 @@ Accounts
 
 	    // email und username werden direkt im Benutzer gesetzt, daher
 	    // loeschen wir diese Attribute auch aus dem Profil-Objekt
-	    user.emails = new Array(profile.email);
+	    user.emails = new Array({ address: profile.email, verified: false });
 	    user.username = profile.username;
 	    delete profile.username;
 	    delete profile.email;
-
+		
 	    // erstelltes Profil dem Benutzerobjekt anhängen
 	    user.profile = profile;
-
+		user.admin = false;
 	    // fertigen Benutzer zurueckgeben, damit er in der Datenbank
 	    // gespeichert werden kann
 	    return user;

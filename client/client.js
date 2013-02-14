@@ -15,14 +15,15 @@ Meteor.autosubscribe(function() {
 			Session.set('sites_completed', true);
 		});
 
-		Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit,
-			function onComplete() {
+		Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit, function onComplete() {
 				// set a session key to true to indicate that the
 				// subscription is completed.
 				Session.set('links_completed', true);
-			});
+		});
     };
-    
+		
+	Meteor.subscribe('userData');
+		
     var timespans = [1,14,30,90,365];
     
     timespans.forEach(function(timespan) {
@@ -98,7 +99,7 @@ Meteor.startup(function() {
 				function(error, result) {
 				    if (error)
 				    	console.log("Fehler beim ermitteln der Benutzer-IP");
-				    if (result)
+				    if (result && result.data && result.data.ip)
 				    	Meteor.user().profile.ip = result.data.ip;
 				});
 		    }
@@ -219,21 +220,21 @@ Template.searchresultlist.searchresults = function() {
 };
 
 Template.link.isAdmin = function() {
-    var admin = Meteor.user().profile.admin;
+    var admin = Meteor.user().admin;
     
-    if (admin) return admin;
+    if (admin && admin === true) return admin;
     return false;
 };
 Template.linklist.isAdmin = function() {
-    var admin = Meteor.user().profile.admin;
+    var admin = Meteor.user().admin;
     
-    if (admin) return admin;
+    if (admin && admin === true) return admin;
     return false;
 };
 Template.sitesDialog.isAdmin = function() {
-    var admin = Meteor.user().profile.admin;
+    var admin = Meteor.user().admin;
     
-    if (admin) return admin;
+    if (admin && admin === true) return admin;
     return false;
 };
 
@@ -955,8 +956,43 @@ Template.sitesDialog.events({
 	Session.set("showSitesDialog", false);
     },
 	'click .icon-search' : function() {
-		event.srcElement.className = "icon-time";
-		//TODO: implementieren
+		if (Meteor.user().admin && Meteor.user().admin === true)
+		{
+			if (!this.next_crawl)
+			{
+				event.srcElement.className = "icon-refresh";
+				Meteor.call("scheduleCrawl",this.feedurl, function(error, result) {
+					if (error)
+					{
+						console.log(error);
+						event.srcElement.className = "icon-remove";
+					}
+					console.log(result);
+					if (result & result.status == "ok")
+					{
+						Site.update({_id:this._id},{next_crawl : result.jobid});
+						event.srcElement.className = "icon-time";
+					}
+				});
+			} else {
+				event.srcElement.className = "icon-refresh";
+
+				Meteor.call("cancelCrawl",this.jobid, function(error, result) {
+				
+					if (error)
+					{
+						console.log(error);
+						event.srcElement.className = "icon-time";
+					}
+					console.log(result);
+					if (result & result.status == "ok")
+					{
+						Site.update({_id:this._id},{next_crawl : null});
+						event.srcElement.className = "icon-remove";
+					}
+				});
+			}
+		}
 	},
     // Hilfsfunktion, um die Eingaben in X-Editable in der Meteor DB einzutragen
 	'submit .form-inline' : function(event, template) {
