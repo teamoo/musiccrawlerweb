@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/meteor/meteor.git",
     "branch": "master",
-    "commit": "4d98d8cb4e5a95e9e98953f44c872c9332a042a3"
+    "commit": "3753c989fd6c26406409b4b27f86ac9331e38346"
   },
   "dependencies": {
     "basePackages": {
@@ -13,7 +13,7 @@
         "version": "0.0.5"
       },
       "x-editable-bootstrap": {
-        "version": "0.1.0"
+        "version": "0.1.2"
       }
     },
     "packages": {
@@ -29,13 +29,8 @@
       },
       "x-editable-bootstrap": {
         "git": "https://github.com/nate-strauser/meteor-x-editable-bootstrap.git",
-        "tag": "v0.1.0",
-        "commit": "d699fdcbd467b4d72d6aeb8a0d40f7a38950945b"
-      },
-      "bootstrap-updated": {
-        "git": "https://github.com/Charuru/bootstrap-updated.git",
-        "tag": "v1.0.1",
-        "commit": "bdd5fcc8e134e62bcbb9d11aad8270534ffb6493"
+        "tag": "v0.1.2",
+        "commit": "d0b3ccbdf3fee16c4ea46e4817fd2d424f353124"
       }
     }
   }

@@ -1,7 +1,7 @@
 ﻿//lokale Collection für Suchergebnisse, damit wir auch diese mit reactivity anzeigen können.
 SearchResults = new Meteor.Collection(null);
 // Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
-Meteor.autosubscribe(function() {
+Meteor.autorun(function() {
     var filter_date = Session.get('filter_date');
     var filter_status = Session.get('filter_status');
     var filter_term = Session.get('filter_term');
@@ -42,9 +42,9 @@ Meteor.autosubscribe(function() {
 // noch nicht immer
 // zur Verfügung. Workaround: Timer auf 3 Sekunden, dann ist das Objekt im
 // Regelfall verfügbar.
-Meteor.startup(function() {	
+Meteor.startup(function() {
 	SC.initialize({
-	  client_id: 'cd2bef92bf104b828e604d3a7d6d8bd1'
+	  client_id: Meteor.settings.client_id
 	});  
 	//Session Variablen initialisieren
 	Session.set("sites_completed", false);
@@ -453,11 +453,11 @@ Template.navigation.rendered = function() {
 	var activenumber = parseInt(Session.get("selected_navitem"));
 	$('li.linkfilter #' + activenumber).parent().addClass("active");
 	
-	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337, Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>"
+	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>"
 	
 	strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
 	//TODO positioning
-	$('#brand').popover({animation:true,placement:"bottom-right",trigger:"click",title:"Impressum",html:true,content:straddress+strdonatebutton,delay: { show: 300, hide: 100 }});
+	$('#brand').popover({animation:true,placement:"bottom",trigger:"click",title:"Impressum",html:true,content:straddress+strdonatebutton,delay: { show: 300, hide: 100 }});
 };
 
 //Eventhandler für die Navigationsleiste
@@ -558,7 +558,7 @@ Template.navigation.events({
 			    	{
 			    		if (Session.get("progressState") === "progress-warning")
 			    			Session.set("progressState","progress-danger");
-			    		else Session.set("progresState","progress-success"); 
+			    		else Session.set("progressState","progress-success"); 
 			    		Session.set("progress",100);
 			    		Session.set("progressActive",false);
 			    		Meteor.setTimeout(function() {
@@ -732,10 +732,10 @@ Template.accountSettingsDialog.rendered = function() {
 Template.user_loggedin.rendered = function() {
 	if (Meteor.userId() && Meteor.user() && Meteor.user().profile)
 	{
-		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><p class='pull-left' style='font-size:12px'><small>   " + Meteor.user().username + "<br/>   " + Meteor.user().emails[0] + "<br/>   " + Meteor.user().profile.ip + " : " + Meteor.user().profile.port + "</small></p>"
+		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><ul class='unstyled'><li><small>   " + Meteor.user().username + "</li><li>" + Meteor.user().emails[0].address + "</li><li>" + Meteor.user().profile.ip + " : " + Meteor.user().profile.port + "</li></small>"
 		//hiden, wen wir was anderes anklicken
 		//TODO positioning
-		$('#accountbtn').popover({animation:true,placement:"bottom-left",trigger:"click",title:Meteor.username,html:true,content:htmlstr,delay: { show: 300, hide: 100 }});
+		$('#accountbtn').popover({animation:true,placement:"bottom",trigger:"click",title:Meteor.username,html:true,content:htmlstr,delay: { show: 300, hide: 100 }});
 	}
 }
 

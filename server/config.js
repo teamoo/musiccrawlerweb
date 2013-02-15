@@ -12,6 +12,6 @@ Accounts.config({
 // Facebook-Konfiguration anlegen
 //Accounts.loginServiceConfiguration.insert({
 //    service : "facebook",
-//    appId : "402028639888899",
-//    secret : "190a4b1b849932d0da17bc3a6513b2a0"
+//    appId : Meteor.settings.facebook.appId,
+//    secret : Meteor.settings.facebook.secret
 //});
