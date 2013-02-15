@@ -5,6 +5,11 @@ Meteor.publish("userData", function () {
                            {fields: {'admin': 1}});
 });
 
+Meteor.publish("allUserData", function () {
+  return Meteor.users.find({}, {fields: {'id': 1, 'profile.first_name':1}});
+});
+
+
 // Publish filtered list to all clients
 Meteor.publish('links', function(filter_date, filter_status, filter_term, filter_limit) {    
     var thelimit = itemBadgeSize * filter_limit;

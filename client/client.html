@@ -307,6 +307,14 @@
 		{{/if}}
 		IP-Adresse automatisch updaten?
 		</label>
+		<label class="checkbox">
+		{{#if currentUser.profile.showtooltips}}
+			<input id="showtooltips" type="checkbox" checked="checked">
+		{{else}}
+			<input id="showtooltips" type="checkbox">
+		{{/if}}
+		Tooltips anzeigen?
+		</label>
 	</form>
   </div>
   <div class="modal-footer">
@@ -383,7 +391,7 @@
 			<th>aktiv</th>
 			<th>
 				{{#if isAdmin}}
-					<i class="icon-search hand" id="crawl_all"></i>
+					<i class="icon-search hand" id="crawl_all_sites"></i>
 				{{/if}}
 			</th>
 		</thead>
@@ -392,7 +400,7 @@
 				<tr>
 					<td>
 						{{#if isOwner}}
-							<i class="icon-trash hand"></i>
+							<i class="icon-trash hand" id="crawl_single_site"></i>
 						{{/if}}
 					</td>
 					<td>

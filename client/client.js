@@ -23,6 +23,7 @@ Meteor.autorun(function() {
     };
 		
 	Meteor.subscribe('userData');
+	Meteor.subscribe('allUserData');
 		
     var timespans = [1,14,30,90,365];
     
@@ -172,13 +173,28 @@ Template.page.linksFound = function() {
 	if (Links.findOne()) return true;
 	if (Session.get("links_completed") === true)
 	{		
-		//TODO die scheinen quatsch zu schicken
-		//if (Session.get("filter_term_external") && Session.get("filter_term_external") != "")
-		//	Meteor.call('searchMuzon', encodeURIComponent(Session.get("filter_term_external")), function(error, result) {
-		//		if (result) console.log(result);
-		//	});
+		//TODO geht erst, wenn Meteor non UTF-8 encoding bei http responses versteht
+		if (Session.get("filter_term_external") && Session.get("filter_term_external") != "")
+			/*Meteor.call('searchMuzon', encodeURIComponent(Session.get("filter_term_external")), function(error, result) {
+				if (result && result.content) {
+					
+					var iterator = document.evaluate("//a[contains(@id,'aplayer')]::text()", result.content, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+					 
+					try {
+					  var thisNode = iterator.iterateNext();
+					   
+					  while (thisNode) {
+					    console.log( thisNode.textContent );
+					    thisNode = iterator.iterateNext();
+					  }
+					}
+					catch (e) {
+					  dump( 'Error: Document tree modified during iteration ' + e );
+					}
+					
+				}
+			});*/
 		
-		//TODO in Produktion wieder anschalten, title scheint manchmal nicht zur Verfügung zu stehen, abfangen
 		Session.set("loading_results",true);
 		
 		//if we don't receive results within x seconds, let's set it to no results found
@@ -279,17 +295,10 @@ Template.link.getSourceName = function() {
 		}
 		if (this.creator && this.creator !== null)
 		{
-			var aCreator = this.creator;
-			//TODO a.b geht noch nicht, daher iterieren wir noch über alle user, bis wir den richtigen haben...
-			//var creator = Meteor.users.findOne({profile.id : this.creator});
-			Meteor.users.find().forEach(function(aUser) {		
-				if (aUser.profile['id'] == aCreator) {
-					return aUser.profile['first_name'];
-				}
-			});
+			return Meteor.users.findOne({id : this.creator}).profile['first_name'];
 		}
     }
-	//return this.source;
+	return undefined;
 };
 // TODO Player-Widget zurückgeben, wenn es einen embedabble player gibt
 Template.link.getPlayerWidget = function() {
@@ -456,8 +465,16 @@ Template.navigation.rendered = function() {
 	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>"
 	
 	strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
-	//TODO positioning
 	$('#brand').popover({animation:true,placement:"bottom",trigger:"click",title:"Impressum",html:true,content:straddress+strdonatebutton,delay: { show: 300, hide: 100 }});
+	
+	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true)
+	{
+		if ($('#downloadbutton').attr("disabled") == "disabled")
+			$('#downloadbutton').tooltip({title:"Dein JDownloader ist nicht erreichbar oder du hast keinen Link ausgewählt. Bitte wähle einen Link aus und überprüfe ggf. dein Profil.",placement:"bottom"});
+		else {
+			$('#downloadbutton').tooltip({title:"Alle ausgewählten Links an JDownloader zum Download übergeben",placement:"bottom"});
+		}
+	}
 };
 
 //Eventhandler für die Navigationsleiste
@@ -527,8 +544,6 @@ Template.navigation.events({
 			        if (error)
 			        {
 						errorcount++;
-						
-						console.log(errorcount);
 						
 						if (errorcount > 2)
 						{
@@ -689,19 +704,25 @@ Template.linklist.events = ({
 });
 
 Template.linklist.rendered = function() {
-	$('#filter_links').tooltip({title: "nur Links mit Status (online) oder alle Links anzeigen",placement:"left"});
-	$('#select_all').tooltip({title: "alle Links zum Download auswählen",placement:"right"});
+	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true)
+	{
+		$('#filter_links').tooltip({title: "nur Links mit Status (online) oder alle Links anzeigen",placement:"left"});
+		$('#select_all').tooltip({title: "alle Links zum Download auswählen",placement:"right"});
+	}
 };
 //UI-Effekte aktivieren, wenn ein Link gerendered wurde
 Template.link.rendered = function() {
     $('.linkname').editable();
-	
-	$('.refreshlink').tooltip({title:"Linkinformationen (Größe, Titel, Online-Status) aktualisieren",placement:"right"});
-	$('.like').tooltip({title:"Gefällt mir",placement:"left"});
-	$('.icon-comment').tooltip({title:"Kommentar(e) anzeigen/hinzufügen",placement:"left"});
-	$('.icon-ok').tooltip({title:"verfügbar",placement:"left"});
-	$('.icon-question-sign').tooltip({title:"unbekannt",placement:"left"});
-	$('.icon-remove').tooltip({title:"nicht verfügbar",placement:"left"});
+    
+	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true)
+	{
+		$('.refreshlink').tooltip({title:"Linkinformationen (Größe, Titel, Online-Status) aktualisieren",placement:"right"});
+		$('.like').tooltip({title:"Gefällt mir",placement:"left"});
+		$('.icon-comment').tooltip({title:"Kommentar(e) anzeigen/hinzufügen",placement:"left"});
+		$('.icon-ok').tooltip({title:"verfügbar",placement:"left"});
+		$('.icon-question-sign').tooltip({title:"unbekannt",placement:"left"});
+		$('.icon-remove').tooltip({title:"nicht verfügbar",placement:"left"});
+	}
 	
     Links.find().forEach(function(link) {
     	htmlstr ="<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4'></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
@@ -709,10 +730,10 @@ Template.link.rendered = function() {
         
 		if (link.comments && link.comments !== null && link.comments.length)
 		{
-			//TODO comments auslesen
+			//TODO comments auslesen, war da nicht was mit dem iterieren? oder doch nicht?
 			for ( var i = 0; i <= link.comments.length; i++) {
 				var aComment = link.comments[i];
-				//commentsstr = commentsstr + "<p><small>" + aComment.creator + ":" + aComment.message + "</small></p>"
+				commentsstr = commentsstr + "<p><small>" + aComment.creator + ":" + aComment.message + "</small></p>"
 			};
 		}
 		else commentsstr = "<small>noch keine Kommentare vorhanden</small>";
@@ -722,20 +743,23 @@ Template.link.rendered = function() {
 };
 
 Template.accountSettingsDialog.rendered = function() {
-	$('#refreship').tooltip({title:"Wenn du auf 'Aktualisieren' klickst, wird die IP-Adresse des Rechners ermittelt, an dem du gerade bist und gespeichert. Du kannst dann Links auf diesem Rechner empfangen, wenn JDownloader läuft hast und der Port offen ist.",placement:"bottom"});
-	$('#port').tooltip({title:"Bitte gebe den Port an, über den JDownloader Remote aus dem Internet erreichbar ist. (Standard: 10025)", placement:"bottom"});
-	$('#autoupdate').tooltip({title:"Wenn du diese Option aktivierst, wird beim Starten dieser App automatisch deine IP-Adresse aktualisiert. Setz diese Option, wenn du keine feste IP-Adresse hast oder JDownloader immer auf dem Rechner nutzt, auf dem du auch diese App aufrufst.", placement:"left"});
-	$('#jdon').tooltip({title:"Dein JDownloader kann Links empfangen.",placement:"bottom"});
-	$('#jdoff').tooltip({title:"Dein JDownloader kann keine Links empfangen. Bitte überprüfe, ob der angebene Port aus dem Internet erreichbar ist. Wenn du einen Proxy-Server nutzt, musst du die IP-Adresse ggf. manuell eintragen.",placement:"bottom"});
+	//TODO seit Bootstrap 2.3 sind die Tooltips abgeschnitten...
+	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true)
+	{
+		$('#refreship').tooltip({title:"Wenn du auf 'Aktualisieren' klickst, wird die IP-Adresse des Rechners ermittelt, an dem du gerade bist und gespeichert. Du kannst dann Links auf diesem Rechner empfangen, wenn JDownloader läuft hast und der Port offen ist.",placement:"right"});
+		$('#port').tooltip({title:"Bitte gebe den Port an, über den JDownloader Remote aus dem Internet erreichbar ist. (Standard: 10025)", placement:"bottom"});
+		$('#autoupdate').tooltip({title:"Wenn du diese Option aktivierst, wird beim Starten dieser App automatisch deine IP-Adresse aktualisiert. Setz diese Option, wenn du keine feste IP-Adresse hast oder JDownloader immer auf dem Rechner nutzt, auf dem du auch diese App aufrufst.", placement:"right"});
+		$('#jdon').tooltip({title:"Dein JDownloader kann Links empfangen.",placement:"bottom"});
+		$('#jdoff').tooltip({title:"Dein JDownloader kann keine Links empfangen. Bitte überprüfe, ob der angebene Port aus dem Internet erreichbar ist. Wenn du einen Proxy-Server nutzt, musst du die IP-Adresse ggf. manuell eintragen.",placement:"bottom"});
+	}
 };
-//TODO das muss noch formatiert werden
+
 Template.user_loggedin.rendered = function() {
 	if (Meteor.userId() && Meteor.user() && Meteor.user().profile)
 	{
-		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><ul class='unstyled'><li><small>   " + Meteor.user().username + "</li><li>" + Meteor.user().emails[0].address + "</li><li>" + Meteor.user().profile.ip + " : " + Meteor.user().profile.port + "</li></small>"
-		//hiden, wen wir was anderes anklicken
-		//TODO positioning
-		$('#accountbtn').popover({animation:true,placement:"bottom",trigger:"click",title:Meteor.username,html:true,content:htmlstr,delay: { show: 300, hide: 100 }});
+		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small>   " + Meteor.user().username + "</li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li></small>"
+		//TODO hiden, wen wir was anderes anklicken
+		$('#accountbtn').popover({animation:true,placement:"bottom",trigger:"click",title:Meteor.user().profile.name,html:true,content:htmlstr,delay: { show: 300, hide: 100 }});
 	}
 }
 
@@ -831,7 +855,7 @@ Template.link.events({
 	};
 	Links.update(query, update);
     },
-    //TODO ddp-pre1 workaround
+    //DDPPRE1 ddp-pre1 workaround
     'click .icon-trash' : function(event, template) {
     	Links.remove({url:this.url});
     }
@@ -863,10 +887,10 @@ Template.addLinkDialog.events({
     if (error)
 		switch (error.error) {
 			case 409:
-				//TODO error-warning sign,test
 				Session.set("status",
-					'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>'
+					'<p class="pull-left statustext"><i class="icon-warning-sign"></i><small>'
 					+ " " + error.details + "</small></p>");
+					break;
 			default:
 				Session.set("status",
 					'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>'
@@ -914,10 +938,15 @@ Template.addSiteDialog
 		    if (error)
 				switch (error.error) {
 					case 409:
-						//TODO error-warning sign,test
 						Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>'
+						'<p class="pull-left statustext"><i class="icon-warning-sign"></i><small>'
 						+ " " + error.details + "</small></p>");
+						break;
+					case 415:
+						Session.set("status",
+						'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>'
+						+ " " + error.details + "</small></p>");
+						break;
 					default:
 						Session.set("status",
 						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>'
@@ -941,12 +970,13 @@ Template.addSiteDialog
 //Wenn der Seitendialog gerendered wurde, UI Widgets aktivieen
 Template.sitesDialog.rendered = function() {
     $('.sitename').editable();
-	
-	$('.icon-trash').tooltip({title:"Seite aus der Datenbank löschen",placement:"top"});
-	$('.icon-facebook').tooltip({title:"Facebook-Gruppe",placement:"left"});
-	$('.icon-rss').tooltip({title:"RSS-Feed",placement:"left"});
-	
-	$('.icon-search').tooltip({title:"Seite erneut durchsuchen",placement:"left"});
+	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true)
+	{
+		$('.icon-trash').tooltip({title:"Seite aus der Datenbank löschen",placement:"top"});
+		$('.icon-facebook').tooltip({title:"Facebook-Gruppe",placement:"left"});
+		$('.icon-rss').tooltip({title:"RSS-Feed",placement:"left"});
+		$('.icon-search').tooltip({title:"Seite erneut durchsuchen",placement:"left"});
+	}
 };
 //Events des Seiten anzeigen Dialogs
 Template.sitesDialog.events({
@@ -955,12 +985,12 @@ Template.sitesDialog.events({
 	
 	Session.set("showSitesDialog", false);
     },
-	'click .icon-search' : function() {
+	'click #crawl_single_site' : function() {
 		if (Meteor.user().admin && Meteor.user().admin === true)
 		{
-			if (!this.next_crawl)
+			event.srcElement.className = "icon-refresh";
+			if (this.next_crawl && this.next_crawl !== null)
 			{
-				event.srcElement.className = "icon-refresh";
 				Meteor.call("scheduleCrawl",this.feedurl, function(error, result) {
 					if (error)
 					{
@@ -969,16 +999,10 @@ Template.sitesDialog.events({
 					}
 					console.log(result);
 					if (result & result.status == "ok")
-					{
 						Site.update({_id:this._id},{next_crawl : result.jobid});
-						event.srcElement.className = "icon-time";
-					}
 				});
 			} else {
-				event.srcElement.className = "icon-refresh";
-
 				Meteor.call("cancelCrawl",this.jobid, function(error, result) {
-				
 					if (error)
 					{
 						console.log(error);
@@ -986,12 +1010,31 @@ Template.sitesDialog.events({
 					}
 					console.log(result);
 					if (result & result.status == "ok")
-					{
 						Site.update({_id:this._id},{next_crawl : null});
-						event.srcElement.className = "icon-remove";
-					}
 				});
 			}
+		}
+	},
+	'click #crawl_all_sites' : function() {
+		if (Meteor.user().admin && Meteor.user().admin === true)
+		{
+			event.srcElement.className = "icon-refresh";
+			
+			Sites.find().forEach(function(site) {
+				if (site.next_crawl && site.next_crawl !== null)
+				{
+					Meteor.call("scheduleCrawl",site.feedurl, function(error, result) {
+						if (error)
+						{
+							console.log(error);
+							event.srcElement.className = "icon-remove";
+						}
+						console.log(result);
+						if (result & result.status == "ok")
+							Site.update({_id:site._id},{next_crawl : result.jobid});
+					});
+				}
+			});
 		}
 	},
     // Hilfsfunktion, um die Eingaben in X-Editable in der Meteor DB einzutragen
@@ -1059,6 +1102,7 @@ Template.accountSettingsDialog.events({
 	var aip = template.find("#ip").value;
 	var aport = template.find("#port").value;
 	var aupdateip = template.find("#autoupdate").checked;
+	var ashowtooltips = template.find("#showtooltips").checked;
 
 	if (aupdateip === true) {
 	    Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
@@ -1071,7 +1115,8 @@ Template.accountSettingsDialog.events({
 			    $set : {
 				'profile.ip' : result.data.ip,
 				'profile.port' : aport,
-				'profile.autoupdateip' : aupdateip
+				'profile.autoupdateip' : aupdateip,
+				'profile.showtooltips' : ashowtooltips
 			    }
 			});
 			// neue IP nutzen und checken, ob hier ein JD läuft...
@@ -1095,7 +1140,8 @@ Template.accountSettingsDialog.events({
 		$set : {
 		    'profile.port' : aport,
 		    'profile.ip' : aip,
-		    'profile.autoupdateip' : aupdateip
+		    'profile.autoupdateip' : aupdateip,
+		    'profile.showtooltips' : ashowtooltips
 		}
 	    });
 	}

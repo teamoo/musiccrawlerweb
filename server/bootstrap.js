@@ -982,7 +982,7 @@ Meteor
 			.insert({
 			    name : "Community Music DJ",
 			    url : "http://community-music-dj.com",
-			    feedurl : "http://www.community-music-dj.com/feeds/posts/default",
+			    feedurl : "http://community-music-dj.com/feeds/posts/default",
 			    domain : "community-music-dj.com",
 			    active : true,next_crawl : null,			date_created : new Date(),
 			    last_crawled : null,
