@@ -670,9 +670,12 @@ Template.page.rendered = function() {
 	   var fromTop = $(this).scrollTop()+topMenuHeight;
 	   
 	   if (fromTop >= (currentBadge * badgeHeight)) {
-	   	console.log("paginate");
-	   	currentBadge++;
-	   	Session.set("filter_limit",currentBadge);
+	   	if (currentBadge <=20)
+	   	{
+	   		console.log("paginate");
+	   		currentBadge++;
+	   		Session.set("filter_limit",currentBadge);
+	   	}
 	   }
 	});
 };
