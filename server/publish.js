@@ -13,7 +13,7 @@ Meteor.publish("allUserData", function () {
 // Publish filtered list to all clients
 Meteor.publish('links', function(filter_date, filter_status, filter_term, filter_limit) {    
     var thelimit = itemBadgeSize * filter_limit;
-	
+               
     //DDPPRE: date wieder einschalten, sobald wir mit Date Objekten arbeiten können
     if (this.userId)
 	return Links.find({
@@ -36,7 +36,6 @@ Meteor.publish('links', function(filter_date, filter_status, filter_term, filter
 		comments : 1,
 		url : 1,
 		source : 1,
-		date : 1,
 		date_published : 1,
 		date_discovered : 1,
 		status : 1,
@@ -44,7 +43,7 @@ Meteor.publish('links', function(filter_date, filter_status, filter_term, filter
 	    }
 	}, {
 	    sort : {
-		date_discovered : -1
+		date_discovered : 1
 	    }
 	});
 });
