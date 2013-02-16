@@ -23,7 +23,7 @@ Meteor.autorun(function() {
     };
 		
 	Meteor.subscribe('userData');
-	Meteor.subscribe('allUserData');
+	Meteor.subscribe('allUserData', function onComplete() {Session.set('users_completed',true)});
 		
     var timespans = [1,14,30,90,365];
     
@@ -50,6 +50,7 @@ Meteor.startup(function() {
 	//Session Variablen initialisieren
 	Session.set("sites_completed", false);
 	Session.set("links_completed", false);
+	Session.set('users_completed',false);
 	Session.set("status", undefined);
 	Session.set("showAccountSettingsDialog",false);
 	
@@ -94,7 +95,6 @@ Meteor.startup(function() {
 	// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP
 	// updaten
 		if (Meteor.userId() && Meteor.user().profile.autoupdateip) {
-		    // TODO refactoring, wird noch woanders benutzt
 		    if (Meteor.user().profile.autoupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
 				function(error, result) {
@@ -125,7 +125,6 @@ Meteor.startup(function() {
 // YYYY")
 // usage: {{dateFormat creation_date format="MMMM YYYY"}}
 Handlebars.registerHelper('dateFormat', function(context, block) {
-	//TODO da ist noch was im argen...
     if (window.moment) {
 	moment().lang('de');
 	var f = block.hash.format || "MMM Do, YYYY";
@@ -293,9 +292,13 @@ Template.link.getSourceName = function() {
 			if (site)
 				return site.name;
 		}
-		if (this.creator && this.creator !== null)
+		
+		if (Session.get("users_completed") === true)
 		{
-			return Meteor.users.findOne({id : this.creator}).profile['first_name'];
+			if (this.creator && this.creator !== null)
+			{
+				return Meteor.users.findOne({id : this.creator}).profile['first_name'];
+			}
 		}
     }
 	return undefined;
@@ -669,6 +672,7 @@ Template.page.rendered = function() {
 	   var fromTop = $(this).scrollTop()+topMenuHeight;
 	   
 	   if (fromTop >= (currentBadge * badgeHeight)) {
+	   	console.log("paginate");
 	   	currentBadge++;
 	   	Session.set("filter_limit",currentBadge);
 	   }
@@ -705,18 +709,12 @@ Template.linklist.events = ({
 });
 
 Template.linklist.rendered = function() {
+	$('.linkname').editable();
+	
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true)
 	{
 		$('#filter_links').tooltip({title: "nur Links mit Status (online) oder alle Links anzeigen",placement:"left"});
 		$('#select_all').tooltip({title: "alle Links zum Download auswählen",placement:"right"});
-	}
-};
-//UI-Effekte aktivieren, wenn ein Link gerendered wurde
-Template.link.rendered = function() {
-    $('.linkname').editable();
-    
-	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true)
-	{
 		$('.refreshlink').tooltip({title:"Linkinformationen (Größe, Titel, Online-Status) aktualisieren",placement:"right"});
 		$('.like').tooltip({title:"Gefällt mir",placement:"left"});
 		$('.icon-comment').tooltip({title:"Kommentar(e) anzeigen/hinzufügen",placement:"left"});
@@ -724,17 +722,24 @@ Template.link.rendered = function() {
 		$('.icon-question-sign').tooltip({title:"unbekannt",placement:"left"});
 		$('.icon-remove').tooltip({title:"nicht verfügbar",placement:"left"});
 	}
-	
-    Links.find().forEach(function(link) {
+};
+//UI-Effekte aktivieren, wenn ein Link gerendered wurde
+Template.link.rendered = function() {
+	Links.find().forEach(function(link) {
     	htmlstr ="<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4'></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
         var commentsstr = "";
         
-		if (link.comments && link.comments !== null && link.comments.length)
+		if (link.comments && link.comments !== null && link.comments.length > 0)
 		{
-			//TODO comments auslesen, war da nicht was mit dem iterieren? oder doch nicht?
-			for ( var i = 0; i <= link.comments.length; i++) {
-				var aComment = link.comments[i];
-				commentsstr = commentsstr + "<p><small>" + aComment.creator + ":" + aComment.message + "</small></p>"
+			for ( var i = 0; i <= link.comments.length; i++) {				
+				if (link.comments[i])
+				{
+					var creatorname = Meteor.users.findOne({id : link.comments[i].creator}).profile['first_name'];
+
+					var strdate = moment(link.comments[i].date_created).fromNow();
+					
+					commentsstr = commentsstr + "<p style='margin-bottom:5px'><small style='font-size:10px'>" + creatorname + " " + "</small><i style='color:grey;font-size:10px'>" + strdate + "</i><br/><small>" + link.comments[i].message + "</small></p></hr>"
+				}
 			};
 		}
 		else commentsstr = "<small>noch keine Kommentare vorhanden</small>";
@@ -744,7 +749,7 @@ Template.link.rendered = function() {
 };
 
 Template.accountSettingsDialog.rendered = function() {
-	//TODO seit Bootstrap 2.3 sind die Tooltips abgeschnitten...
+	//XXX seit Bootstrap 2.3 sind die Tooltips abgeschnitten...
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true)
 	{
 		$('#refreship').tooltip({title:"Wenn du auf 'Aktualisieren' klickst, wird die IP-Adresse des Rechners ermittelt, an dem du gerade bist und gespeichert. Du kannst dann Links auf diesem Rechner empfangen, wenn JDownloader läuft hast und der Port offen ist.",placement:"right"});
@@ -759,14 +764,12 @@ Template.user_loggedin.rendered = function() {
 	if (Meteor.userId() && Meteor.user() && Meteor.user().profile)
 	{
 		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small>   " + Meteor.user().username + "</li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li></small>"
-		//TODO hiden, wen wir was anderes anklicken
-		$('#accountbtn').popover({animation:true,placement:"bottom",trigger:"click",title:Meteor.user().profile.name,html:true,content:htmlstr,delay: { show: 300, hide: 100 }});
+		$('#accountbtn').popover({animation:true,placement:"bottom",trigger:"hover",title:Meteor.user().profile.name,html:true,content:htmlstr,delay: { show: 300, hide: 100 }});
 	}
 }
 
 //Events für die einzelnen Link-Objekte
 Template.link.events({
-	//TODO geht schonmal einigermaßen....
 	'submit .newcommentform' : function(event, template) {
 		event.preventDefault();
 		var newmessage = template.find('#new_comment').value;
@@ -774,8 +777,8 @@ Template.link.events({
 		return Meteor.call('createComment',linkid,newmessage, function(error, result) {
 			if (error)
 				console.log(error);
-			if (result)
-				console.log(result);
+			//TODO Commentbox wieder anzeigen
+			$("#"+linkid+'_comments').popover('show')
 		});
 	},
 	//Anhaken eines Links
@@ -830,9 +833,10 @@ Template.link.events({
 		});
     },
 	//TODO nur 1 Kommentarbox zulassen, die anderen hiden....
-	//Kommentare für einen Linkanzeigen
-    'click .icon-comment' : function(context) {       
-	$('#'+context.srcElement.id+"_comments").popover('show');
+	//Kommentare für einen Link anzeigen
+    'click .icon-comment' : function(context) {  
+	$('#'+context.srcElement.id+"_comments").popover('show');	
+	//$('.icon-comment:not(#'+context.srcElement.id+'_comments)').popover('hide') 
     },
 	//Link liken
     'click .like' : function(context) {
@@ -1009,6 +1013,7 @@ Template.sitesDialog.events({
     		});
     	}
     },
+    //TODO crawl nur alle 12 Stunden erlauben
 	'click .icon-search' : function(event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true)
 		{
