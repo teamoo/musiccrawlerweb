@@ -283,7 +283,7 @@ Template.link.getSourceName = function() {
 		if (this.source && this.source !== null)
 		{
 			var site = Sites.findOne({
-			url : this.source
+			feedurl : this.source
 			}, {
 				fields : {
 				url : 1,
@@ -658,7 +658,7 @@ Template.page.rendered = function() {
 	factorHeight = 1;
 	itemHeight = 29;
 	
-	factor = 1.1;
+	factor = 1;
 	
 	badgeHeight = itemBadgeSize * itemHeight * factor;
 	
