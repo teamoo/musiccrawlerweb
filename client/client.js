@@ -654,11 +654,13 @@ Template.navigation.events({
 });
 //TODO infinite scroll justieren, anpassen an Fensterbreite, die bestimmt die itemHeight
 Template.page.rendered = function() {
-	topMenuHeight = 90;
+	topMenuHeight = 79;
 	factorHeight = 1;
 	itemHeight = 29;
 	
-	badgeHeight = itemBadgeSize * itemHeight;
+	factor = 1.1;
+	
+	badgeHeight = itemBadgeSize * itemHeight * factor;
 	
 	currentBadge = 1;
 	
@@ -667,7 +669,6 @@ Template.page.rendered = function() {
 	   var fromTop = $(this).scrollTop()+topMenuHeight;
 	   
 	   if (fromTop >= (currentBadge * badgeHeight)) {
-	   	console.log("nachladen");
 	   	currentBadge++;
 	   	Session.set("filter_limit",currentBadge);
 	   }
@@ -985,56 +986,57 @@ Template.sitesDialog.events({
 	
 	Session.set("showSitesDialog", false);
     },
-	'click #crawl_single_site' : function() {
+    'click #crawl_all_sites' : function(event, template) {
+    	if (Meteor.user().admin && Meteor.user().admin === true)
+    	{
+    		event.srcElement.className = "icon-refreshing";
+    		
+    		Sites.find().forEach(function(site) {
+    			if (!site.next_crawl && site.next_crawl !== null)
+    			{
+    				Meteor.call("scheduleCrawl",site._id, function(error, result) {
+    					if (error)
+    					{
+    						event.srcElement.className = "icon-remove";
+    						console.log("kapiutt");
+    						console.log(error);
+    					}
+    					console.log(result);
+    					if (result && result.status == "ok")
+    						Site.update({_id:site._id},{$set : {next_crawl : result.jobid}});
+    				});
+    			}
+    		});
+    	}
+    },
+	'click .icon-search' : function(event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true)
 		{
-			event.srcElement.className = "icon-refresh";
-			if (this.next_crawl && this.next_crawl !== null)
+			event.srcElement.className = "icon-refreshing";
+			if (!this.next_crawl && this.next_crawl !== null)
 			{
-				Meteor.call("scheduleCrawl",this.feedurl, function(error, result) {
+				Meteor.call("scheduleCrawl",this._id, function(error, result) {
 					if (error)
 					{
-						console.log(error);
 						event.srcElement.className = "icon-remove";
+						console.log("kaputt2");
+						console.log(error);
 					}
-					console.log(result);
-					if (result & result.status == "ok")
-						Site.update({_id:this._id},{next_crawl : result.jobid});
+					if (result && result.status == "ok")
+						Site.update({_id:this._id},{$set: {next_crawl : result.jobid}});
 				});
 			} else {
-				Meteor.call("cancelCrawl",this.jobid, function(error, result) {
+				Meteor.call("cancelCrawl",this._id, function(error, result) {
 					if (error)
 					{
+						event.srcElement.className = "icon-remove";
+						console.log("kapiutt3");
 						console.log(error);
-						event.srcElement.className = "icon-time";
 					}
-					console.log(result);
-					if (result & result.status == "ok")
-						Site.update({_id:this._id},{next_crawl : null});
+					if (result && result.status == "ok")
+						Site.update({_id:this._id},{$set : {next_crawl : undefined}});
 				});
 			}
-		}
-	},
-	'click #crawl_all_sites' : function() {
-		if (Meteor.user().admin && Meteor.user().admin === true)
-		{
-			event.srcElement.className = "icon-refresh";
-			
-			Sites.find().forEach(function(site) {
-				if (site.next_crawl && site.next_crawl !== null)
-				{
-					Meteor.call("scheduleCrawl",site.feedurl, function(error, result) {
-						if (error)
-						{
-							console.log(error);
-							event.srcElement.className = "icon-remove";
-						}
-						console.log(result);
-						if (result & result.status == "ok")
-							Site.update({_id:site._id},{next_crawl : result.jobid});
-					});
-				}
-			});
 		}
 	},
     // Hilfsfunktion, um die Eingaben in X-Editable in der Meteor DB einzutragen
