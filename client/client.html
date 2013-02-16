@@ -246,7 +246,7 @@
 	</td>
 	<td>{{getSourceName}}</td>
 	<td style="text-align: right">{{getSizeinMB}}</td>
-	<td>	{{dateFormat date_discovered format="DD. MMM YYYY"}}</td>
+	<td>	{{dateFormatPretty date_discovered}}</td>
 	{{#if isAdmin}}	
 		<td><i class="icon-trash hand"></i></td>
   	{{/if}}
@@ -411,7 +411,7 @@
 						{{/if}}
 					</td>
 					<td>{{url}}</td>
-					<td>{{dateFormat last_crawled format="DD. MMM YYYY"}}</td>
+					<td>{{dateFormatPretty last_crawled}}</td>
 					<td><i class="{{getFeedTypeIcon}}"></i></td>
 					<td>
 						{{#if active}}

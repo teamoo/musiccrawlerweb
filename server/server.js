@@ -4,7 +4,7 @@ Accounts
 	    if (options.profile)
 	    	user.profile = options.profile;
 	    
-	    var accessToken = user.services.facebook.accessToken, result, profile;
+	    var accessToken = user.services.facebook.accessToken, result;
 
 	    // Das Profilbild muessen wir extra abfragen...
 	    result = Meteor.http

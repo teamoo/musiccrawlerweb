@@ -20,10 +20,10 @@ Meteor.autorun(function() {
 				// subscription is completed.
 				Session.set('links_completed', true);
 		});
-    };
+    }
 		
 	Meteor.subscribe('userData');
-	Meteor.subscribe('allUserData', function onComplete() {Session.set('users_completed',true)});
+	Meteor.subscribe('allUserData', function onComplete() {Session.set('users_completed',true);});
 		
     var timespans = [1,14,30,90,365];
     
@@ -124,12 +124,10 @@ Meteor.startup(function() {
 // moment syntax example: moment(Date("2011-07-18T15:50:52")).format("MMMM
 // YYYY")
 // usage: {{dateFormat creation_date format="MMMM YYYY"}}
-Handlebars.registerHelper('dateFormat', function(context, block) {
+Handlebars.registerHelper('dateFormatPretty', function(context) {
     if (window.moment) {
-	moment().lang('de');
-	var f = block.hash.format || "MMM Do, YYYY";
+    	moment().lang('de');
 	if (context && moment(context).isValid())
-	    //return moment(context).format(f);
 		return moment(context).fromNow();
 	return "kein Datum";
     }
@@ -198,10 +196,10 @@ Template.page.linksFound = function() {
 		
 		//if we don't receive results within x seconds, let's set it to no results found
 		//TODO geht noch nicht
-		Meteor.setTimeout(function(){Session.set("loading_results",false)},8000);
+		Meteor.setTimeout(function(){Session.set("loading_results",false);},8000);
 		
-		var tracks;
-		Session.set("filter_term_external",Session.get("filter_term").replace(/\.\*/gi,""))
+		var tracks = undefined;
+		Session.set("filter_term_external",Session.get("filter_term").replace(/\.\*/gi,""));
 		
 		if (Session.get("filter_term_external") !== "")
 		{
@@ -211,7 +209,7 @@ Template.page.linksFound = function() {
 					for (var i = 0; i <= tracks.length; i++) {
 						console.log(tracks[i]);
 						SearchResults.insert({source: "SoundCloud", name: tracks[i].title, url : tracks[i].permalink_url, duration: moment(tracks[i].duration).format('mm:ss') + " min."});
-					};
+					}
 				}
 				Session.set("loading_results",false);
 			//});
@@ -337,10 +335,10 @@ Template.link.getPlayerWidget = function() {
 	    var callback = function(video) {
 		return unescape(video.html);
 	    };
-	    var url = vimeoEndpoint + '?url=' + encodeURIComponent(this.url)
+	    var aurl = vimeoEndpoint + '?url=' + encodeURIComponent(this.url)
 		    + '&callback=' + callback + '&width=30';
 
-	    // Meteor.http.get(url);
+	    // Meteor.http.get(aurl);
 	}
     } else
 	return "<i class=\"icon-ban-circle\"></i>";
@@ -363,7 +361,7 @@ Template.sitesDialog.getFeedTypeIcon = function(data) {
 // Funktion um zu überprüfen, ob eine Seite von einem User erstellt wurde
 Template.sitesDialog.isOwner = function() {
 	if (!Meteor.user()) return false;
-    if (this.creator === Meteor.user().profile.id);
+    if (this.creator === Meteor.user().profile.id)
 		return true;
 	return false;
 };
@@ -465,7 +463,7 @@ Template.navigation.rendered = function() {
 	var activenumber = parseInt(Session.get("selected_navitem"));
 	$('li.linkfilter #' + activenumber).parent().addClass("active");
 	
-	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>"
+	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>";
 	
 	strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
 	$('#brand').popover({animation:true,placement:"bottom",trigger:"click",title:"Impressum",html:true,content:straddress+strdonatebutton,delay: { show: 300, hide: 100 }});
@@ -486,7 +484,7 @@ Template.navigation.events({
     'click #addsitebutton' : function(event) {
     event.preventDefault();
 	openAddSiteDialog();
-	Meteor.setTimeout(function(){activateInput($("#newsiteurl"))},250);
+	Meteor.setTimeout(function(){activateInput($("#newsiteurl"));},250);
 	return false;
     },
 	//Seiten anzeigen Dialog öffnen
@@ -611,7 +609,7 @@ Template.navigation.events({
     'click #addlinkbutton' : function(event, template) {
 	event.preventDefault();
 	openAddLinkDialog();
-	Meteor.setTimeout(function(){activateInput($("#newlinkurl"))},250);
+	Meteor.setTimeout(function(){activateInput($("#newlinkurl"));},250);
 	return false;
     },
     'click .linkfilter' : function(event, template) {
@@ -738,9 +736,9 @@ Template.link.rendered = function() {
 
 					var strdate = moment(link.comments[i].date_created).fromNow();
 					
-					commentsstr = commentsstr + "<p style='margin-bottom:5px'><small style='font-size:10px'>" + creatorname + " " + "</small><i style='color:grey;font-size:10px'>" + strdate + "</i><br/><small>" + link.comments[i].message + "</small></p></hr>"
+					commentsstr = commentsstr + "<p style='margin-bottom:5px'><small style='font-size:10px'>" + creatorname + " " + "</small><i style='color:grey;font-size:10px'>" + strdate + "</i><br/><small>" + link.comments[i].message + "</small></p>";
 				}
-			};
+			}
 		}
 		else commentsstr = "<small>noch keine Kommentare vorhanden</small>";
 		
@@ -763,10 +761,10 @@ Template.accountSettingsDialog.rendered = function() {
 Template.user_loggedin.rendered = function() {
 	if (Meteor.userId() && Meteor.user() && Meteor.user().profile)
 	{
-		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small>   " + Meteor.user().username + "</li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li></small>"
+		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small>   " + Meteor.user().username + "</li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li></small>";
 		$('#accountbtn').popover({animation:true,placement:"bottom",trigger:"hover",title:Meteor.user().profile.name,html:true,content:htmlstr,delay: { show: 300, hide: 100 }});
 	}
-}
+};
 
 //Events für die einzelnen Link-Objekte
 Template.link.events({
@@ -778,7 +776,7 @@ Template.link.events({
 			if (error)
 				console.log(error);
 			//TODO Commentbox wieder anzeigen
-			$("#"+linkid+'_comments').popover('show')
+			$("#"+linkid+'_comments').popover('show');
 		});
 	},
 	//Anhaken eines Links
@@ -803,7 +801,7 @@ Template.link.events({
     'click .icon-refresh' : function(event, template) {
 	event.srcElement.className = "icon-refreshing";
 	
-	var theurl = this.url
+	var theurl = this.url;
 	
 	Meteor.call("refreshLink", theurl, function(error, result) {
 	    if (error)
