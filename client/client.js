@@ -48,6 +48,7 @@ Meteor.startup(function() {
 	  client_id: Meteor.settings.client_id
 	});  
 	//Session Variablen initialisieren
+	Session.set("wait_for_items",false);
 	Session.set("sites_completed", false);
 	Session.set("links_completed", false);
 	Session.set('users_completed',false);
@@ -663,30 +664,23 @@ Template.navigation.events({
 	return false;
     }
 });
-//TODO infinite scroll justieren, anpassen an Fensterbreite, die bestimmt die itemHeight
-Template.page.rendered = function() {
-	topMenuHeight = 79;
-	factorHeight = 1;
-	itemHeight = 29;
-	
-	factor = 1;
-	
-	badgeHeight = itemBadgeSize * itemHeight * factor;
-	
-	currentBadge = 1;
-	
+
+Template.page.rendered = function() {	
+	bottomMargin = 49;
+	itemHeight = 30;
+	threshold = 10 * itemHeight + bottomMargin;
+	//TODO: User informieren, dass maximal 250 items angezeigt werden
 	$(window).scroll(function(){
-	   // Get container scroll position
-	   var fromTop = $(this).scrollTop()+topMenuHeight;
-	   
-	   if (fromTop >= (currentBadge * badgeHeight)) {
-	   	if (currentBadge <=20)
-	   	{
-	   		console.log("paginate");
-	   		currentBadge++;
-	   		Session.set("filter_limit",currentBadge);
-	   	}
-	   }
+		if($(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
+			if (Session.get("filter_limit") <= 6 && Session.get("wait_for_items") === false)
+			{
+				Session.set("filter_limit",Session.get("filter_limit")+1);
+				Session.set("wait_for_items",true);
+				Meteor.setTimeout(function() {
+					Session.set("wait_for_items",false);
+				},4000);
+			}
+		}
 	});
 };
 
@@ -733,9 +727,7 @@ Template.linklist.rendered = function() {
 		$('.icon-question-sign').tooltip({title:"unbekannt",placement:"left"});
 		$('.icon-remove').tooltip({title:"nicht verfügbar",placement:"left"});
 	}
-};
-//UI-Effekte aktivieren, wenn ein Link gerendered wurde
-Template.link.rendered = function() {
+	
 	Links.find().forEach(function(link) {
     	htmlstr ="<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4'></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
         var commentsstr = "";

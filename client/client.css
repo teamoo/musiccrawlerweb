@@ -114,3 +114,11 @@ textarea#new_comment, #postcomment {
 	margin-top:5px;
 	margin-bottom: 0px;
 }
+
+.table-condensed tr,td {
+	height: 20px;
+	max-height: 20px;
+	text-overflow:ellipsis;  
+	overflow:hidden;  
+	white-space:nowrap;  
+}
