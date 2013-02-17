@@ -1,4 +1,4 @@
-﻿//lokale Collection für Suchergebnisse, damit wir auch diese mit reactivity anzeigen können.
+//lokale Collection für Suchergebnisse, damit wir auch diese mit reactivity anzeigen können.
 SearchResults = new Meteor.Collection(null);
 // Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
 Meteor.autorun(function() {
@@ -6,7 +6,7 @@ Meteor.autorun(function() {
     var filter_status = Session.get('filter_status');
     var filter_term = Session.get('filter_term');
     var filter_limit = Session.get('filter_limit');
-    var loading_results = Session.get("loading_results");
+    var loading_results = Session.get('loading_results');
 	
     if (filter_date && filter_status && filter_limit) { 
 		Meteor.subscribe('sites', function onComplete() {
@@ -170,7 +170,7 @@ Template.page.linksFound = function() {
 	if (Links.findOne()) return true;
 	if (Session.get("links_completed") === true)
 	{		
-		//TODO geht erst, wenn Meteor non UTF-8 encoding bei http responses versteht
+		//XXX geht erst, wenn Meteor non UTF-8 encoding bei http responses versteht
 		if (Session.get("filter_term_external") && Session.get("filter_term_external") != "")
 			/*Meteor.call('searchMuzon', encodeURIComponent(Session.get("filter_term_external")), function(error, result) {
 				if (result && result.content) {
@@ -361,7 +361,7 @@ Template.sitesDialog.getFeedTypeIcon = function(data) {
 // Funktion um zu überprüfen, ob eine Seite von einem User erstellt wurde
 Template.sitesDialog.isOwner = function() {
 	if (!Meteor.user()) return false;
-    if (this.creator === Meteor.user().profile.id)
+    if (this.creator === Meteor.user().id)
 		return true;
 	return false;
 };
@@ -888,7 +888,7 @@ Template.addLinkDialog.events({
 	Session.set("status",
 		'<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird überprüft</small></p>');
 	var newlinkurl = template.find("#newlinkurl").value;
-	//TODO timeout scheint bei post nicht zu funktionieren
+
 	Meteor.call('createLink', newlinkurl, function(error, result) {
     if (error)
 		switch (error.error) {
@@ -907,9 +907,9 @@ Template.addLinkDialog.events({
 	{
 		Session.set("status",'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + "Link hinzugefügt!</small></p>");
 		Meteor.setTimeout(function() {
-			Session.set("showAddSiteDialog", false);
+			Session.set("showAddLinkDialog", false);
 			Session.set("status", undefined);
-		},3500);	
+		},3000);
 	}
 	});
 	return false;
@@ -962,12 +962,17 @@ Template.addSiteDialog
 			{
 				Session.set("status",
 				'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>'
-					+ " " + "Seite hinzugefügt!</small></p>");
-					
-				Meteor.setTimeout(function() {
-		    		Session.set("showAddSiteDialog", false);	
-					Session.set("status", undefined);
-		    	},3500);			
+					+ " " + "Seite hinzugefügt! Die Seite wird automatisch beim nächsten Suchlauf durchsucht.</small></p>");
+				
+                Meteor.setTimeout(function() {
+                                      Session.set("showAddSiteDialog", false);
+                                      Session.set("status", undefined);
+                                      },3000);
+                    
+                Meteor.call("scheduleCrawl",result, function(error2, result2) {
+                    if (result && result.status == "ok")
+                        Site.update({_id:site._id},{$set : {next_crawl : result.jobid}});
+                });
 			}
 		});
 		return false;
