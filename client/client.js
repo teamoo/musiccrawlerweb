@@ -251,6 +251,16 @@ Template.sitesDialog.isAdmin = function() {
     return false;
 };
 
+
+
+Template.sitesDialog.canCrawlAgain = function() {
+    if (!this.last_crawled || this.last_crawled == null)
+        return true;
+    if ((new Date() - this.last_crawled) > (1000*60*60*24))
+        return true;
+    return false;
+};
+
 // Link-Größe von Kilobyte in MB umwandeln
 Template.link.getSizeinMB = function() {
     if (this.size && this.size > 0)
@@ -1019,7 +1029,6 @@ Template.sitesDialog.events({
     		});
     	}
     },
-    //TODO crawl nur alle 12 Stunden erlauben
 	'click .icon-search' : function(event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true)
 		{

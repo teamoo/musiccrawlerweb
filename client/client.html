@@ -423,7 +423,11 @@
 							{{#if next_crawl}}
 								<i class="icon-time" id="{{_id}}"></i>
 							{{else}}
-								<i class="icon-search hand" id="{{_id}}"></i>
+                                {{#if canCrawlAgain}}
+                                    <i class="icon-search hand" id="{{_id}}"></i>
+                                {{else}}
+                                    <i class="icon-ban-circle"></i>
+                                {{/if}}
 							{{/if}}
 						{{/if}}
 					</td>
