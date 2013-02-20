@@ -122,3 +122,10 @@ textarea#new_comment, #postcomment {
 	overflow:hidden;  
 	white-space:nowrap;  
 }
+ div .editable-input, div .editable-input > input .input-medium {
+	width:300px;
+ }
+ 
+ div .editable-input > input {
+	width:270px;
+ }

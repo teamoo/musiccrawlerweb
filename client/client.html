@@ -229,8 +229,8 @@
 	<td>
 		{{{getPlayerWidget}}}
 	</td>
-    <td style="max-width: 600px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text" data-pk="{{_id}}">{{name}}</a></td>
-    <td style="max-width: 500px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
+    <td style="max-width: 500px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text" data-pk="{{_id}}">{{name}}</a></td>
+    <td style="max-width: 350px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
 	<td>
 		{{#if comments}}
 			<i class="icon-comment hand" rel="popover" id="{{_id}}_comments"></i>
@@ -425,10 +425,28 @@
 								<i class="icon-time" id="{{_id}}"></i>
 							{{else}}
                                 {{#if canCrawlAgain}}
-                                    <i class="icon-search hand" id="{{_id}}"></i>
+									{{#if active}}
+										<i class="icon-search hand" id="{{_id}}"></i>
+									{{/if}}
                                 {{else}}
                                     <i class="icon-ban-circle"></i>
                                 {{/if}}
+							{{/if}}
+						{{/if}}
+						{{#if isOwner}}
+							{{#if isAdmin}}
+							{{else}}
+								{{#if next_crawl}}
+									<i class="icon-time" id="{{_id}}"></i>
+								{{else}}
+									{{#if canCrawlAgain}}
+										{{#if active}}
+											<i class="icon-search hand" id="{{_id}}"></i>
+										{{/if}}
+									{{else}}
+										<i class="icon-ban-circle"></i>
+									{{/if}}
+								{{/if}}
 							{{/if}}
 						{{/if}}
 					</td>
