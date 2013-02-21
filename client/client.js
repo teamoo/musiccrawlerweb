@@ -47,9 +47,25 @@ Meteor.autorun(function () {
 // zur Verfügung. Workaround: Timer auf 3 Sekunden, dann ist das Objekt im
 // Regelfall verfügbar.
 Meteor.startup(function () {
-	SC.initialize({
-	  client_id: Meteor.settings.client_id
-	});  
+	$(document).ready(function () {
+		bottomMargin = 49;
+		itemHeight = 30;
+		threshold = 10 * itemHeight + bottomMargin;
+		$(window).scroll(function () {
+			if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
+				if (Session.get("filter_limit") <= 4 && Session.get("wait_for_items") === false) {
+					Session.set("filter_limit", Session.get("filter_limit") + 1);
+					Session.set("wait_for_items", true);
+					Meteor.setTimeout(function () {
+						Session.set("wait_for_items", false);
+					}, 2500);
+				}
+			}
+		});
+	});
+	//SC.initialize({
+	//  client_id: Meteor.settings.client_id
+	//});  
 	//Session Variablen initialisieren
 	Session.set("wait_for_items", false);
 	Session.set("sites_completed", false);
@@ -164,8 +180,6 @@ Template.page.linksFound = function () {
 
 		Session.set("loading_results", true);
 
-		//if we don't receive results within x seconds, let's set it to no results found
-		//TODO geht noch nicht
 		Meteor.setTimeout(function () {
 			Session.set("loading_results", false);
 		}, 8000);
@@ -176,18 +190,18 @@ Template.page.linksFound = function () {
 		if (Session.get("filter_term_external") !== "") {
 			//TODO scheint mehrfach aufgerufen zu werden...das müssen wir verhindern.
 			//SC.get('/tracks', {limit: 10, q: Session.get("filter_term_external")}, function(tracks) {
-			if (tracks && tracks.length) {
-				for (var i = 0; i <= tracks.length; i++) {
-					console.log(tracks[i]);
-					SearchResults.insert({
-						source: "SoundCloud",
-						name: tracks[i].title,
-						url: tracks[i].permalink_url,
-						duration: moment(tracks[i].duration).format('mm:ss') + " min."
-					});
+				if (tracks && tracks.length) {
+					for (var i = 0; i <= tracks.length; i++) {
+						console.log(tracks[i]);
+						SearchResults.insert({
+							source: "SoundCloud",
+							name: tracks[i].title,
+							url: tracks[i].permalink_url,
+							duration: moment(tracks[i].duration).format('mm:ss') + " min."
+						});
+					}
 				}
-			}
-			//Session.set("loading_results", false);
+				Session.set("loading_results", false);
 			//});
 		}
 	}
@@ -214,6 +228,7 @@ Template.navigation.getSiteCount = function () {
 };
 
 Template.linklist.isAdmin = function () {
+	if (!Meteor.user()) return false;
 	var admin = Meteor.user().admin;
 
 	if (admin && admin === true) return admin;
@@ -230,6 +245,7 @@ Template.searchresultlist.searchresults = function () {
 };
 
 Template.link.isAdmin = function () {
+	if (!Meteor.user()) return false;
 	var admin = Meteor.user().admin;
 
 	if (admin && admin === true) return admin;
@@ -261,22 +277,23 @@ Template.link.isLinkSelected = function () {
 Template.link.getSourceName = function () {
 	if (Session.get("sites_completed") === true) {
 		if (this.source && this.source !== null) {
-			var site = Sites.findOne({
+			var aSite = Sites.findOne({
 				feedurl: this.source
 			}, {
 				fields: {
-					url: 1,
 					name: 1
 				}
 			});
-			if (site) return site.name;
+			if (aSite) return aSite.name;
 		}
 
 		if (Session.get("users_completed") === true) {
 			if (this.creator && this.creator !== null) {
-				return Meteor.users.findOne({
+				var aUser = Meteor.users.findOne({
 					id: this.creator
-				}).profile['first_name'];
+				});
+				if (aUser && aUser.profile)
+					return aUser.profile['first_name']
 			}
 		}
 	}
@@ -307,7 +324,7 @@ Template.link.getPlayerWidget = function () {
 		//return "<script type='text/javascript'>var zippywww='" + this.url.split("http://www")[1].split(".zippyshare")[0] +"';var zippyfile='" + this.url.split("/v/")[1].split("/file.html")[0] + "';var zippytext='#000000';var zippyback='#ffffff';var zippyplay='#000000';var zippywidth=60;var zippyauto=false;var zippyvol=80;var zippywave = '#ffffff';var zippyborder = '#ffffff';</script><script type='text/javascript' src='http://api.zippyshare.com/api/embed_new.js'></script>";
 		else if (this.hoster === "youtube.com") return undefined;
 		else if (this.hoster === "vimeo.com") {
-			// TODO diese Links müssen asynchron erstellt werden, das dauert
+			// diese Links müssen asynchron erstellt werden, das dauert
 			// sonst zu lange...
 			
 			var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
@@ -343,6 +360,7 @@ Template.sitesDialog.isOwner = function () {
 };
 
 Template.sitesDialog.isAdmin = function () {
+	if (!Meteor.user()) return false;
 	var admin = Meteor.user().admin;
 
 	if (admin && admin === true) return admin;
@@ -457,12 +475,12 @@ Template.navigation.rendered = function () {
 	$('#brand').popover({
 		animation: true,
 		placement: "bottom",
-		trigger: "click",
+		trigger: "hover",
 		title: "Impressum",
 		html: true,
 		content: straddress + strdonatebutton,
 		delay: {
-			show: 300,
+			show: 500,
 			hide: 100
 		}
 	});
@@ -548,7 +566,6 @@ Template.navigation.events({
 						errorcount++;
 
 						if (errorcount > 2) {
-							console.log("DOUBLEERROR");
 							Session.set("progressState", "progress-danger");
 							Session.set("progress", 100);
 							Session.set("progressActive", false);
@@ -556,11 +573,9 @@ Template.navigation.events({
 								Session.set("progress", undefined);
 								Session.set("progressState", undefined);
 							}, 3500);
-							console.log(error);
 							return;
 						}
-
-						console.log(error);
+						console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
 						Session.set("progressState", "progress-warning");
 					}
 					if (result) {
@@ -625,7 +640,7 @@ Template.navigation.events({
 	'submit #searchform': function (event, template) {
 		event.preventDefault();
 		var term = template.find('#searchfield').value;
-
+		
 		if (term && term != undefined && term != "") {
 			var prev_filter_date = Session.get("filter_date");
 			Session.set("prev_filter_date", prev_filter_date);
@@ -653,24 +668,6 @@ Template.navigation.events({
 	}
 });
 
-Template.page.rendered = function () {
-	bottomMargin = 49;
-	itemHeight = 30;
-	threshold = 10 * itemHeight + bottomMargin;
-	//TODO: User informieren, dass maximal 250 items angezeigt werden
-	$(window).scroll(function () {
-		if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
-			if (Session.get("filter_limit") <= 4 && Session.get("wait_for_items") === false) {
-				Session.set("filter_limit", Session.get("filter_limit") + 1);
-				Session.set("wait_for_items", true);
-				Meteor.setTimeout(function () {
-					Session.set("wait_for_items", false);
-				}, 4000);
-			}
-		}
-	});
-};
-
 //Events für das Template der Linkliste
 Template.linklist.events = ({
 	//Links filtern (alle / auch unbekannte)
@@ -697,6 +694,40 @@ Template.linklist.events = ({
 		} else Session.set("selected_links", []);
 	},
 });
+
+Template.link.rendered = function () {
+		link = this.data;
+
+		htmlstr = "<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4' type='text' required></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
+		var commentsstr = "";
+
+		if (link.comments && link.comments !== null && link.comments.length > 0) {
+			for (var i = 0; i <= link.comments.length; i++) {
+				if (link.comments[i]) {
+					var creatorname = Meteor.users.findOne({
+						id: link.comments[i].creator
+					}).profile['first_name'];
+
+					var strdate = moment(link.comments[i].date_created).fromNow();
+
+					commentsstr = commentsstr + "<p style='margin-bottom:5px'><small style='font-size:10px'>" + creatorname + " " + "</small><i style='color:grey;font-size:10px'>" + strdate + "</i><br/><small>" + link.comments[i].message + "</small></p>";
+				}
+			}
+		} else commentsstr = "<small>noch keine Kommentare vorhanden</small>";
+
+		$("#" + link._id + '_comments').popover({
+			animation: true,
+			placement: "bottom",
+			trigger: "click",
+			title: "Kommentare",
+			html: true,
+			content: commentsstr + htmlstr,
+			delay: {
+				show: 300,
+				hide: 100
+			}
+		});
+}
 
 Template.linklist.rendered = function () {
 	$('.linkname').editable();
@@ -735,39 +766,6 @@ Template.linklist.rendered = function () {
 			placement: "left"
 		});
 	}
-/*
-	Links.find().forEach(function (link) {
-		htmlstr = "<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4'></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
-		var commentsstr = "";
-
-		if (link.comments && link.comments !== null && link.comments.length > 0) {
-			for (var i = 0; i <= link.comments.length; i++) {
-				if (link.comments[i]) {
-					var creatorname = Meteor.users.findOne({
-						id: link.comments[i].creator
-					}).profile['first_name'];
-
-					var strdate = moment(link.comments[i].date_created).fromNow();
-
-					commentsstr = commentsstr + "<p style='margin-bottom:5px'><small style='font-size:10px'>" + creatorname + " " + "</small><i style='color:grey;font-size:10px'>" + strdate + "</i><br/><small>" + link.comments[i].message + "</small></p>";
-				}
-			}
-		} else commentsstr = "<small>noch keine Kommentare vorhanden</small>";
-
-		$("#" + link._id + '_comments').popover({
-			animation: true,
-			placement: "bottom",
-			trigger: "click",
-			title: "Kommentare",
-			html: true,
-			content: commentsstr + htmlstr,
-			delay: {
-				show: 300,
-				hide: 100
-			}
-		});
-	});
-*/
 };
 
 Template.accountSettingsDialog.rendered = function () {
@@ -807,7 +805,7 @@ Template.user_loggedin.rendered = function () {
 			html: true,
 			content: htmlstr,
 			delay: {
-				show: 300,
+				show: 200,
 				hide: 100
 			}
 		});
@@ -820,11 +818,13 @@ Template.link.events({
 		event.preventDefault();
 		var newmessage = template.find('#new_comment').value;
 		var linkid = event.srcElement.id;
-		return Meteor.call('createComment', linkid, newmessage, function (error, result) {
-			if (error) console.log(error);
-			//TODO Commentbox wieder anzeigen
-			$("#" + linkid + '_comments').popover('show');
+		Meteor.call('createComment', linkid, newmessage, function (error, result) {
+			if (error) console.log("Kommentar konnte nicht erstellt werden. (" + error.details + ")");
+			//TODO testen
+			Meteor.setTimeout(function(){$('#' + linkid + '_comments').popover('show');},100);
 		});
+		Meteor.setTimeout(function(){$('#' + linkid + '_comments').popover('show');},100);
+		return false;
 	},
 	//Anhaken eines Links
 	'click .link_checkbox': function (event, template) {
@@ -852,7 +852,7 @@ Template.link.events({
 
 		Meteor.call("refreshLink", theurl, function (error, result) {
 			if (error) {
-				console.log("Fehler beim refreshen des Links " + theurl);
+				console.log("Fehler beim Aktualisieren des Links " + theurl + ": " + error.reason);
 				event.srcElement.className = "icon-remove";
 			}
 			if (result) {
@@ -874,11 +874,9 @@ Template.link.events({
 			}
 		});
 	},
-	//TODO nur 1 Kommentarbox zulassen, die anderen hiden....
-	//Kommentare für einen Link anzeigen
-	'click .icon-comment': function (context) {
-		$('#' + context.srcElement.id + "_comments").popover('show');
-		//$('.icon-comment:not(#'+context.srcElement.id+'_comments)').popover('hide') 
+	'click .icon-comment': function (context) {	
+		$('.icon-comment:not(#'+context.srcElement.id+')').popover('hide');
+		$('#' + context.srcElement.id).popover('toggle');
 	},
 	//Link liken
 	'click .like': function (context) {
@@ -1095,11 +1093,11 @@ Template.sitesDialog.events({
 			event.srcElement.className = "icon-refreshing";
 
 			Sites.find().forEach(function (site) {
-				if (!site.next_crawl && site.next_crawl !== null) {
+				if (!site.next_crawl && site.next_crawl !== null && site.active === true) {
 					Meteor.call("scheduleCrawl", site._id, function (error, result) {
 						if (error) {
 							event.srcElement.className = "icon-remove";
-							console.log("kapiutt");
+							console.log("Error scheduling crawl for multiple sites");
 							console.log(error);
 						}
 						console.log(result);
@@ -1115,14 +1113,13 @@ Template.sitesDialog.events({
 			});
 		}
 	},
-	'click .icon-search': function (event, template) {
+	'click #crawl_single_site': function (event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true) {
 			event.srcElement.className = "icon-refreshing";
-			if (!this.next_crawl && this.next_crawl !== null) {
+			if (!this.next_crawl && this.next_crawl !== null  && this.active === true) {
 				Meteor.call("scheduleCrawl", this._id, function (error, result) {
 					if (error) {
 						event.srcElement.className = "icon-remove";
-						console.log("kaputt2");
 						console.log(error);
 					}
 					if (result && result.status == "ok") Site.update({
@@ -1137,7 +1134,6 @@ Template.sitesDialog.events({
 				Meteor.call("cancelCrawl", this._id, function (error, result) {
 					if (error) {
 						event.srcElement.className = "icon-remove";
-						console.log("kapiutt3");
 						console.log(error);
 					}
 					if (result && result.status == "ok") Site.update({
@@ -1165,7 +1161,7 @@ Template.sitesDialog.events({
 		});
 	},
 	//DDPPRE: ddp-pre1 workaround
-	'click .icon-trash': function (event, template) {
+	'click #remove_site': function (event, template) {
 		Sites.remove({
 			url: this.url
 		});
@@ -1269,7 +1265,7 @@ Template.accountSettingsDialog.events({
 });
 
 function refreshJDOnlineStatus() {
-	if (Meteor.userId() && Meteor.user().profile.autoupdateip) {
+	if (Meteor.userId() && Meteor.user().profile) {
 		if (Meteor.user().profile.autoupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
 
@@ -1284,7 +1280,7 @@ function refreshJDOnlineStatus() {
 			ip: Meteor.user().profile.ip,
 			port: Meteor.user().profile.port
 		}, function (error, isOnline) {
-			if (error) console.log("Fehler beim prüfen des Online-Status");
+			if (error) console.log("Fehler beim Prüfen des Online-Status");
 			Session.set("JDOnlineStatus", isOnline);
 		});
 	}

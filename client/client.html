@@ -27,8 +27,10 @@
 		<div class="row-fluid">
 			<div class="span12">
 				{{> navigation}}
-				{{#if notConnected}}
-					{{> connectionLostWarning}}
+				{{#if session "links_completed"}}
+					{{#if notConnected}}
+						{{> connectionLostWarning}}
+					{{/if}}
 				{{/if}}
 			</div>
 		</div>
@@ -134,7 +136,8 @@
 				<ul class="nav pull-right">
 					<li>
 						<form class="navbar-search pull-right" id="searchform">
-							<input type="text" class="search-query" placeholder="Titel, Interpret, Album..." id="searchfield" value="{{getLastSearchTerm}}">
+							<input type="search" class="search-query span20" placeholder="Titel, Interpret, Album..." id="searchfield" value="{{getLastSearchTerm}}">
+							<div class="icon-search"></div>
 						</form>
 					</li>
 					<li class="divider-vertical"></li>
@@ -211,6 +214,7 @@
 			{{/each}}
 		</tbody>
 	</table>
+	<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt.</p>
 </template>
 
 <template name="link">
@@ -289,7 +293,7 @@
     <h3 align="center">Kontoeinstellungen</h3>
   </div>
   <div class="modal-body">
-	<form class="form-horizontal">
+	<form class="form-horizontal" id="settingsform">
 		<span class="help-inline">IP-Adresse:</span>
 			{{#if currentUser.profile.autoupdateip}}
 				<input class="input-medium" id="ip" type="text" value={{currentUser.profile.ip}} disabled>
@@ -341,7 +345,7 @@
   <div class="modal-body">
 	<form class="form-inline" id="addlinkform">
 		<div class="input-append">
-			<input id="newlinkurl" class="input-xlarge linkurl" type="url" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required>
+			<input id="newlinkurl" class="input-xlarge linkurl" type="url" pattern="https?://.+" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required>
 			<button class="btn addlink" disabled>Hinzufügen</button>
 		</div>
 	</form>
@@ -363,7 +367,7 @@
 	<form class="form-horizontal" id="addsiteform">
 		<div class="input-append">
 			<span class="help-inline">URL der Seite, die wir nach Links durchsuchen sollen</span>
-			<input id="newsiteurl" class="input-xlarge siteurl" type="url" placeholder="http://www.electrotechnosuperblog.com" required>
+			<input id="newsiteurl" class="input-xlarge siteurl" type="url" pattern="https?://.+" placeholder="http://www.electrotechnosuperblog.com" required>
 			<button class="btn addsite" disabled>Seite hinzufügen</button>
 		</div>
 	</form>
@@ -401,7 +405,7 @@
 				<tr>
 					<td>
 						{{#if isOwner}}
-							<i class="icon-trash hand" id="crawl_single_site"></i>
+							<i class="icon-trash hand" id="remove_site"></i>
 						{{/if}}
 					</td>
 					<td>
@@ -426,7 +430,7 @@
 							{{else}}
                                 {{#if canCrawlAgain}}
 									{{#if active}}
-										<i class="icon-search hand" id="{{_id}}"></i>
+										<i class="icon-search hand" id="crawl_single_site"></i>
 									{{/if}}
                                 {{else}}
                                     <i class="icon-ban-circle"></i>
@@ -441,7 +445,7 @@
 								{{else}}
 									{{#if canCrawlAgain}}
 										{{#if active}}
-											<i class="icon-search hand" id="{{_id}}"></i>
+											<i class="icon-search hand" id="crawl_single_site"></i>
 										{{/if}}
 									{{else}}
 										<i class="icon-ban-circle"></i>

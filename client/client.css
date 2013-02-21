@@ -129,3 +129,31 @@ textarea#new_comment, #postcomment {
  div .editable-input > input {
 	width:270px;
  }
+ 
+ .navbar-search {
+    position: relative;
+}
+  
+.navbar-search .search-query {
+    padding-left: 29px;
+}
+
+.navbar-search .icon-search {
+    position: absolute;
+    top: 7px;
+    left: 11px;
+    background-image: url("/packages/bootstrap/img/glyphicons-halflings.png");
+}
+
+#settingsform {
+	margin: 0px;
+}
+
+.modal-footer {
+	padding: 10px;
+}
+
+.dropdown-menu .active > a, .dropdown-menu .active > a:hover {
+	color:white;
+	outline-color:white;
+}
