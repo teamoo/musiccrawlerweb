@@ -661,9 +661,7 @@ Template.navigation.events({
 			Session.set("filter_status", ["on"]);
 		}
 		Session.set("filter_limit", 1);
-		SearchResults.remove({
-			_id: /.*/gi
-		});
+		SearchResults.remove({});
 		return false;
 	}
 });
