@@ -16,19 +16,11 @@ Session.setDefault("filter_limit", 1);
 Session.setDefault("selected_links", []);
 Session.setDefault("loading_results", true);
 
-var timespans = [1, 14, 30, 90, 365];
-
-timespans.forEach(function (timespan) {
+[1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, 0);
 });
 
-timespans.forEach(function (timespan) {
-	var tmp_date = new Date();
-	tmp_date.setDate(tmp_date.getDate() - timespan);
-	Meteor.call("getLinksCount", tmp_date, function (error, count) {
-		Session.set("links_count_" + timespan, count);
-	});
-});
+
 
 //lokale Collection für Suchergebnisse, damit wir auch diese mit reactivity anzeigen können.
 SearchResults = new Meteor.Collection(null);
@@ -39,7 +31,7 @@ Meteor.autorun(function () {
 	var filter_term = Session.get('filter_term');
 	var filter_limit = Session.get('filter_limit');
 	var loading_results = Session.get('loading_results');
-
+	
 	if (filter_date && filter_status && filter_limit) {
 		Meteor.subscribe('sites', function onReady() {
 			// set a session key to true to indicate that the subscription is
@@ -57,6 +49,16 @@ Meteor.autorun(function () {
 	Meteor.subscribe('userData');
 	Meteor.subscribe('allUserData', function onReady() {
 		Session.set('users_completed', true);
+	});
+	
+	var timespans = [1, 14, 30, 90, 365];
+	
+	timespans.forEach(function (timespan) {
+		var tmp_date = new Date();
+		tmp_date.setDate(tmp_date.getDate() - timespan);
+		Meteor.call("getLinksCount", tmp_date, function (error, count) {
+			Session.set("links_count_" + timespan, count);
+		});
 	});
 });
 //
