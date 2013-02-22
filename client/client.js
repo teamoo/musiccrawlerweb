@@ -1,3 +1,35 @@
+//Session Variablen initialisieren
+Session.setDefault("wait_for_items", false);
+Session.setDefault("sites_completed", false);
+Session.setDefault("links_completed", false);
+Session.setDefault('users_completed', false);
+Session.setDefault("status", undefined);
+Session.setDefault("showAccountSettingsDialog", false);
+
+var tmp_date = new Date();
+tmp_date.setDate(tmp_date.getDate() - 14);
+Session.setDefault("selected_navitem", 14);
+Session.setDefault("filter_date", tmp_date);
+Session.setDefault("filter_status", ["on"]);
+Session.setDefault("filter_term", ".*");
+Session.setDefault("filter_limit", 1);
+Session.setDefault("selected_links", []);
+Session.setDefault("loading_results", true);
+
+var timespans = [1, 14, 30, 90, 365];
+
+timespans.forEach(function (timespan) {
+	Session.setDefault("links_count_" + timespan, 0);
+});
+
+timespans.forEach(function (timespan) {
+	var tmp_date = new Date();
+	tmp_date.setDate(tmp_date.getDate() - timespan);
+	Meteor.call("getLinksCount", tmp_date, function (error, count) {
+		Session.set("links_count_" + timespan, count);
+	});
+});
+
 //lokale Collection für Suchergebnisse, damit wir auch diese mit reactivity anzeigen können.
 SearchResults = new Meteor.Collection(null);
 // Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
@@ -9,13 +41,13 @@ Meteor.autorun(function () {
 	var loading_results = Session.get('loading_results');
 
 	if (filter_date && filter_status && filter_limit) {
-		Meteor.subscribe('sites', function onComplete() {
+		Meteor.subscribe('sites', function onReady() {
 			// set a session key to true to indicate that the subscription is
 			// completed.
 			Session.set('sites_completed', true);
 		});
 
-		Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit, function onComplete() {
+		Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit, function onReady() {
 			// set a session key to true to indicate that the
 			// subscription is completed.
 			Session.set('links_completed', true);
@@ -23,18 +55,8 @@ Meteor.autorun(function () {
 	}
 
 	Meteor.subscribe('userData');
-	Meteor.subscribe('allUserData', function onComplete() {
+	Meteor.subscribe('allUserData', function onReady() {
 		Session.set('users_completed', true);
-	});
-
-	var timespans = [1, 14, 30, 90, 365];
-
-	timespans.forEach(function (timespan) {
-		var tmp_date = new Date();
-		tmp_date.setDate(tmp_date.getDate() - timespan);
-		Meteor.call("getLinksCount", tmp_date, function (error, count) {
-			Session.set("links_count_" + timespan, count);
-		});
 	});
 });
 //
@@ -47,6 +69,11 @@ Meteor.autorun(function () {
 // zur Verfügung. Workaround: Timer auf 3 Sekunden, dann ist das Objekt im
 // Regelfall verfügbar.
 Meteor.startup(function () {
+	$.fn.editable.defaults.validate = function(value) {
+		if($.trim(value) == '') {
+		     return 'Name darf nicht leer sein.';
+		 }
+	};
 	$(document).ready(function () {
 		bottomMargin = 49;
 		itemHeight = 30;
@@ -66,49 +93,7 @@ Meteor.startup(function () {
 	//SC.initialize({
 	//  client_id: Meteor.settings.client_id
 	//});  
-	//Session Variablen initialisieren
-	Session.set("wait_for_items", false);
-	Session.set("sites_completed", false);
-	Session.set("links_completed", false);
-	Session.set('users_completed', false);
-	Session.set("status", undefined);
-	Session.set("showAccountSettingsDialog", false);
-
-	if (!Session.get("filter_date")) {
-		var tmp_date = new Date();
-		tmp_date.setDate(tmp_date.getDate() - 14);
-		Session.set("filter_date", tmp_date);
-	}
-	if (!Session.get("selected_navitem")) {
-		Session.set("selected_navitem", 14);
-	}
-	if (!Session.get("filter_status")) {
-		var filter_status = new Array();
-		filter_status.push("on");
-		Session.set("filter_status", filter_status);
-	}
-	if (!Session.get("filter_term")) {
-		var filter_term = ".*";
-		Session.set("filter_term", filter_term);
-	}
-	if (!Session.get("filter_limit")) {
-		var filter_limit = 1;
-		Session.set("filter_limit", filter_limit);
-	}
-	if (!Session.get("selected_links")) {
-		var selected_links = [];
-		Session.set("selected_links", selected_links);
-	}
-	if (!Session.get("loading_results")) {
-		Session.set("loading_results", true);
-	}
-
-	var timespans = [1, 14, 30, 90, 365];
-
-	timespans.forEach(function (timespan) {
-		Session.set("links_count_" + timespan, 0);
-	});
-
+	
 	activateInput($('#searchfield'));
 
 	Meteor.setTimeout(function () {
@@ -116,6 +101,7 @@ Meteor.startup(function () {
 		// auch 
 		refreshJDOnlineStatus();
 		Meteor.call('updateFacebookTokensForUser');
+		Meteor.call('updateLinkContributionCount');
 	}, 2000);
 });
 
@@ -270,7 +256,13 @@ Template.link.getStatusIcon = function () {
 };
 // Funktion um zu bestimmen, ob ein Link ausgewählt ist
 Template.link.isLinkSelected = function () {
-	if (_.contains(Session.get("selected_links"), this._id)) return true;
+	var selected = Session.get("selected_links");
+	
+	for (var i=0;i<selected.length;i++)
+	{ 
+		if (EJSON.equals(this._id,selected[i]))
+			return true;
+	}
 	return false;
 };
 // Funktion, die anhand der Source-URL im Link Objekt den zugehörigen Namen raussucht
@@ -476,7 +468,7 @@ Template.navigation.rendered = function () {
 
 	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>";
 
-	strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
+	strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
 	$('#brand').popover({
 		animation: true,
 		placement: "bottom",
@@ -485,8 +477,8 @@ Template.navigation.rendered = function () {
 		html: true,
 		content: straddress + strdonatebutton,
 		delay: {
-			show: 500,
-			hide: 100
+			show: 1000,
+			hide: 3000
 		}
 	});
 
@@ -700,8 +692,8 @@ Template.linklist.events = ({
 
 Template.link.rendered = function () {
 		link = this.data;
-
-		htmlstr = "<form class='newcommentform' id=" + link._id + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4' type='text' required></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
+		
+		htmlstr = "<form class='newcommentform' id=" + link._id._str + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4' type='text' required></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
 		var commentsstr = "";
 
 		if (link.comments && link.comments !== null && link.comments.length > 0) {
@@ -718,7 +710,7 @@ Template.link.rendered = function () {
 			}
 		} else commentsstr = "<small>noch keine Kommentare vorhanden</small>";
 
-		$("#" + link._id + '_comments').popover({
+		$("#" + link._id._str + '_comments').popover({
 			animation: true,
 			placement: "bottom",
 			trigger: "click",
@@ -733,7 +725,6 @@ Template.link.rendered = function () {
 }
 
 Template.linklist.rendered = function () {
-	//TODO validation, cannot be empty
 	$('.linkname').editable();
 
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true) {
@@ -799,14 +790,8 @@ Template.accountSettingsDialog.rendered = function () {
 };
 
 Template.user_loggedin.rendered = function () {
-	if (Meteor.userId() && Meteor.user() && Meteor.user().profile) {
-		//TODO geht fast schon
-		var linkcontribcount = "?"; 
-		Meteor.call('getLinkContributionCount', function (error, result) {
-			if (result) linkcontribcount = result;
-		});
-		
-		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small>   " + Meteor.user().username + "</li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li>Seiten hinzugefügt: " + Sites.find({creator: Meteor.user().id}).count() + "</li><li>Links hinzugefügt: " + linkcontribcount + "</li></small>";
+	if (Meteor.userId() && Meteor.user() && Meteor.user().profile) {		
+		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small><b>   " + Meteor.user().username + "</b></li><li><br/></li><li><b>Dein JDownloader</b></li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li><b>Deine Beitrag</b></li><li>Seiten: " + Sites.find({creator: Meteor.user().id}).count() + "</li><li>Links: " + Meteor.user().profile.linkcontributioncount + "</li></small>";
 		$('#accountbtn').popover({
 			toggle: true,
 			animation: true,
@@ -826,7 +811,7 @@ Template.user_loggedin.rendered = function () {
 //Events für die einzelnen Link-Objekte
 Template.link.events({
 	'submit .newcommentform': function (event, template) {
-		linkid = this._id;
+		linkid = this._id._str;
 		event.preventDefault();
 		var newmessage = template.find('#new_comment').value;
 		Meteor.call('createComment', linkid, newmessage, function (error, result) {
@@ -877,25 +862,24 @@ Template.link.events({
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
 		
-		//DDPPRE: workaround über URL, später sollte wieder _id genutzt werden, wenn ddp-pre1 geht
 		if (Meteor.userId() && newName != "") Links.update({
-			url: this.url
+			_id: this._id
 		}, {
 			$set: {
 				name: newName
 			}
 		});
 	},
-	'click .icon-comment': function (event) {	
+	//TODO ist jetzt leider kaputt....toller kram
+	'click .icon-comment': function (event) {
 		$('.icon-comment:not(#'+event.target.id+')').popover('hide');
 		$('#' + event.target.id).popover('toggle');
 	},
 	//Link liken
 	'click .like': function (context) {
 		// This query succeeds only if the voters array doesn't contain the user
-		//DDPPRE: workaround bis ddp-pre1 geht, dann wieder über _id
 		query = {
-			url: this.url,
+			_id: this._id,
 			likers: {
 				'$ne': Meteor.userId()
 			}
@@ -912,10 +896,9 @@ Template.link.events({
 		};
 		Links.update(query, update);
 	},
-	//DDPPRE1 ddp-pre1 workaround
 	'click .icon-trash': function (event, template) {
 		Links.remove({
-			url: this.url
+			_id: this._id
 		});
 	}
 });
@@ -954,6 +937,7 @@ Template.addLinkDialog.events({
 			}
 
 			if (result) {
+				Meteor.call('updateLinkContributionCount');
 				Session.set("status", '<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + "Link hinzugefügt!</small></p>");
 				Meteor.setTimeout(function () {
 					Session.set("showAddLinkDialog", false);
@@ -1174,24 +1158,37 @@ Template.sitesDialog.events({
 	'submit .form-inline': function (event, template) {
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
-		//DDPPRE: workaround bis ddp-pre1 fertig ist
+
 		if (Meteor.userId() && newName != "") Sites.update({
-			url: this.url
+			_id: this._id
 		}, {
 			$set: {
 				name: newName
 			}
 		});
 	},
-	//DDPPRE: ddp-pre1 workaround
 	'click #remove_site': function (event, template) {
 		Sites.remove({
-			url: this.url
+			_id: this._id
 		});
 	}
 });
 //Events des Einstellungs-Dialogs
 Template.accountSettingsDialog.events({
+	'input #port': function (event, template) {
+		if (!event.target.validity.valid || !template.find('#ip').validity.valid) {
+			template.find('.save').disabled = true;
+		} else {
+			template.find('.save').disabled = false;
+		}
+	},
+	'input #ip': function (event, template) {
+		if (!event.target.validity.valid && !template.find('#autoupdate').checked || !template.find('#port').validity.valid) {
+			template.find('.save').disabled = true;
+		} else {
+			template.find('.save').disabled = false;
+		}
+	},
 	//IP-Adresse aktualisieren Button - IP checken und anzeigen
 	'click #refreship': function (event, template) {
 		Session.set("status",
@@ -1226,7 +1223,11 @@ Template.accountSettingsDialog.events({
 	},
 	//IP-Feld für Eingbae aktivieren/deaktivieren, je nachdem ob autoupdate eingeschaltet ist
 	'click #autoupdate': function (event, template) {
-		if (template.find("#autoupdate").checked) $('#ip').prop("disabled", true);
+		if (template.find("#autoupdate").checked) {
+			$('#ip').prop("disabled", true);
+			if (template.find('#port').validity.valid && template.find('#ip').validity.valid)
+				template.find('.save').disabled = false;
+		}
 		else $('#ip').prop("disabled", false);
 	},
 	//eingaben speichern und IP nochmal updaten, falls der User was komisches eingegeben hat

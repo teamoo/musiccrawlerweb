@@ -98,7 +98,7 @@
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			{{#if currentUser}}
-				<a class="brand hand" id="brand" style="margin-left:-15px">MusicCrawler</a>
+				<a class="brand" id="brand" style="margin-left:-15px">MusicCrawler</a>
 				<ul class="nav" role="navigation">
 					<li class="dropdown">
 	                      <a id="drop1" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
@@ -222,13 +222,13 @@
   <tr>
 	<td>
 		{{#if isLinkSelected}}
-			<input type="checkbox" class="link_checkbox" id="{{_id}}" checked="checked">
+			<input type="checkbox" class="link_checkbox" id="{{_id._str}}" checked="checked">
 		{{else}}
-			<input type="checkbox" class="link_checkbox" id="{{_id}}">
+			<input type="checkbox" class="link_checkbox" id="{{_id._str}}">
 		{{/if}}
 	</td>
 	<td>
-		<i class="icon-refresh hand refreshlink" id="{{_id}}"></i>
+		<i class="icon-refresh hand refreshlink" id="{{_id._str}}"></i>
 	</td>
 	<td>
 		{{{getPlayerWidget}}}
@@ -237,13 +237,13 @@
     <td style="max-width: 300px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
 	<td>
 		{{#if comments}}
-			<i class="icon-comment hand" rel="popover" id="{{_id}}_comments"></i>
+			<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
 		{{else}}
-			<i class="icon-comment icon-white hand" rel="popover" id="{{_id}}_comments"></i>
+			<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
 		{{/if}}
 	</td>
 	<td>
-		<i class="icon-thumbs-up hand like" id="{{_id}}"></i>
+		<i class="icon-thumbs-up hand like" id="{{_id._str}}"></i>
 		{{#if likes}}{{likes}}{{else}}0{{/if}}
 	</td>
 	<td style="text-align: center;">
@@ -296,14 +296,14 @@
 	<form class="form-horizontal" id="settingsform">
 		<span class="help-inline">IP-Adresse:</span>
 			{{#if currentUser.profile.autoupdateip}}
-				<input class="input-medium" id="ip" type="text" value={{currentUser.profile.ip}} disabled>
+				<input class="input-medium" id="ip" type="text" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" value={{currentUser.profile.ip}} disabled>
 			{{else}}
-				<input class="input-medium" id="ip" type="text" value={{currentUser.profile.ip}}>
+				<input class="input-medium" id="ip" type="text" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" value={{currentUser.profile.ip}}>
 			{{/if}}
 			<button class="btn btn-link" type="button" id="refreship">Aktualisieren</button>
 		<span class="help-inline">Port:</span>
 		{{! TODO pattern für IP und port, port length auch mit angeben, keine negativen werte}}
-		<input class="input-mini" id="port" type="number" value={{currentUser.profile.port}}>
+		<input class="input-mini" id="port" type="number" min="0" max="65536" value={{currentUser.profile.port}}>
 		<label class="checkbox">
 		<br/>
 		{{#if currentUser.profile.autoupdateip}}
@@ -411,7 +411,7 @@
 					</td>
 					<td>
 						{{#if isOwner}}
-							<a class="sitename" data-mode="inline" data-name="name" data-type="text" data-pk="{{_id}}">{{name}}</a>
+							<a class="sitename" data-mode="inline" data-name="name" data-type="text" data-pk="{{_id._str}}">{{name}}</a>
 						{{else}}
 							{{name}}
 						{{/if}}
@@ -427,7 +427,7 @@
 					<td>
 						{{#if isAdmin}}
 							{{#if next_crawl}}
-								<i class="icon-time" id="{{_id}}"></i>
+								<i class="icon-time" id="{{_id._str}}"></i>
 							{{else}}
                                 {{#if canCrawlAgain}}
 									{{#if active}}
@@ -442,7 +442,7 @@
 							{{#if isAdmin}}
 							{{else}}
 								{{#if next_crawl}}
-									<i class="icon-time" id="{{_id}}"></i>
+									<i class="icon-time" id="{{_id._str}}"></i>
 								{{else}}
 									{{#if canCrawlAgain}}
 										{{#if active}}
