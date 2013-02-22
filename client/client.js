@@ -399,6 +399,11 @@ var openSitesDialog = function () {
 //
 // Eventhandler
 //
+Template.page.events({
+	'click' : function (event, template) {
+		$('.icon-comment').popover('hide');
+	}
+});
 // Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
 Template.connectionLostWarning.events({
 	'click #terminateappbutton': function (context) {
@@ -432,7 +437,7 @@ Template.user_loggedout.events({
 					"http://api.hostip.info/get_json.php", function (
 				error2, result) {
 					if (error2) console.log("Fehler beim ermitteln der Benutzer-IP");
-					if (result) Meteor.users.update({
+					if (result && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
 						_id: Meteor.userId()
 					}, {
 						$set: {
@@ -626,10 +631,10 @@ Template.navigation.events({
 		return false;
 	},
 	'click .linkfilter': function (event, template) {
-		var tmp_date = new Date();
-		tmp_date.setDate(tmp_date.getDate() - event.srcElement.id);
+		var tmp_date = new Date();		
+		tmp_date.setDate(tmp_date.getDate() - event.target.id);
 		Session.set("filter_date", tmp_date);
-		Session.set("selected_navitem", parseInt(event.srcElement.id));
+		Session.set("selected_navitem", parseInt(event.target.id));
 		$('li.linkfilter').removeClass("active");
 		var activenumber = parseInt(Session.get("selected_navitem"));
 		$('li.linkfilter #' + activenumber).parent().addClass("active");
@@ -682,7 +687,7 @@ Template.linklist.events = ({
 	},
 	//alle Links anhaken, die gerade zu sehen sind
 	'click #select_all': function (event, template) {
-		if (event.srcElement.checked === true) {
+		if (event.target.checked === true) {
 			var selected = _.pluck(Links.find({}, {
 				fields: {
 					_id: 1
@@ -728,6 +733,7 @@ Template.link.rendered = function () {
 }
 
 Template.linklist.rendered = function () {
+	//TODO validation, cannot be empty
 	$('.linkname').editable();
 
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true) {
@@ -794,11 +800,18 @@ Template.accountSettingsDialog.rendered = function () {
 
 Template.user_loggedin.rendered = function () {
 	if (Meteor.userId() && Meteor.user() && Meteor.user().profile) {
-		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small>   " + Meteor.user().username + "</li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li></small>";
+		//TODO geht fast schon
+		var linkcontribcount = "?"; 
+		Meteor.call('getLinkContributionCount', function (error, result) {
+			if (result) linkcontribcount = result;
+		});
+		
+		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small>   " + Meteor.user().username + "</li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li>Seiten hinzugefügt: " + Sites.find({creator: Meteor.user().id}).count() + "</li><li>Links hinzugefügt: " + linkcontribcount + "</li></small>";
 		$('#accountbtn').popover({
+			toggle: true,
 			animation: true,
 			placement: "bottom",
-			trigger: "hover",
+			trigger: "click",
 			title: Meteor.user().profile.name,
 			html: true,
 			content: htmlstr,
@@ -813,9 +826,9 @@ Template.user_loggedin.rendered = function () {
 //Events für die einzelnen Link-Objekte
 Template.link.events({
 	'submit .newcommentform': function (event, template) {
+		linkid = this._id;
 		event.preventDefault();
 		var newmessage = template.find('#new_comment').value;
-		var linkid = event.srcElement.id;
 		Meteor.call('createComment', linkid, newmessage, function (error, result) {
 			if (error) console.log("Kommentar konnte nicht erstellt werden. (" + error.details + ")");
 			//TODO testen
@@ -827,7 +840,7 @@ Template.link.events({
 	//Anhaken eines Links
 	'click .link_checkbox': function (event, template) {
 		var selected = Session.get("selected_links");
-		if (event.srcElement.checked) {
+		if (event.target.checked) {
 			var idx = selected.indexOf(this._id);
 			if (idx === -1) {
 				selected.push(this._id);
@@ -844,17 +857,17 @@ Template.link.events({
 	},
 	//Link-Status aktualisieren
 	'click .icon-refresh': function (event, template) {
-		event.srcElement.className = "icon-refreshing";
+		event.target.className = "icon-refreshing";
 
 		var theurl = this.url;
 
 		Meteor.call("refreshLink", theurl, function (error, result) {
 			if (error) {
 				console.log("Fehler beim Aktualisieren des Links " + theurl + ": " + error.reason);
-				event.srcElement.className = "icon-remove";
+				event.target.className = "icon-remove";
 			}
 			if (result) {
-				event.srcElement.className = "icon-refresh";
+				event.target.className = "icon-refresh";
 			}
 		});
 
@@ -863,8 +876,9 @@ Template.link.events({
 	'submit .form-inline': function (event, template) {
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
+		
 		//DDPPRE: workaround über URL, später sollte wieder _id genutzt werden, wenn ddp-pre1 geht
-		if (Meteor.userId()) Links.update({
+		if (Meteor.userId() && newName != "") Links.update({
 			url: this.url
 		}, {
 			$set: {
@@ -872,9 +886,9 @@ Template.link.events({
 			}
 		});
 	},
-	'click .icon-comment': function (context) {	
-		$('.icon-comment:not(#'+context.srcElement.id+')').popover('hide');
-		$('#' + context.srcElement.id).popover('toggle');
+	'click .icon-comment': function (event) {	
+		$('.icon-comment:not(#'+event.target.id+')').popover('hide');
+		$('#' + event.target.id).popover('toggle');
 	},
 	//Link liken
 	'click .like': function (context) {
@@ -915,7 +929,7 @@ Template.addLinkDialog.events({
 	},
 	//Link validieren - ist das eine gültige URL
 	'input #newlinkurl': function (event, template) {
-		if (!event.srcElement.validity.valid) {
+		if (!event.target.validity.valid) {
 			template.find('.addlink').disabled = true;
 		} else {
 			template.find('.addlink').disabled = false;
@@ -959,7 +973,7 @@ Template.addSiteDialog.events({
 	},
 	// Seiten-URL validieren
 	'input #newsiteurl': function (event, template) {
-		if (!event.srcElement.validity.valid) {
+		if (!event.target.validity.valid) {
 			template.find('.addsite').disabled = true;
 		} else {
 			template.find('.addsite').disabled = false;
@@ -1088,59 +1102,70 @@ Template.sitesDialog.events({
 	},
 	'click #crawl_all_sites': function (event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true) {
-			event.srcElement.className = "icon-refreshing";
+			event.target.className = "icon-refreshing";
 
 			Sites.find().forEach(function (site) {
-				if (!site.next_crawl && site.next_crawl !== null && site.active === true) {
+				if ((!site.next_crawl || site.next_crawl !== null) && site.active === true) {
 					Meteor.call("scheduleCrawl", site._id, function (error, result) {
 						if (error) {
-							event.srcElement.className = "icon-remove";
-							console.log("Error scheduling crawl for multiple sites");
-							console.log(error);
+							event.target.className = "icon-remove";
+							console.log("Error scheduling crawl for site " + site.name + " (" + error.reason + ")");
 						}
-						console.log(result);
-						if (result && result.status == "ok") Site.update({
-							_id: site._id
-						}, {
-							$set: {
-								next_crawl: result.jobid
-							}
-						});
+						if (result && result.data && result.data.status == "ok") {
+							Site.update({
+								_id: site._id
+							}, {
+								$set: {
+									next_crawl: result.jobid
+								}
+							});
+							event.target.className = "icon-time";
+						}
+						else event.target.className = "icon-remove";
 					});
 				}
 			});
 		}
 	},
-	'click #crawl_single_site': function (event, template) {
+	'click .crawl_single_site': function (event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true) {
-			event.srcElement.className = "icon-refreshing";
-			if (!this.next_crawl && this.next_crawl !== null  && this.active === true) {
+			event.target.className = "icon-refreshing";
+			
+			if ((!this.next_crawl || this.next_crawl !== null)  && this.active === true) {
 				Meteor.call("scheduleCrawl", this._id, function (error, result) {
 					if (error) {
-						event.srcElement.className = "icon-remove";
-						console.log(error);
+						event.target.className = "icon-remove";
+						console.log("Error scheduling crawl for site " + this.name + " (" + error.reason + ")");
 					}
-					if (result && result.status == "ok") Site.update({
-						_id: this._id
-					}, {
-						$set: {
-							next_crawl: result.jobid
-						}
-					});
+					if (result && result.data && result.data.status == "ok") {
+						Site.update({
+							_id: this._id
+						}, {
+							$set: {
+								next_crawl: result.jobid
+							}
+						});
+						event.target.className = "icon-time";
+					}
+					else event.target.className = "icon-remove";
 				});
 			} else {
 				Meteor.call("cancelCrawl", this._id, function (error, result) {
 					if (error) {
-						event.srcElement.className = "icon-remove";
-						console.log(error);
+						event.target.className = "icon-remove";
+						console.log("Error canceling crawl for site " + this.name + " (" + error.reason + ")");
 					}
-					if (result && result.status == "ok") Site.update({
-						_id: this._id
-					}, {
-						$set: {
-							next_crawl: undefined
-						}
-					});
+					if (result && result.data && result.data.status == "ok") {
+						Site.update({
+							_id: this._id
+						}, {
+							$set: {
+								next_crawl: undefined
+							}
+						});
+						event.target.className = "icon-search";
+					}
+					else event.target.className = "icon-remove";
 				});
 			}
 		}
@@ -1150,7 +1175,7 @@ Template.sitesDialog.events({
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
 		//DDPPRE: workaround bis ddp-pre1 fertig ist
-		Sites.update({
+		if (Meteor.userId() && newName != "") Sites.update({
 			url: this.url
 		}, {
 			$set: {
@@ -1177,7 +1202,7 @@ Template.accountSettingsDialog.events({
 
 		function (error, result) {
 			if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-			if (result) Meteor.users.update({
+			if (result && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
 				_id: Meteor.userId()
 			}, {
 				$set: {
@@ -1213,30 +1238,32 @@ Template.accountSettingsDialog.events({
 
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
-
 			function (error, result) {
 				if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-				Meteor.users.update({
-					_id: Meteor.userId()
-				}, {
-					$set: {
-						'profile.ip': result.data.ip,
-						'profile.port': aport,
-						'profile.autoupdateip': aupdateip,
-						'profile.showtooltips': ashowtooltips
-					}
-				});
-				// neue IP nutzen und checken, ob hier ein JD läuft...
-				//
-				Meteor.call("checkJDOnlineStatus", {
-					ip: result.data.ip,
-					port: aport
-				}, function (error2, isOnline) {
-					if (error2) {
-						console.log("Fehler beim ermitteln des Online-Status");
-					}
-					Session.set("JDOnlineStatus", isOnline);
-				});
+				if (result && result.statusCode === 200 && result.data && result.data.ip)
+				{
+					Meteor.users.update({
+						_id: Meteor.userId()
+					}, {
+						$set: {
+							'profile.ip': result.data.ip,
+							'profile.port': aport,
+							'profile.autoupdateip': aupdateip,
+							'profile.showtooltips': ashowtooltips
+						}
+					});
+					// neue IP nutzen und checken, ob hier ein JD läuft...
+					//
+					Meteor.call("checkJDOnlineStatus", {
+						ip: result.data.ip,
+						port: aport
+					}, function (error2, isOnline) {
+						if (error2) {
+							console.log("Fehler beim ermitteln des Online-Status");
+						}
+						Session.set("JDOnlineStatus", isOnline);
+					});
+				}
 			});
 		} else {
 			// wenn Aut-Update aus ist, nehmen wir die IP-Adresse, die der User
@@ -1269,7 +1296,7 @@ function refreshJDOnlineStatus() {
 
 			function (error, result) {
 				if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-				if (result && result.data && result.data.ip) Meteor.user().profile.ip = result.data.ip;
+				if (result && result.statusCode === 200 && result.data && result.data.ip) Meteor.user().profile.ip = result.data.ip;
 			});
 		}
 		// unabhängig von autoupdate schauen wir, ob die gewünschte IP
