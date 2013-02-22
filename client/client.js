@@ -1003,7 +1003,7 @@ Template.addSiteDialog.events({
 								Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
 								
 								Meteor.call("scheduleCrawl", newsiteurl, function (error3, result3) {
-									if (result3 && result3.status == "ok") Site.update({
+									if (result3 && result3.status == "ok") Sites.update({
 										groupid: newsiteurl.split("groups/")[1].split("/")[0]
 									}, {
 										$set: {
@@ -1045,7 +1045,7 @@ Template.addSiteDialog.events({
 				}, 3000);
 
 				Meteor.call("scheduleCrawl", newsiteurl, function (error2, result2) {
-					if (result2 && result2.status == "ok") Site.update({
+					if (result2 && result2.status == "ok") Sites.update({
 						_id: site._id
 					}, {
 						$set: {
@@ -1098,7 +1098,7 @@ Template.sitesDialog.events({
 							console.log("Error scheduling crawl for site " + site.name + " (" + error.reason + ")");
 						}
 						if (result && result.data && result.data.status == "ok") {
-							Site.update({
+							Sites.update({
 								_id: site._id
 							}, {
 								$set: {
@@ -1124,7 +1124,7 @@ Template.sitesDialog.events({
 						console.log("Error scheduling crawl for site " + this.name + " (" + error.reason + ")");
 					}
 					if (result && result.data && result.data.status == "ok") {
-						Site.update({
+						Sites.update({
 							_id: this._id
 						}, {
 							$set: {
@@ -1142,7 +1142,7 @@ Template.sitesDialog.events({
 						console.log("Error canceling crawl for site " + this.name + " (" + error.reason + ")");
 					}
 					if (result && result.data && result.data.status == "ok") {
-						Site.update({
+						Sites.update({
 							_id: this._id
 						}, {
 							$set: {
