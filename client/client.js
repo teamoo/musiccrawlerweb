@@ -92,9 +92,9 @@ Meteor.startup(function () {
 			}
 		});
 	});
-	//SC.initialize({
-	//  client_id: Meteor.settings.client_id
-	//});  
+	SC.initialize({
+	  client_id: Meteor.settings.public.soundcloud.client_id
+	});
 	
 	activateInput($('#searchfield'));
 
@@ -142,6 +142,7 @@ Template.page.searchresultsFound = function () {
 };
 
 Template.page.linksFound = function () {
+    console.log("call");
 	if (Links.findOne()) return true;
 	if (Session.get("links_completed") === true) {
 		//XXX geht erst, wenn Meteor non UTF-8 encoding bei http responses versteht
@@ -175,7 +176,8 @@ Template.page.linksFound = function () {
 		var tracks = undefined;
 		Session.set("filter_term_external", Session.get("filter_term").replace(/\.\*/gi, ""));
 
-		if (Session.get("filter_term_external") !== "") {
+		if (Session.get("filter_term_external") != "") {
+            console.log("search soundcloud");
 			//TODO scheint mehrfach aufgerufen zu werden...das müssen wir verhindern.
 			//SC.get('/tracks', {limit: 10, q: Session.get("filter_term_external")}, function(tracks) {
 				if (tracks && tracks.length) {
@@ -484,7 +486,7 @@ Template.navigation.rendered = function () {
 		}
 	});
 
-	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true) {
+	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
 		if ($('#downloadbutton').attr("disabled") == "disabled") $('#downloadbutton').tooltip({
 			title: "Dein JDownloader ist nicht erreichbar oder du hast keinen Link ausgewählt. Bitte wähle einen Link aus und überprüfe ggf. dein Profil.",
 			placement: "bottom"
@@ -729,7 +731,7 @@ Template.link.rendered = function () {
 Template.linklist.rendered = function () {
 	$('.linkname').editable();
 
-	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true) {
+	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
 		$('#filter_links').tooltip({
 			title: "nur Links mit Status (online) oder alle Links anzeigen",
 			placement: "left"
@@ -767,7 +769,7 @@ Template.linklist.rendered = function () {
 
 Template.accountSettingsDialog.rendered = function () {
 	//XXX seit Bootstrap 2.3 sind die Tooltips abgeschnitten...
-	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true) {
+	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
 		$('#refreship').tooltip({
 			title: "Wenn du auf 'Aktualisieren' klickst, wird die IP-Adresse des Rechners ermittelt, an dem du gerade bist und gespeichert. Du kannst dann Links auf diesem Rechner empfangen, wenn JDownloader läuft hast und der Port offen ist.",
 			placement: "right"
@@ -1061,7 +1063,7 @@ Template.addSiteDialog.events({
 //Wenn der Seitendialog gerendered wurde, UI Widgets aktivieen
 Template.sitesDialog.rendered = function () {
 	$('.sitename').editable();
-	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips == true) {
+	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
 		$('.icon-trash').tooltip({
 			title: "Seite aus der Datenbank löschen",
 			placement: "top"
