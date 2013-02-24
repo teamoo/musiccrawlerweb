@@ -142,56 +142,58 @@ Template.page.searchresultsFound = function () {
 };
 
 Template.page.linksFound = function () {
-    console.log("call");
 	if (Links.findOne()) return true;
 	if (Session.get("links_completed") === true) {
 		//XXX geht erst, wenn Meteor non UTF-8 encoding bei http responses versteht
-		if (Session.get("filter_term_external") && Session.get("filter_term_external") != "")
-		/*Meteor.call('searchMuzon', encodeURIComponent(Session.get("filter_term_external")), function(error, result) {
-				if (result && result.content) {
-					
-					var iterator = document.evaluate("//a[contains(@id,'aplayer')]::text()", result.content, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
-					 
-					try {
-					  var thisNode = iterator.iterateNext();
-					   
-					  while (thisNode) {
-					    console.log( thisNode.textContent );
-					    thisNode = iterator.iterateNext();
-					  }
-					}
-					catch (e) {
-					  dump( 'Error: Document tree modified during iteration ' + e );
-					}
-					
-				}
-			});*/
-
-		Session.set("loading_results", true);
-
-		Meteor.setTimeout(function () {
-			Session.set("loading_results", false);
-		}, 8000);
-
-		var tracks = undefined;
-		Session.set("filter_term_external", Session.get("filter_term").replace(/\.\*/gi, ""));
-
-		if (Session.get("filter_term_external") != "") {
-            console.log("search soundcloud");
-			//TODO scheint mehrfach aufgerufen zu werden...das müssen wir verhindern.
-			//SC.get('/tracks', {limit: 10, q: Session.get("filter_term_external")}, function(tracks) {
-				if (tracks && tracks.length) {
-					for (var i = 0; i <= tracks.length; i++) {
-						console.log(tracks[i]);
-						SearchResults.insert({
-							source: "SoundCloud",
-							name: tracks[i].title,
-							url: tracks[i].permalink_url,
-							duration: moment(tracks[i].duration).format('mm:ss') + " min."
-						});
-					}
-				}
+		
+		var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "");
+		
+		if (filter_term_external != "")
+		{
+//			Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
+//					if (result && result.content) {
+//						
+//						var iterator = document.evaluate("//a[contains(@id,'aplayer')]::text()", result.content, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+//						 
+//						try {
+//						  var thisNode = iterator.iterateNext();
+//						   
+//						  while (thisNode) {
+//						    console.log( thisNode.textContent );
+//						    thisNode = iterator.iterateNext();
+//						  }
+//						}
+//						catch (e) {
+//						  dump( 'Error: Document tree modified during iteration ' + e );
+//						}
+//						
+//					}
+//				});
+			console.log("gooo");
+			Session.set("loading_results", true);
+	
+			Meteor.setTimeout(function () {
+				console.log("ttimmme out");
 				Session.set("loading_results", false);
+			}, 8000);
+	
+			var tracks = undefined;
+			
+		    console.log("search soundcloud");
+			//TODO scheint mehrfach aufgerufen zu werden...das müssen wir verhindern.
+			//SC.get('/tracks', {limit: 10, q: filter_term_external}, function(tracks) {
+					if (tracks && tracks.length) {
+						for (var i = 0; i <= tracks.length; i++) {
+							console.log(tracks[i]);
+							SearchResults.insert({
+								source: "SoundCloud",
+								name: tracks[i].title,
+								url: tracks[i].permalink_url,
+								duration: moment(tracks[i].duration).format('mm:ss') + " min."
+							});
+						}
+					}
+					//Session.set("loading_results", false);
 			//});
 		}
 	}
@@ -397,7 +399,16 @@ var openSitesDialog = function () {
 //
 Template.page.events({
 	'click' : function (event, template) {
-		$('.icon-comment').popover('hide');
+		if (!(event.target.form && event.target.form.className == "newcommentform"))
+		{
+			if (event.target.id.indexOf("comment") === -1)
+				if (event.target.className.indexOf("popover") === -1)
+					if (event.target.className.indexOf("comment") === -1)
+						if (event.target.outerHTML.indexOf("comment") === -1)
+						{
+							$('.icon-comment').popover('hide');
+						}
+		}
 	}
 });
 // Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
@@ -462,6 +473,9 @@ Template.user_loggedin.events({
 		event.stopImmediatePropagation();
 		openAccountSettingsDialog();
 		return false;
+	},
+	'click .dropdown-toggle': function (event) {
+		$('#accountbtn').popover('hide');
 	}
 });
 
@@ -697,7 +711,7 @@ Template.linklist.events = ({
 Template.link.rendered = function () {
 		link = this.data;
 		
-		htmlstr = "<form class='newcommentform' id=" + link._id._str + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='4' type='text' required></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
+		htmlstr = "<form class='newcommentform' id=" + link._id._str + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='5' style='width:248px' type='text' required></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
 		var commentsstr = "";
 
 		if (link.comments && link.comments !== null && link.comments.length > 0) {
@@ -709,10 +723,10 @@ Template.link.rendered = function () {
 
 					var strdate = moment(link.comments[i].date_created).fromNow();
 
-					commentsstr = commentsstr + "<p style='margin-bottom:5px'><small style='font-size:10px'>" + creatorname + " " + "</small><i style='color:grey;font-size:10px'>" + strdate + "</i><br/><small>" + link.comments[i].message + "</small></p>";
+					commentsstr = commentsstr + "<p id='comment_text' style='margin-bottom:5px;width:248px'><small id='comment_creator' style='font-size:10px'>" + creatorname + " " + "</small><i id='comment_date' style='color:grey;font-size:10px'>" + strdate + "</i><br/><small id='comment_message'>" + link.comments[i].message + "</small></p>";
 				}
 			}
-		} else commentsstr = "<small>noch keine Kommentare vorhanden</small>";
+		} else commentsstr = "<small id='no_comments_label'>noch keine Kommentare vorhanden</small>";
 
 		$("#" + link._id._str + '_comments').popover({
 			animation: true,
@@ -795,9 +809,8 @@ Template.accountSettingsDialog.rendered = function () {
 
 Template.user_loggedin.rendered = function () {
 	if (Meteor.userId() && Meteor.user() && Meteor.user().profile) {		
-		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small><b>   " + Meteor.user().username + "</b></li><li><br/></li><li><b>Dein JDownloader</b></li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li><b>Deine Beitrag</b></li><li>Seiten: " + Sites.find({creator: Meteor.user().id}).count() + "</li><li>Links: " + Meteor.user().profile.linkcontributioncount + "</li></small>";
+		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small><b>   " + Meteor.user().username + "</b></li><li><br/></li><li><b>Dein JDownloader</b></li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li><b>Dein Beitrag</b></li><li>Seiten: " + Sites.find({creator: Meteor.user().id}).count() + "</li><li>Links: " + Meteor.user().profile.linkcontributioncount + "</li></small>";
 		$('#accountbtn').popover({
-			toggle: true,
 			animation: true,
 			placement: "bottom",
 			trigger: "click",
@@ -814,16 +827,23 @@ Template.user_loggedin.rendered = function () {
 
 //Events für die einzelnen Link-Objekte
 Template.link.events({
-	'submit .newcommentform': function (event, template) {
-		linkid = this._id._str;
+	'input #new_comment': function (event, template) {
+		if (!event.target.validity.valid) {
+			template.find('#postcomment').disabled = true;
+		} else {
+			template.find('#postcomment').disabled = false;
+		}
+	},
+	'click #postcomment': function (event, template) {
+		linkid = this._id;
+		
 		event.preventDefault();
+		event.stopPropagation();
 		var newmessage = template.find('#new_comment').value;
 		Meteor.call('createComment', linkid, newmessage, function (error, result) {
 			if (error) console.log("Kommentar konnte nicht erstellt werden. (" + error.details + ")");
-			//TODO testen
-			Meteor.setTimeout(function(){$('#' + linkid + '_comments').popover('show');},100);
+			Meteor.setTimeout(function(){$('#' + linkid + '_comments').popover('show');},10);
 		});
-		Meteor.setTimeout(function(){$('#' + linkid + '_comments').popover('show');},100);
 		return false;
 	},
 	//Anhaken eines Links
@@ -847,12 +867,12 @@ Template.link.events({
 	//Link-Status aktualisieren
 	'click .icon-refresh': function (event, template) {
 		event.target.className = "icon-refreshing";
-
-		var theurl = this.url;
-
-		Meteor.call("refreshLink", theurl, function (error, result) {
+		
+		var linkurl = this.url
+		
+		Meteor.call("refreshLink", this._id, function (error, result) {
 			if (error) {
-				console.log("Fehler beim Aktualisieren des Links " + theurl + ": " + error.reason);
+				console.log("Fehler beim Aktualisieren des Links " + linkurl + ": " + error.reason);
 				event.target.className = "icon-remove";
 			}
 			if (result) {
@@ -874,10 +894,10 @@ Template.link.events({
 			}
 		});
 	},
-	//TODO ist jetzt leider kaputt....toller kram
 	'click .icon-comment': function (event) {
+		event.stopPropagation();	
 		$('.icon-comment:not(#'+event.target.id+')').popover('hide');
-		$('#' + event.target.id).popover('toggle');
+		return false;
 	},
 	//Link liken
 	'click .like': function (context) {
