@@ -43,6 +43,7 @@ Meteor.autorun(function () {
 			// set a session key to true to indicate that the
 			// subscription is completed.
 			Session.set('links_completed', true);
+			Session.set('loading_results', false);
 		});
 	}
 
@@ -171,7 +172,8 @@ Template.page.linksFound = function () {
 //				});
 			console.log("gooo");
 			Session.set("loading_results", true);
-	
+			Session.set("filter_term_external", filter_term_external);
+			
 			Meteor.setTimeout(function () {
 				console.log("ttimmme out");
 				Session.set("loading_results", false);
