@@ -70,6 +70,9 @@ Meteor.publish('sites', function () {
             last_crawled: 1,
             next_crawl: 1,
             active: 1,
+        },
+        sort: {
+            name: 1
         }
     });
 });
