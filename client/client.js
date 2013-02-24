@@ -235,7 +235,11 @@ Template.linklist.links = function () {
 Template.searchresultlist.searchresults = function () {
 	return SearchResults.find({});
 };
-
+Template.link.isNotAlreadyDownloaded = function () {
+	if (this.downloaders && this.downloaders.length)
+		return !_.contains(this.downloaders, Meteor.userId())
+	return true
+};
 Template.link.isAdmin = function () {
 	if (!Meteor.user()) return false;
 	var admin = Meteor.user().admin;
@@ -594,7 +598,23 @@ Template.navigation.events({
 						Session.set("progressState", "progress-warning");
 					}
 					if (result) {
-						console.log(result);
+						query = {
+							url: {
+								'$in': sel_links
+							},
+							downloaders: {
+								'$ne': Meteor.userId()
+							}
+						};
+						update = {
+							'$push': {
+								'downloaders': Meteor.userId()
+							}
+						};
+						options = {
+							multi: true
+						};
+						Links.update(query, update, options);
 					}
 
 					var oldprogress = Session.get("progress");
@@ -620,13 +640,32 @@ Template.navigation.events({
 		if (selected.length > 0) {
 			var selectedurls = _.pluck(Links.find({
 				_id: {
-					$in: selected
+					'$in': selected
 				}
 			}, {
 				fields: {
 					url: 1
 				}
 			}).fetch(), 'url');
+			
+			query = {
+				_id: {
+					'$in': selected
+				},
+				downloaders: {
+					'$ne': Meteor.userId()
+				}
+			};
+			update = {
+				'$push': {
+					'downloaders': Meteor.userId()
+				}
+			};
+			options = {
+				multi: true
+			};
+			Links.update(query, update, options);
+			
 			writeConsole(_.reduce(selectedurls, function (memo, aUrl) {
 				return memo + aUrl + "<br/>";
 			}));
@@ -1260,7 +1299,8 @@ Template.accountSettingsDialog.events({
 		var aport = template.find("#port").value;
 		var aupdateip = template.find("#autoupdate").checked;
 		var ashowtooltips = template.find("#showtooltips").checked;
-
+		var ashowdownloadedlinks = template.find("#showdownloadedlinks").checked;
+		
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
 			function (error, result) {
@@ -1274,7 +1314,8 @@ Template.accountSettingsDialog.events({
 							'profile.ip': result.data.ip,
 							'profile.port': aport,
 							'profile.autoupdateip': aupdateip,
-							'profile.showtooltips': ashowtooltips
+							'profile.showtooltips': ashowtooltips,
+							'profile.showdownloadedlinks' : ashowdownloadedlinks
 						}
 					});
 					// neue IP nutzen und checken, ob hier ein JD läuft...
@@ -1300,7 +1341,8 @@ Template.accountSettingsDialog.events({
 					'profile.port': aport,
 					'profile.ip': aip,
 					'profile.autoupdateip': aupdateip,
-					'profile.showtooltips': ashowtooltips
+					'profile.showtooltips': ashowtooltips,
+					'profile.showdownloadedlinks' : ashowdownloadedlinks
 				}
 			});
 		}

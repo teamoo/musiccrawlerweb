@@ -1,6 +1,7 @@
 //Eventhandler User wird erstellt auf dem Server
 Meteor.startup(function(){
         Links._ensureIndex({date_discovered: 1});
+        Links._ensureIndex({url: 1}, {unique: 1});
         Sites._ensureIndex({last_crawled: 1, creator: 1});
         Sites._ensureIndex({feedurl: 1}, {unique: 1});
         Meteor.users._ensureIndex({id: 1}, {unique: 1});
@@ -26,6 +27,7 @@ Accounts.onCreateUser(function (options, user) {
 	// default-Werte setzen
 	user.profile.autoupdateip = true;
 	user.profile.showtooltips = true;
+	user.profile.showdownloadedlinks = false;
 	user.profile.ip = "";
 	user.profile.port = 10025;
 	user.profile.pictureurl = result.data.data.url;

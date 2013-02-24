@@ -218,44 +218,125 @@
 </template>
 
 <template name="link">
-{{! TODO: schon geladene Links anders darstellen? Filter dafür?}}
-  <tr>
-	<td>
-		{{#if isLinkSelected}}
-			<input type="checkbox" class="link_checkbox" id="{{_id._str}}" checked="checked">
-		{{else}}
-			<input type="checkbox" class="link_checkbox" id="{{_id._str}}">
-		{{/if}}
-	</td>
-	<td>
-		<i class="icon-refresh hand refreshlink" id="{{_id._str}}"></i>
-	</td>
-	<td>
-		{{{getPlayerWidget}}}
-	</td>
-    <td style="max-width: 500px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text" data-pk="{{_id}}">{{name}}</a></td>
-    <td style="max-width: 300px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
-	<td>
-		{{#if comments}}
-			<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
-		{{else}}
-			<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
-		{{/if}}
-	</td>
-	<td style="min-width: 30px">
-		<i class="icon-thumbs-up hand like" id="{{_id._str}}"></i>
-		{{#if likes}}{{likes}}{{else}}0{{/if}}
-	</td>
-	<td style="text-align: center;">
-		<i class="{{getStatusIcon}}"></i>
-	</td>
-	<td>{{getSourceName}}</td>
-	<td style="text-align: right">{{getSizeinMB}}</td>
-	<td>	{{dateFormatPretty date_discovered}}</td>
-	{{#if isAdmin}}	
-		<td><i class="icon-trash hand"></i></td>
-  	{{/if}}
-  </tr>
+{{#if currentUser.profile.showdownloadedlinks}}
+	{{#if isNotAlreadyDownloaded}}
+		<tr>
+			<td>
+				{{#if isLinkSelected}}
+					<input type="checkbox" class="link_checkbox" id="{{_id._str}}" checked="checked">
+				{{else}}
+					<input type="checkbox" class="link_checkbox" id="{{_id._str}}">
+				{{/if}}
+			</td>
+			<td>
+				<i class="icon-refresh hand refreshlink" id="{{_id._str}}"></i>
+			</td>
+			<td>
+				{{{getPlayerWidget}}}
+			</td>
+		  <td style="max-width: 500px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text" data-pk="{{_id}}">{{name}}</a></td>
+		  <td style="max-width: 300px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
+			<td>
+				{{#if comments}}
+					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{else}}
+					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{/if}}
+			</td>
+			<td style="min-width: 30px">
+				<i class="icon-thumbs-up hand like" id="{{_id._str}}"></i>
+				{{#if likes}}{{likes}}{{else}}0{{/if}}
+			</td>
+			<td style="text-align: center;">
+				<i class="{{getStatusIcon}}"></i>
+			</td>
+			<td>{{getSourceName}}</td>
+			<td style="text-align: right">{{getSizeinMB}}</td>
+			<td>	{{dateFormatPretty date_discovered}}</td>
+			{{#if isAdmin}}	
+				<td><i class="icon-trash hand"></i></td>
+			{{/if}}
+		</tr>
+	{{else}}
+		<tr>
+			<td>
+				{{#if isLinkSelected}}
+					<input type="checkbox" class="link_checkbox" id="{{_id._str}}" checked="checked">
+				{{else}}
+					<input type="checkbox" class="link_checkbox" id="{{_id._str}}">
+				{{/if}}
+			</td>
+			<td>
+				<i class="icon-refresh hand refreshlink" id="{{_id._str}}"></i>
+			</td>
+			<td>
+				{{{getPlayerWidget}}}
+			</td>
+		  <td style="max-width: 500px;color: gray;"><a style="color: gray;" class="linkname" data-mode="inline" data-name="linkname" data-type="text" data-pk="{{_id}}">{{name}}</a></td>
+		  <td style="max-width: 300px;color: gray;"><a style="color: gray;" href="{{url}}" target="_blank">{{url}}</a></td>
+			<td>
+				{{#if comments}}
+					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{else}}
+					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{/if}}
+			</td>
+			<td style="min-width: 30px;color: gray;">
+				<i class="icon-thumbs-up hand like" id="{{_id._str}}"></i>
+				{{#if likes}}{{likes}}{{else}}0{{/if}}
+			</td>
+			<td style="text-align: center;">
+				<i class="{{getStatusIcon}}"></i>
+			</td>
+			<td style="color: gray;">{{getSourceName}}</td>
+			<td style="text-align: right;color: gray;">{{getSizeinMB}}</td>
+			<td style="color: gray;">	{{dateFormatPretty date_discovered}}</td>
+			{{#if isAdmin}}	
+				<td><i class="icon-trash hand"></i></td>
+			{{/if}}
+		</tr>
+	{{/if}}
+{{else}}
+	{{#if isNotAlreadyDownloaded}}
+		<tr>
+			<td>
+				{{#if isLinkSelected}}
+					<input type="checkbox" class="link_checkbox" id="{{_id._str}}" checked="checked">
+				{{else}}
+					<input type="checkbox" class="link_checkbox" id="{{_id._str}}">
+				{{/if}}
+			</td>
+			<td>
+				<i class="icon-refresh hand refreshlink" id="{{_id._str}}"></i>
+			</td>
+			<td>
+				{{{getPlayerWidget}}}
+			</td>
+		  <td style="max-width: 500px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text" data-pk="{{_id}}">{{name}}</a></td>
+		  <td style="max-width: 300px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
+			<td>
+				{{#if comments}}
+					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{else}}
+					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{/if}}
+			</td>
+			<td style="min-width: 30px">
+				<i class="icon-thumbs-up hand like" id="{{_id._str}}"></i>
+				{{#if likes}}{{likes}}{{else}}0{{/if}}
+			</td>
+			<td style="text-align: center;">
+				<i class="{{getStatusIcon}}"></i>
+			</td>
+			<td>{{getSourceName}}</td>
+			<td style="text-align: right">{{getSizeinMB}}</td>
+			<td>	{{dateFormatPretty date_discovered}}</td>
+			{{#if isAdmin}}	
+				<td><i class="icon-trash hand"></i></td>
+			{{/if}}
+		</tr>
+	{{/if}}
+{{/if}}
 </template>
 
 <template name="searchresultlist">
@@ -319,6 +400,14 @@
 			<input id="showtooltips" type="checkbox">
 		{{/if}}
 		Tooltips anzeigen?
+		</label>
+		<label class="checkbox">
+		{{#if currentUser.profile.showdownloadedlinks}}
+			<input id="showdownloadedlinks" type="checkbox" checked="checked">
+		{{else}}
+			<input id="showdownloadedlinks" type="checkbox">
+		{{/if}}
+		bereits heruntergeladene/kopierte Links anzeigen?
 		</label>
 	</form>
   </div>

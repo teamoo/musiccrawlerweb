@@ -41,6 +41,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
             size: 1,
             likes: 1,
             likers: 1,
+            downloaders : 1,
             comments: 1,
             url: 1,
             source: 1,
