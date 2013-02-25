@@ -45,12 +45,12 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
             comments: 1,
             url: 1,
             source: 1,
-            date_discovered: 1,
+            date_published: 1,
             status: 1,
             creator: 1
         },
         sort: {
-            date_discovered: -1
+            date_published: -1
         }
     }
 
@@ -70,6 +70,7 @@ Meteor.publish('sites', function () {
             last_crawled: 1,
             next_crawl: 1,
             active: 1,
+			discovered_links: 1
         },
         sort: {
             name: 1

@@ -692,7 +692,7 @@ Template.navigation.events({
 
 		Session.set("filter_limit", 1);
 	},
-	//TODO: auto suggest for search terms
+		//TODO: auto suggest for search terms
 	'submit #searchform': function (event, template) {
 		event.preventDefault();
 		var term = template.find('#searchfield').value;
@@ -708,16 +708,29 @@ Template.navigation.events({
 		} else {
 			Session.set("filter_term", ".*");
 
-			if (Session.get("prev_filter_date")) Session.set("filter_date", Session.get("prev_filter_date"));
+			if (Session.get("prev_filter_date")) {
+				Session.set("filter_date", Session.get("prev_filter_date"));
+				Session.set("selected_navitem", parseInt((new Date().getTime()-Session.get("prev_filter_date").getTime())/(24*3600*1000)));
+				$('li.linkfilter').removeClass("active");
+				var activenumber = parseInt(Session.get("selected_navitem"));
+				$('li.linkfilter #' + activenumber).parent().addClass("active");
+			}
 			else {
 				var tmp_date = new Date();
 				tmp_date.setDate(tmp_date.getDate() - 14);
 				Session.set("filter_date", tmp_date);
+				Session.set("selected_navitem", 14);
+				$('li.linkfilter').removeClass("active");
+				var activenumber = Session.get("selected_navitem");
+				$('li.linkfilter #' + activenumber).parent().addClass("active");
 			}
 			Session.set("filter_status", ["on"]);
 		}
 		Session.set("filter_limit", 1);
 		SearchResults.remove({});
+		
+		console.log(Links.findOne());
+		
 		return false;
 	}
 });
@@ -1359,7 +1372,7 @@ Template.accountSettingsDialog.events({
 });
 
 function refreshJDOnlineStatus() {
-	if (Meteor.userId() && Meteor.user().profile) {
+	if (Meteor.user() && Meteor.user().profile) {
 		if (Meteor.user().profile.autoupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
 
