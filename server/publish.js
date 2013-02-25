@@ -23,7 +23,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
     var thelimit = itemBadgeSize * filter_limit;
 
     if (this.userId) return Links.find({
-        date_discovered: {
+        date_published: {
             $gte: filter_date
         },
         status: {

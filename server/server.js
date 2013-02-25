@@ -1,6 +1,6 @@
 //Eventhandler User wird erstellt auf dem Server
 Meteor.startup(function(){
-        Links._ensureIndex({date_discovered: 1});
+        Links._ensureIndex({date_published: 1});
         Links._ensureIndex({url: 1}, {unique: 1});
         Sites._ensureIndex({last_crawled: 1, creator: 1});
         Sites._ensureIndex({feedurl: 1}, {unique: 1});

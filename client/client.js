@@ -20,8 +20,6 @@ Session.setDefault("loading_results", true);
 	Session.setDefault("links_count_" + timespan, 0);
 });
 
-
-
 //lokale Collection für Suchergebnisse, damit wir auch diese mit reactivity anzeigen können.
 SearchResults = new Meteor.Collection(null);
 // Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
