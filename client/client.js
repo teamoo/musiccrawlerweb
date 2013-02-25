@@ -1266,7 +1266,7 @@ Template.sitesDialog.events({
 			}
 		});
 	},
-	'click #remove_site': function (event, template) {
+	'click #removesite': function (event, template) {
 		Sites.remove({
 			_id: this._id
 		});
