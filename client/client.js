@@ -1255,7 +1255,8 @@ Template.sitesDialog.events({
 				name: newName
 			}
 		});
-	},	
+	},
+	//TODO event kommt nicht an
 	'click .remove_site': function (event, template) {
 		Sites.remove({
 			_id: this._id
