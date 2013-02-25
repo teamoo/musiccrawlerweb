@@ -667,7 +667,7 @@ Template.navigation.events({
 			Links.update(query, update, options);
 			
 			writeConsole(_.reduce(selectedurls, function (memo, aUrl) {
-				return memo + aUrl + "<br/>";
+				return memo + "<br/>" + aUrl;
 			}));
 		}
 	},
