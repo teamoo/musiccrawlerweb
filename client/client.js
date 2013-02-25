@@ -726,7 +726,7 @@ Template.navigation.events({
 		}
 		Session.set("filter_limit", 1);
 		SearchResults.remove({});
-		
+		//TODO hier suchen?
 		console.log(Links.findOne());
 		
 		return false;
@@ -916,17 +916,7 @@ Template.link.events({
 				selected.push(this._id);
 				Session.set("selected_links", selected);
 			}
-			/*var idx = selected.indexOf(this._id);
-			if (idx === -1) {
-				selected.push(this._id);
-				Session.set("selected_links", selected);
-			}*/
 		} else {
-			/*var idx = selected.indexOf(this._id);
-			if (idx !== -1) {
-				selected.splice(idx, 1);
-				Session.set("selected_links", selected);
-			}*/
 			selectedloop: for (var i=0;i<selected.length;i++)
 			{ 
 				if (EJSON.equals(this._id,selected[i]))
@@ -1265,16 +1255,11 @@ Template.sitesDialog.events({
 				name: newName
 			}
 		});
-	},
-	'click #removesite': function (event, template) {
-		//TODO geht nicht mehr
-		console.log("removesite");
+	},	
+	'click .remove_site': function (event, template) {
 		Sites.remove({
 			_id: this._id
 		});
-	},
-	'click .icon-trash': function (event, template) {
-		console.log("icontrash");
 	}
 });
 //Events des Einstellungs-Dialogs
