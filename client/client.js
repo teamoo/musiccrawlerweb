@@ -914,8 +914,10 @@ Template.link.events({
 				}
 			}
 			if (contains === false)
+			{
 				selected.push(this._id);
 				Session.set("selected_links", selected);
+			}
 			/*var idx = selected.indexOf(this._id);
 			if (idx === -1) {
 				selected.push(this._id);
