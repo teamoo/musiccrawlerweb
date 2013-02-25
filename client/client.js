@@ -1267,9 +1267,14 @@ Template.sitesDialog.events({
 		});
 	},
 	'click #removesite': function (event, template) {
+		//TODO geht nicht mehr
+		console.log("removesite");
 		Sites.remove({
 			_id: this._id
 		});
+	},
+	'click .icon-trash': function (event, template) {
+		console.log("icontrash");
 	}
 });
 //Events des Einstellungs-Dialogs
