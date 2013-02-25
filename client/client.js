@@ -904,16 +904,36 @@ Template.link.events({
 	'click .link_checkbox': function (event, template) {
 		var selected = Session.get("selected_links");
 		if (event.target.checked) {
-			var idx = selected.indexOf(this._id);
+			var contains = false;
+			selectedloop: for (var i=0;i<selected.length;i++)
+			{ 
+				if (EJSON.equals(this._id,selected[i]))
+				{
+					contains = true;
+					break selectedloop;
+				}
+			}
+			if (contains === false)
+				selected.push(this._id);
+			/*var idx = selected.indexOf(this._id);
 			if (idx === -1) {
 				selected.push(this._id);
 				Session.set("selected_links", selected);
-			}
+			}*/
 		} else {
-			var idx = selected.indexOf(this._id);
+			/*var idx = selected.indexOf(this._id);
 			if (idx !== -1) {
 				selected.splice(idx, 1);
 				Session.set("selected_links", selected);
+			}*/
+			selectedloop: for (var i=0;i<selected.length;i++)
+			{ 
+				if (EJSON.equals(this._id,selected[i]))
+				{
+					selected.splice(i,1);
+					Session.set("selected_links", selected);
+					break selectedloop;
+				}
 			}
 		}
 		if (!selected.length) $('#select_all').prop("checked", false);
