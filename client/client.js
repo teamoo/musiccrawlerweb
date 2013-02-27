@@ -1223,7 +1223,7 @@ Template.addSiteDialog.events({
 Template.sitesDialog.rendered = function () {
 	$('.sitename').editable();
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
-		$('.icon-trash').tooltip({
+		$('.remove_site').tooltip({
 			title: "Seite aus der Datenbank löschen",
 			placement: "top"
 		});
@@ -1235,7 +1235,15 @@ Template.sitesDialog.rendered = function () {
 			title: "RSS-Feed",
 			placement: "left"
 		});
-		$('.icon-search').tooltip({
+		$('.icon-time').tooltip({
+			title: "Durchsuchen der Seite ist eingeplant",
+			placement: "left"
+		});
+		$('.icon-ban-circle').tooltip({
+			title: "Seite wurde innerhalb der letzten 24h durchsucht und kann noch nicht wieder durchsucht werden.",
+			placement: "left"
+		});
+		$('.crawl_single_site').tooltip({
 			title: "Seite erneut durchsuchen",
 			placement: "left"
 		});
