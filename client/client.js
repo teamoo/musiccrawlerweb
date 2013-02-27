@@ -30,7 +30,7 @@ Meteor.autorun(function () {
 	var filter_limit = Session.get('filter_limit');
 	var loading_results = Session.get('loading_results');
 	
-	if (filter_date && filter_status && filter_limit) {
+	if (filter_date && filter_status && filter_status && filter_limit) {
 		Meteor.subscribe('sites', function onReady() {
 			// set a session key to true to indicate that the subscription is
 			// completed.
@@ -250,7 +250,13 @@ Template.link.isAdmin = function () {
 
 // Link-Größe von Kilobyte in MB umwandeln
 Template.link.getSizeinMB = function () {
-	if (this.size && this.size > 0) return Math.round(this.size / 1048576) + " MB";
+	if (this.size && this.size > 0) 
+	var sizeinMB = Math.round(this.size / 1048576);
+	if (Math.ceil(Math.log(sizeinMB +1) / Math.LN10) > 3) {
+		var sizeinGB = sizeinMB / 1024;
+		return sizeinGB.toFixed(1) + " GB";
+	}
+	else return sizeinMB + " MB";
 	return undefined;
 };
 // Status-Icon auswählen je nach Status des Links
@@ -758,6 +764,29 @@ Template.linklist.events = ({
 			Session.set("selected_links", selected);
 		} else Session.set("selected_links", []);
 	},
+	'click #hide_selected_links' : function (event, template) {
+		var selected = Session.get("selected_links");
+
+		if (selected.length > 0) {			
+			query = {
+				_id: {
+					'$in': selected
+				},
+				downloaders: {
+					'$ne': Meteor.userId()
+				}
+			};
+			update = {
+				'$push': {
+					'downloaders': Meteor.userId()
+				}
+			};
+			options = {
+				multi: true
+			};
+			Links.update(query, update, options);
+		}
+	}	
 });
 
 Template.link.rendered = function () {
@@ -985,10 +1014,27 @@ Template.link.events({
 		};
 		Links.update(query, update);
 	},
-	'click .icon-trash': function (event, template) {
+	'click .delete_link': function (event, template) {
 		Links.remove({
 			_id: this._id
 		});
+	},
+	'click .hide_link': function (event, template) {
+		query = {
+			id: this._id,
+			downloaders: {
+				'$ne': Meteor.userId()
+			}
+		};
+		update = {
+			'$push': {
+				'downloaders': Meteor.userId()
+			}
+		};
+		options = {
+			multi: true
+		};
+		Links.update(query, update, options);
 	}
 });
 //Events im Link hinzufügen Dialog
@@ -1178,11 +1224,14 @@ Template.sitesDialog.events({
 			event.target.className = "icon-refreshing";
 
 			Sites.find().forEach(function (site) {
-				if ((!site.next_crawl || site.next_crawl !== null) && site.active === true) {
+				if ((!site.next_crawl || site.next_crawl == null) && site.active === true && (new Date() - site.last_crawled) > (1000 * 60 * 60 * 24)) {
 					Meteor.call("scheduleCrawl", site._id, function (error, result) {
 						if (error) {
 							event.target.className = "icon-remove";
 							console.log("Error scheduling crawl for site " + site.name + " (" + error.reason + ")");
+							$('#'+site._id+'_crawlstatus').removeClass("icon-search");
+							$('#'+site._id+'_crawlstatus').removeClass("hand");
+							$('#'+site._id+'_crawlstatus').addClass("icon-remove");
 						}
 						if (result && result.data && result.data.status == "ok") {
 							Sites.update({
@@ -1193,8 +1242,16 @@ Template.sitesDialog.events({
 								}
 							});
 							event.target.className = "icon-time";
+							$('#'+site._id+'_crawlstatus').removeClass("icon-search");
+							$('#'+site._id+'_crawlstatus').removeClass("hand");
+							$('#'+site._id+'_crawlstatus').addClass("icon-time");
 						}
-						else event.target.className = "icon-remove";
+						else {
+							event.target.className = "icon-remove";
+							$('#'+site._id+'_crawlstatus').removeClass("icon-search");
+							$('#'+site._id+'_crawlstatus').removeClass("hand");
+							$('#'+site._id+'_crawlstatus').addClass("icon-remove");
+						}
 					});
 				}
 			});
@@ -1204,7 +1261,7 @@ Template.sitesDialog.events({
 		if (Meteor.user().admin && Meteor.user().admin === true) {
 			event.target.className = "icon-refreshing";
 			
-			if ((!this.next_crawl || this.next_crawl !== null)  && this.active === true) {
+			if ((!this.next_crawl || this.next_crawl == null)  && this.active === true) {
 				Meteor.call("scheduleCrawl", this._id, function (error, result) {
 					if (error) {
 						event.target.className = "icon-remove";
@@ -1256,7 +1313,6 @@ Template.sitesDialog.events({
 			}
 		});
 	},
-	//TODO event kommt nicht an
 	'click .remove_site': function (event, template) {
 		Sites.remove({
 			_id: this._id

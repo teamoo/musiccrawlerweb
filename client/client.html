@@ -202,8 +202,11 @@
 			<th>Quelle</th>
 			<th>Größe</th>
 			<th>Veröffentlicht</th>
-			{{#if isAdmin}}
-				<th></th>
+			{{#if currentUser.profile.showdownloadedlinks}}
+			{{else}}
+				{{#if isAnyLinkSelected}}
+					<th><td><i class="icon-trash hand" id="hide_selected_links"></i></td></th>
+				{{/if}}
 			{{/if}}
 		</thead>
 		<tbody>
@@ -252,7 +255,7 @@
 			<td class="hidden-phone" style="text-align: right">{{getSizeinMB}}</td>
 			<td>	{{dateFormatPretty date_published}}</td>
 			{{#if isAdmin}}	
-				<td><i class="icon-trash hand"></i></td>
+				<td><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{else}}
@@ -290,7 +293,7 @@
 			<td class="hidden-phone" style="text-align: right;color: gray;">{{getSizeinMB}}</td>
 			<td style="color: gray;">	{{dateFormatPretty date_published}}</td>
 			{{#if isAdmin}}	
-				<td><i class="icon-trash hand"></i></td>
+				<td><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{/if}}
@@ -330,7 +333,9 @@
 			<td class="hidden-phone" style="text-align: right">{{getSizeinMB}}</td>
 			<td>	{{dateFormatPretty date_published}}</td>
 			{{#if isAdmin}}	
-				<td><i class="icon-trash hand"></i></td>
+				<td><i class="icon-trash hand delete_link"></i></td>
+			{{else}}
+				<td><i class="icon-trash hand hide_link"></i></td>
 			{{/if}}
 		</tr>
 	{{/if}}
@@ -517,14 +522,14 @@
 					<td>
 						{{#if isAdmin}}
 							{{#if next_crawl}}
-								<i class="icon-time"></i>
+								<i class="icon-time" id="{{_id}}_crawlstatus"></i>
 							{{else}}
                                 {{#if canCrawlAgain}}
 									{{#if active}}
-										<i class="icon-search hand crawl_single_site"></i>
+										<i class="icon-search hand crawl_single_site" id="{{_id}}_crawlstatus"></i>
 									{{/if}}
                                 {{else}}
-                                    <i class="icon-ban-circle"></i>
+                                    <i class="icon-ban-circle" id="{{_id}}_crawlstatus"></i>
                                 {{/if}}
 							{{/if}}
 						{{/if}}
@@ -532,14 +537,14 @@
 							{{#if isAdmin}}
 							{{else}}
 								{{#if next_crawl}}
-									<i class="icon-time"></i>
+									<i class="icon-time" id="{{_id}}_crawlstatus"></i>
 								{{else}}
 									{{#if canCrawlAgain}}
 										{{#if active}}
-											<i class="icon-search hand crawl_single_site"></i>
+											<i class="icon-search hand crawl_single_site" id="{{_id}}_crawlstatus"></i>
 										{{/if}}
 									{{else}}
-										<i class="icon-ban-circle"></i>
+										<i class="icon-ban-circle" id="{{_id}}_crawlstatus"></i>
 									{{/if}}
 								{{/if}}
 							{{/if}}
