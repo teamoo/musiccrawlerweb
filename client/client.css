@@ -41,8 +41,8 @@ body {
 }
 
 #showSitesModal {
-    width: 900px; /* SET THE WIDTH OF THE MODAL */
-    margin: 50px 0 0 -450px; /* CHANGE MARGINS TO ACCOMODATE THE NEW WIDTH (original = margin: -250px 0 0 -280px;) */
+    width: 1100px; /* SET THE WIDTH OF THE MODAL */
+    margin: 50px 0 0 -550px; /* CHANGE MARGINS TO ACCOMODATE THE NEW WIDTH (original = margin: -250px 0 0 -280px;) */
     
 }
 

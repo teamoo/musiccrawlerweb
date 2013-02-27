@@ -70,7 +70,8 @@ Meteor.publish('sites', function () {
             last_crawled: 1,
             next_crawl: 1,
             active: 1,
-			discovered_links: 1
+			discovered_links: 1,
+			last_post: 1
         },
         sort: {
             name: 1

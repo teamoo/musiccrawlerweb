@@ -2,7 +2,9 @@
 Meteor.startup(function(){
         Links._ensureIndex({date_published: 1});
         Links._ensureIndex({url: 1}, {unique: 1});
-        Sites._ensureIndex({last_crawled: 1, creator: 1});
+		Links._ensureIndex({source: 1});
+        Sites._ensureIndex({last_crawled: 1});
+		Sites._ensureIndex({creator: 1});
         Sites._ensureIndex({feedurl: 1}, {unique: 1});
         Meteor.users._ensureIndex({id: 1}, {unique: 1});
 });

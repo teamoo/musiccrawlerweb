@@ -205,6 +205,17 @@ Template.navigation.isAnyLinkSelected = function () {
 	if (Session.get("selected_links") && Session.get("selected_links").length) return true;
 	return false;
 };
+
+Template.linklist.isAnyLinkSelected = function () {
+	if (Session.get("selected_links") && Session.get("selected_links").length) return true;
+	return false;
+};
+
+Template.link.isAnyLinkSelected = function () {
+	if (Session.get("selected_links") && Session.get("selected_links").length) return true;
+	return false;
+};
+
 // Funktion um den letzten Suchbegriff wieder ins Input Feld einzutragen
 Template.navigation.getLastSearchTerm = function () {
 	var lastterm = Session.get("filter_term");
@@ -785,6 +796,7 @@ Template.linklist.events = ({
 				multi: true
 			};
 			Links.update(query, update, options);
+			Session.set("selected_links",[]);
 		}
 	}	
 });
@@ -831,6 +843,10 @@ Template.linklist.rendered = function () {
 			title: "nur Links mit Status (online) oder alle Links anzeigen",
 			placement: "left"
 		});
+		$('#hide_selected_links').tooltip({
+			title: "ausgewählte Links verbergen",
+			placement: "left"
+		});
 		$('#select_all').tooltip({
 			title: "alle Links zum Download auswählen",
 			placement: "right"
@@ -859,6 +875,14 @@ Template.linklist.rendered = function () {
 			title: "nicht verfügbar",
 			placement: "left"
 		});
+		$('.delete_link').tooltip({
+			title: "Link aus der Datenbank löschen",
+			placement: "left"
+		});
+		$('.hide_link').tooltip({
+			title: "Link ausblenden",
+			placement: "left"
+		});
 	}
 };
 
@@ -875,6 +899,10 @@ Template.accountSettingsDialog.rendered = function () {
 		});
 		$('#autoupdate').tooltip({
 			title: "Wenn du diese Option aktivierst, wird beim Starten dieser App automatisch deine IP-Adresse aktualisiert. Setz diese Option, wenn du keine feste IP-Adresse hast oder JDownloader immer auf dem Rechner nutzt, auf dem du auch diese App aufrufst.",
+			placement: "right"
+		});
+		$('#showdownloadedlinks').tooltip({
+			title: "Wenn du diese Option aktivierst, werden auch Links angezeigt, die du bereits heruntergeladen, kopiert oder ausgeblendet hast.",
 			placement: "right"
 		});
 		$('#jdon').tooltip({
@@ -1021,7 +1049,7 @@ Template.link.events({
 	},
 	'click .hide_link': function (event, template) {
 		query = {
-			id: this._id,
+			_id: this._id,
 			downloaders: {
 				'$ne': Meteor.userId()
 			}

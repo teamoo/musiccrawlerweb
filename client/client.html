@@ -205,7 +205,7 @@
 			{{#if currentUser.profile.showdownloadedlinks}}
 			{{else}}
 				{{#if isAnyLinkSelected}}
-					<th><td><i class="icon-trash hand" id="hide_selected_links"></i></td></th>
+					<th><i class="icon-trash hand" id="hide_selected_links"></i></th>
 				{{/if}}
 			{{/if}}
 		</thead>
@@ -401,20 +401,20 @@
 		IP-Adresse automatisch updaten?
 		</label>
 		<label class="checkbox">
-		{{#if currentUser.profile.showtooltips}}
-			<input id="showtooltips" type="checkbox" checked="checked">
-		{{else}}
-			<input id="showtooltips" type="checkbox">
-		{{/if}}
-		Tooltips anzeigen?
-		</label>
-		<label class="checkbox">
 		{{#if currentUser.profile.showdownloadedlinks}}
 			<input id="showdownloadedlinks" type="checkbox" checked="checked">
 		{{else}}
 			<input id="showdownloadedlinks" type="checkbox">
 		{{/if}}
 		bereits heruntergeladene/kopierte Links anzeigen?
+		</label>
+		<label class="checkbox">
+		{{#if currentUser.profile.showtooltips}}
+			<input id="showtooltips" type="checkbox" checked="checked">
+		{{else}}
+			<input id="showtooltips" type="checkbox">
+		{{/if}}
+		Tooltips anzeigen?
 		</label>
 	</form>
   </div>
@@ -484,12 +484,16 @@
   <div class="modal-body">
 		<table class="table table-striped table-condensed">
 		<thead>
-			<th><i class="icon-trash"></i></th>
+			<th></th>
 			<th>Name</th>
 			<th>URL</th>
+			<th style="text-align: center;">Links</th>
 			<th>zuletzt durchsucht</th>
 			<th>Typ</th>
 			<th>aktiv</th>
+			{{#if isAdmin}}
+				<th>zuletzt aktualisiert</th>
+			{{/if}}
 			<th>
 				{{#if isAdmin}}
 					<i class="icon-search hand" id="crawl_all_sites"></i>
@@ -512,6 +516,7 @@
 						{{/if}}
 					</td>
 					<td>{{url}}</td>
+					<td>{{discovered_links}}</td>
 					<td>{{dateFormatPretty last_crawled}}</td>
 					<td><i class="{{getFeedTypeIcon}}"></i></td>
 					<td>
@@ -519,6 +524,9 @@
 							<i class="icon-ok-sign"></i>
 						{{/if}}
 					</td>
+					{{#if isAdmin}}
+						<td>{{dateFormatPretty last_post}}</td>
+					{{/if}}
 					<td>
 						{{#if isAdmin}}
 							{{#if next_crawl}}
