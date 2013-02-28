@@ -96,7 +96,7 @@
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			{{#if currentUser}}
-				<a class="brand" id="brand" style="margin-left:-15px">MusicCrawler</a>
+				<a class="brand" id="brand" style="margin-left:-15px;cursor:default">MusicCrawler</a>
 				<ul class="nav" role="navigation">
 					<li class="dropdown">
 	                      <a id="drop1" role="button" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
@@ -199,6 +199,7 @@
 			<th>
 				<i class="icon-filter hand" id="filter_links"></i>
 			</th>
+			{{! TODO: Source filtern}}
 			<th>Quelle</th>
 			<th>Größe</th>
 			<th>Veröffentlicht</th>
@@ -215,7 +216,9 @@
 			{{/each}}
 		</tbody>
 	</table>
-	<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt.</p>
+	{{#if isLinksLimit}}
+		<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt.</p>
+	{{/if}}
 </template>
 
 <template name="link">
@@ -344,7 +347,7 @@
 
 <template name="searchresultlist">
 	{{#if searchresults}}
-		<table class="table table-condensed">
+		<table class="table table-condensed table-striped">
 		<thead>
 			<th>Quelle</th>
 			<th>
@@ -364,12 +367,12 @@
 <template name="searchresult">
   <tr>
 	<td>
-		{{source}}
+		{{{getExternalSourceIcon}}}
 	</td>
 	<td>{{getPlayerWidget}}</td>
     <td><a href="{{url}}" target="_blank">{{name}}</a></td>
 	<td>{{duration}}</td>	
-	<td><a class="btn btn-small"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</a></td>
+	<td><a class="btn btn-small add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</a></td>
   </tr>
 </template>
 

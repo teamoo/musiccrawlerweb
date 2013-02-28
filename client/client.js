@@ -142,61 +142,6 @@ Template.page.searchresultsFound = function () {
 
 Template.page.linksFound = function () {
 	if (Links.findOne()) return true;
-	if (Session.get("links_completed") === true) {
-		//XXX geht erst, wenn Meteor non UTF-8 encoding bei http responses versteht
-		
-		var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "");
-		
-		if (filter_term_external != "")
-		{
-//			Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
-//					if (result && result.content) {
-//						
-//						var iterator = document.evaluate("//a[contains(@id,'aplayer')]::text()", result.content, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
-//						 
-//						try {
-//						  var thisNode = iterator.iterateNext();
-//						   
-//						  while (thisNode) {
-//						    console.log( thisNode.textContent );
-//						    thisNode = iterator.iterateNext();
-//						  }
-//						}
-//						catch (e) {
-//						  dump( 'Error: Document tree modified during iteration ' + e );
-//						}
-//						
-//					}
-//				});
-			console.log("gooo");
-			Session.set("loading_results", true);
-			Session.set("filter_term_external", filter_term_external);
-			
-			Meteor.setTimeout(function () {
-				console.log("ttimmme out");
-				Session.set("loading_results", false);
-			}, 8000);
-	
-			var tracks = undefined;
-			
-		    console.log("search soundcloud");
-			//TODO scheint mehrfach aufgerufen zu werden...das müssen wir verhindern.
-			//SC.get('/tracks', {limit: 10, q: filter_term_external}, function(tracks) {
-					if (tracks && tracks.length) {
-						for (var i = 0; i <= tracks.length; i++) {
-							console.log(tracks[i]);
-							SearchResults.insert({
-								source: "SoundCloud",
-								name: tracks[i].title,
-								url: tracks[i].permalink_url,
-								duration: moment(tracks[i].duration).format('mm:ss') + " min."
-							});
-						}
-					}
-					//Session.set("loading_results", false);
-			//});
-		}
-	}
 	return false;
 };
 
@@ -204,6 +149,10 @@ Template.page.linksFound = function () {
 Template.navigation.isAnyLinkSelected = function () {
 	if (Session.get("selected_links") && Session.get("selected_links").length) return true;
 	return false;
+};
+
+Template.linklist.isLinksLimit = function () {
+	return (Session.get("filter_limit") == 5);
 };
 
 Template.linklist.isAnyLinkSelected = function () {
@@ -246,6 +195,7 @@ Template.linklist.links = function () {
 Template.searchresultlist.searchresults = function () {
 	return SearchResults.find({});
 };
+
 Template.link.isNotAlreadyDownloaded = function () {
 	if (this.downloaders && this.downloaders.length)
 		return !_.contains(this.downloaders, Meteor.userId())
@@ -323,9 +273,6 @@ Template.link.getPlayerWidget = function () {
 	// Soundcloud: <a href="http://soundcloud.com/matas/hobnotropic"
 	// class="sc-player">My new dub track</a>
 	// Youtube: schauen
-	// zippyshare: testen: <script type="text/javascript"
-	// src="http://api.zippyshare.com/api/embed.js"></script>
-	// vimeo: auch machen!
 
 	// This is the oEmbed endpoint for Vimeo (we're using JSON)
 	// (Vimeo also supports oEmbed discovery. See the PHP example.)
@@ -356,6 +303,12 @@ Template.link.getPlayerWidget = function () {
 		}
 	} else return "<i class=\"icon-ban-circle\"></i>";
 };
+
+Template.searchresult.getExternalSourceIcon = function() {
+	if (this.source == "soundcloud") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>"
+	return undefined;
+};
+
 // Funktion um alle Seiten ins Template zu geben (die subscription)
 Template.sitesDialog.sites = function () {
 	return Sites.find({});
@@ -420,6 +373,7 @@ var openSitesDialog = function () {
 //
 Template.page.events({
 	'click' : function (event, template) {
+		$('#accountbtn').popover('hide');
 		if (!(event.target.form && event.target.form.className == "newcommentform"))
 		{
 			if (event.target.id.indexOf("comment") === -1)
@@ -491,12 +445,13 @@ Template.user_loggedin.events({
 	//Accounteinstellungen anzeigen
 	'click #showsettings': function (event) {
 		event.preventDefault();
-		event.stopImmediatePropagation();
 		openAccountSettingsDialog();
 		return false;
 	},
-	'click .dropdown-toggle': function (event) {
-		$('#accountbtn').popover('hide');
+	'click #accountbtn': function (event) {
+		event.preventDefault();
+		event.stopPropagation();
+		return false;
 	}
 });
 
@@ -743,9 +698,58 @@ Template.navigation.events({
 		}
 		Session.set("filter_limit", 1);
 		SearchResults.remove({});
-		//TODO hier suchen?
-		console.log(Links.findOne());
+
+		Session.set("loading_results", true);
 		
+		Meteor.setTimeout(function () {
+			Session.set("loading_results", false);
+		}, 8000);
+		
+		Meteor.setTimeout(function(){
+			if (Session.get("links_completed") === true) {
+				//XXX geht erst, wenn Meteor non UTF-8 encoding bei http responses versteht
+				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "");
+				
+				if (filter_term_external != "" && !Links.findOne())
+				{
+				/*	Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
+							if (result && result.content) {
+								
+								var iterator = document.evaluate("//a[contains(@id,'aplayer')]::text()", result.content, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+								 
+								try {
+								  var thisNode = iterator.iterateNext();
+								   
+								  while (thisNode) {
+								    console.log( thisNode.textContent );
+								    thisNode = iterator.iterateNext();
+								  }
+								}
+								catch (e) {
+								  dump( 'Error: Document tree modified during iteration ' + e );
+								}
+								
+							}
+						});*/
+					Session.set("filter_term_external", filter_term_external);
+					
+					SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
+							if (tracks && tracks.length) {
+								for (var i = 0; i <= tracks.length; i++) {
+									if(tracks[i])
+										SearchResults.insert({
+											source: "soundcloud",
+											name: tracks[i].title,
+											url: tracks[i].permalink_url,
+											duration: moment(tracks[i].duration).format('mm:ss') + " min."
+										});
+								}
+								Session.set("loading_results", false);
+							}
+					});
+				}
+			}	
+		},1000);
 		return false;
 	}
 });
@@ -1098,7 +1102,6 @@ Template.addLinkDialog.events({
 					Session.set("status",
 						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>' + " " + error.details + "</small></p>");
 			}
-
 			if (result) {
 				Meteor.call('updateLinkContributionCount');
 				Session.set("status", '<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + "Link hinzugefügt!</small></p>");
@@ -1111,6 +1114,21 @@ Template.addLinkDialog.events({
 		return false;
 	}
 });
+
+Template.searchresult.events({
+	'click .add_external_link': function (event, template) {
+		event.target.disabled = true;
+		Meteor.call('createLink', this.url, function (error, result) {
+			if (error) {
+				console.log(error);
+			}
+			if (result) {
+				Meteor.call('updateLinkContributionCount');
+			}
+		});
+	}
+});
+
 //Events für den "Seite hinzufügen"-Dialog
 Template.addSiteDialog.events({
 	// User hat abgebrochen, Dialog schließen
