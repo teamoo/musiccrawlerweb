@@ -5,11 +5,8 @@ Session.setDefault("links_completed", false);
 Session.setDefault('users_completed', false);
 Session.setDefault("status", undefined);
 Session.setDefault("showAccountSettingsDialog", false);
-
-var tmp_date = new Date();
-tmp_date.setDate(tmp_date.getDate() - 14);
 Session.setDefault("selected_navitem", 14);
-Session.setDefault("filter_date", tmp_date);
+Session.setDefault("filter_date", new Date(new Date().setDate(new Date().getDate()-14)));
 Session.setDefault("filter_status", ["on"]);
 Session.setDefault("filter_term", ".*");
 Session.setDefault("filter_limit", 1);
@@ -28,7 +25,6 @@ Meteor.autorun(function () {
 	var filter_status = Session.get('filter_status');
 	var filter_term = Session.get('filter_term');
 	var filter_limit = Session.get('filter_limit');
-	var loading_results = Session.get('loading_results');
 	
 	if (filter_date && filter_status && filter_status && filter_limit) {
 		Meteor.subscribe('sites', function onReady() {
@@ -52,9 +48,7 @@ Meteor.autorun(function () {
 	var timespans = [1, 14, 30, 90, 365];
 	
 	timespans.forEach(function (timespan) {
-		var tmp_date = new Date();
-		tmp_date.setDate(tmp_date.getDate() - timespan);
-		Meteor.call("getLinksCount", tmp_date, function (error, count) {
+		Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
 			Session.set("links_count_" + timespan, count);
 		});
 	});
@@ -197,8 +191,8 @@ Template.searchresultlist.searchresults = function () {
 
 Template.link.isNotAlreadyDownloaded = function () {
 	if (this.downloaders && this.downloaders.length)
-		return !_.contains(this.downloaders, Meteor.userId())
-	return true
+		return !_.contains(this.downloaders, Meteor.userId());
+	return true;
 };
 Template.link.isAdmin = function () {
 	if (!Meteor.user()) return false;
@@ -215,9 +209,9 @@ Template.link.getSizeinMB = function () {
 		var sizeinMB = Math.round(this.size / 1048576);
 		if (Math.ceil(Math.log(sizeinMB +1) / Math.LN10) > 3) {
 			var sizeinGB = sizeinMB / 1024;
-			return sizeinGB.toFixed(1) + " GB";
+			return sizeinGB.toFixed(1).toString().replace(".",",") + " GB";
 		}
-		else return sizeinMB + " MB";
+		return sizeinMB + " MB";
 	}
 	return undefined;
 };
@@ -263,7 +257,7 @@ Template.link.getSourceName = function () {
 					id: this.creator
 				});
 				if (aUser && aUser.profile)
-					return aUser.profile['first_name']
+					return aUser.profile['first_name'];
 			}
 		}
 	}
@@ -275,22 +269,20 @@ Template.link.getPlayerWidget = function () {
 	// class="sc-player">My new dub track</a>
 	// Youtube: schauen
 
-	// This is the oEmbed endpoint for Vimeo (we're using JSON)
-	// (Vimeo also supports oEmbed discovery. See the PHP example.)
-	if (this.source === "SoundCloud") {
-		//return "<i class=\" icon-play\"><a href=\"" + this.url
-		//+ "\" class=\"sc-player\"></a></i>";
-	}
-
+	if (this.source == "soundcloud")
+		return "<i class=\" icon-play\"><a href=\"" + this.url + "\" class=\"sc-player\"></a></i>";
+	
+	if (this.source == "muzon")
+		return undefined;
+	
 	if (this.status != 'off') {
-		if (this.hoster === "soundcloud.com") return "<i class=\" icon-play\"><a href=\"" + this.url + "\" class=\"sc-player\"></a></i>";
-		else if (this.hoster === "zippyshare.com")
-		// Link aufsplitten, so dass wir die Bestandteile bekommen...
-			return undefined
+		if (this.hoster == "soundcloud.com") return "<i class=\" icon-play\"><a href=\"" + this.url + "\" class=\"sc-player\"></a></i>";
+		else if (this.hoster == "zippyshare.com")
+			return undefined;
 		//return "<object width='30' height='30' name='zs_player23137972' id='zs_player23137972' classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' style='width: 60px; height: 80px;'><param value='http://api.zippyshare.com/api/player.swf' name='movie'><param value='false' name='allowfullscreen'><param value='always' name='allowscriptaccess'><param name='wmode' value='transparent'><param value='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' name='flashvars'><embed width='30' height='30' flashvars='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' allowfullscreen='false' allowscriptaccess='always' type='application/x-shockwave-flash' src='http://api.zippyshare.com/api/player.swf' name='zs_player23137972' wmode='transparent' id='zs_player23137972'></object>"
 		//return "<script type='text/javascript'>var zippywww='" + this.url.split("http://www")[1].split(".zippyshare")[0] +"';var zippyfile='" + this.url.split("/v/")[1].split("/file.html")[0] + "';var zippytext='#000000';var zippyback='#ffffff';var zippyplay='#000000';var zippywidth=60;var zippyauto=false;var zippyvol=80;var zippywave = '#ffffff';var zippyborder = '#ffffff';</script><script type='text/javascript' src='http://api.zippyshare.com/api/embed_new.js'></script>";
-		else if (this.hoster === "youtube.com") return undefined;
-		else if (this.hoster === "vimeo.com") {
+		else if (this.hoster == "youtube.com") return undefined;
+		else if (this.hoster == "vimeo.com") {
 			// diese Links müssen asynchron erstellt werden, das dauert
 			// sonst zu lange...
 			
@@ -306,8 +298,8 @@ Template.link.getPlayerWidget = function () {
 };
 
 Template.searchresult.getExternalSourceIcon = function() {
-	if (this.source == "soundcloud") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>"
-	if (this.source == "muzon") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>"
+	if (this.source == "soundcloud") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>";
+	if (this.source == "muzon") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>";
 	return undefined;
 };
 
@@ -654,9 +646,7 @@ Template.navigation.events({
 		return false;
 	},
 	'click .linkfilter': function (event, template) {
-		var tmp_date = new Date();		
-		tmp_date.setDate(tmp_date.getDate() - event.target.id);
-		Session.set("filter_date", tmp_date);
+		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-event.target.id)));
 		Session.set("selected_navitem", parseInt(event.target.id));
 		$('li.linkfilter').removeClass("active");
 		var activenumber = parseInt(Session.get("selected_navitem"));
@@ -673,9 +663,7 @@ Template.navigation.events({
 		if (term && term != undefined && term != "") {
 			var prev_filter_date = Session.get("filter_date");
 			Session.set("prev_filter_date", prev_filter_date);
-			var tmp_date = new Date();
-			tmp_date.setDate(tmp_date.getDate() - 365);
-			Session.set("filter_date", tmp_date);
+			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
 			Session.set("filter_term", ".*" + term.replace("\s", ".*") + ".*");
 		} else {
@@ -689,9 +677,7 @@ Template.navigation.events({
 				$('li.linkfilter #' + activenumber).parent().addClass("active");
 			}
 			else {
-				var tmp_date = new Date();
-				tmp_date.setDate(tmp_date.getDate() - 14);
-				Session.set("filter_date", tmp_date);
+				Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-14)));
 				Session.set("selected_navitem", 14);
 				$('li.linkfilter').removeClass("active");
 				var activenumber = Session.get("selected_navitem");
@@ -715,6 +701,8 @@ Template.navigation.events({
 				
 				if (filter_term_external != "" )
 				{
+					//TODO testen wenn iconv läuft
+					/*
 					Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
 						if (result && result.content) {
 							console.log(result.content);
@@ -736,10 +724,9 @@ Template.navigation.events({
 							}	
 						}
 					});
+					*/
 					
 					Session.set("filter_term_external", filter_term_external);
-					
-					var tracks = undefined;
 					
 					SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
 							if (tracks && tracks.length) {
@@ -845,7 +832,7 @@ Template.link.rendered = function () {
 				hide: 100
 			}
 		});
-}
+};
 
 Template.linklist.rendered = function () {
 	$('.linkname').editable();
@@ -1002,7 +989,7 @@ Template.link.events({
 	'click .icon-refresh': function (event, template) {
 		event.target.className = "icon-refreshing";
 		
-		var linkurl = this.url
+		var linkurl = this.url;
 		
 		Meteor.call("refreshLink", this._id, function (error, result) {
 			if (error) {
@@ -1125,15 +1112,21 @@ Template.addLinkDialog.events({
 
 Template.searchresult.events({
 	'click .add_external_link': function (event, template) {
+		console.log(event);
+		event.preventDefault();
 		event.target.disabled = true;
+		event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";
 		Meteor.call('createLink', this.url, function (error, result) {
 			if (error) {
-				console.log(error);
+				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
+				event.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";
 			}
 			if (result) {
 				Meteor.call('updateLinkContributionCount');
+				event.target.innerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";
 			}
 		});
+		return false;
 	}
 });
 
@@ -1169,9 +1162,9 @@ Template.addSiteDialog.events({
 					Meteor.setTimeout(function () {
 						Meteor.loginWithFacebook({
 							requestPermissions: ['user_groups']
-						}, function (error) {
-							if (error) {
-								if (error.type == "OAuthException") {
+						}, function (error2) {
+							if (error2) {
+								if (error2.type == "OAuthException") {
 									alert("Du hast den Zugriff verweigert oder widerrufen.");
 									Sites.update({
 										creator : Meteor.user().id,
@@ -1221,7 +1214,8 @@ Template.addSiteDialog.events({
 					break;
 			}
 			if (result) {
-				Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
+				if (newsiteurl && newsiteurl.indexOf("groups/") !== -1)
+					Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
 			
 				Session.set("status",
 					'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + "Seite hinzugefügt! Die Seite wird automatisch beim nächsten Suchlauf durchsucht.</small></p>");

@@ -350,8 +350,8 @@
 <template name="searchresultlist">
 		<table class="table table-condensed table-striped">
 		<thead>
-			<th>Quelle</th>
-			<th>
+			<th style="text-align:center">Quelle</th>
+			<th><i class="icon-volume-up"></i></th>
 			<th>Name</th>
 			<th>Dauer</th>
 			<th></th>
@@ -364,13 +364,14 @@
 
 <template name="searchresult">
   <tr>
-	<td>
+	<td style="width:142px;min-width:142px;max-width:142px;text-align:center">
 		{{{getExternalSourceIcon}}}
 	</td>
-	<td>{{getPlayerWidget}}</td>
-    <td><a href="{{url}}" target="_blank">{{name}}</a></td>
-	<td>{{duration}}</td>	
-	<td><a class="btn btn-small add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</a></td>
+	<td style="width:14px;min-width:14px;max-width:14px">{{getPlayerWidget}}</td>
+    <td style="min-width:400px;"><a href="{{url}}" target="_blank">{{name}}</a></td>
+	<td style="width:101px;min-width:101px;max-width:101px">{{duration}}</td>	
+	<td style="width:239px;min-width:239px;max-width:239px">
+	<button class="btn add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</button></td>
   </tr>
 </template>
 
