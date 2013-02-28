@@ -48,6 +48,8 @@
 								{{#if searchresultsFound}}
 									<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
 									{{> searchresultlist}}
+								{{else}}
+									<p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
 								{{/if}}
 							{{/if}}
 						{{/if}}
@@ -232,33 +234,33 @@
 					<input type="checkbox" class="link_checkbox">
 				{{/if}}
 			</td>
-			<td>
+			<td style="width:14px;min-width:14px;max-width:14px">
 				<i class="icon-refresh hand refreshlink"></i>
 			</td>
-			<td>
+			<td style="width:14px;min-width:14px;max-width:14px">
 				{{{getPlayerWidget}}}
 			</td>
-		  <td style="max-width: 500px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
-		  <td class="hidden-phone" style="max-width: 300px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
-			<td>
+		  <td style="max-width: 400px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
+		  <td class="hidden-phone" style="max-width: 200px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
+			<td style="width:14px;min-width:14px;max-width:14px">
 				{{#if comments}}
 					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
 				{{else}}
 					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
 				{{/if}}
 			</td>
-			<td style="min-width: 30px">
+			<td style="width:30px;min-width:30px;max-width:30px">
 				<i class="icon-thumbs-up hand like"></i>
 				{{#if likes}}{{likes}}{{else}}0{{/if}}
 			</td>
-			<td style="text-align: center;">
+			<td style="width:14px;min-width:14px;max-width:14px;text-align:center;">
 				<i class="{{getStatusIcon}}"></i>
 			</td>
-			<td class="hidden-phone">{{getSourceName}}</td>
-			<td class="hidden-phone" style="text-align: right">{{getSizeinMB}}</td>
-			<td>	{{dateFormatPretty date_published}}</td>
+			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
+			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
+			<td style="width:85px;min-width:85px;max-width:5px;text-align:right;">{{dateFormatPretty date_published}}</td>
 			{{#if isAdmin}}	
-				<td><i class="icon-trash hand delete_link"></i></td>
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{else}}
@@ -270,33 +272,33 @@
 					<input type="checkbox" class="link_checkbox">
 				{{/if}}
 			</td>
-			<td>
+			<td style="width:14px;min-width:14px;max-width:14px">
 				<i class="icon-refresh hand refreshlink"></i>
 			</td>
-			<td>
+			<td style="width:14px;min-width:14px;max-width:14px">
 				{{{getPlayerWidget}}}
 			</td>
-		  <td style="max-width: 500px;color: gray;"><a style="color: gray;" class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
-		  <td class="hidden-phone" style="max-width: 300px;color: gray;"><a style="color: gray;" href="{{url}}" target="_blank">{{url}}</a></td>
-			<td>
+		  <td style="max-width: 400px;color: gray;"><a style="color: gray;" class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
+		  <td class="hidden-phone" style="max-width: 200px;color: gray;"><a style="color: gray;" href="{{url}}" target="_blank">{{url}}</a></td>
+			<td style="width:14px;min-width:14px;max-width:14px">
 				{{#if comments}}
 					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
 				{{else}}
 					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
 				{{/if}}
 			</td>
-			<td style="min-width: 30px;color: gray;">
+			<td style="width:30px;min-width:30px;max-width:30px;color: gray;">
 				<i class="icon-thumbs-up hand like"></i>
 				{{#if likes}}{{likes}}{{else}}0{{/if}}
 			</td>
-			<td style="text-align: center;">
+			<td style="width:14px;min-width:14px;max-width:14px;text-align:center;">
 				<i class="{{getStatusIcon}}"></i>
 			</td>
-			<td class="hidden-phone" style="color: gray;">{{getSourceName}}</td>
-			<td class="hidden-phone" style="text-align: right;color: gray;">{{getSizeinMB}}</td>
-			<td style="color: gray;">	{{dateFormatPretty date_published}}</td>
+			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;color: gray;">{{getSourceName}}</td>
+			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;color:gray">{{getSizeinMB}}</td>
+			<td style="width:85px;min-width:85px;max-width:5px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
 			{{#if isAdmin}}	
-				<td><i class="icon-trash hand delete_link"></i></td>
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{/if}}
@@ -310,35 +312,35 @@
 					<input type="checkbox" class="link_checkbox">
 				{{/if}}
 			</td>
-			<td>
+			<td style="width:14px;min-width:14px;max-width:14px">
 				<i class="icon-refresh hand refreshlink"></i>
 			</td>
-			<td>
+			<td style="width:14px;min-width:14px;max-width:14px">
 				{{{getPlayerWidget}}}
 			</td>
-		  <td style="max-width: 500px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
-		  <td class="hidden-phone" style="max-width: 300px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
-			<td>
+		  <td style="max-width: 400px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
+		  <td class="hidden-phone" style="max-width: 200px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
+			<td style="width:14px;min-width:14px;max-width:14px">
 				{{#if comments}}
 					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
 				{{else}}
 					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
 				{{/if}}
 			</td>
-			<td style="min-width: 30px">
+			<td style="width:30px;min-width:30px;max-width:30px">
 				<i class="icon-thumbs-up hand like"></i>
 				{{#if likes}}{{likes}}{{else}}0{{/if}}
 			</td>
-			<td style="text-align: center;">
+			<td style="width:14px;min-width:14px;max-width:14px;text-align:center;">
 				<i class="{{getStatusIcon}}"></i>
 			</td>
-			<td class="hidden-phone">{{getSourceName}}</td>
-			<td class="hidden-phone" style="text-align: right">{{getSizeinMB}}</td>
-			<td>	{{dateFormatPretty date_published}}</td>
+			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
+			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
+			<td style="width:85px;min-width:85px;max-width:5px;text-align:right;">{{dateFormatPretty date_published}}</td>
 			{{#if isAdmin}}	
-				<td><i class="icon-trash hand delete_link"></i></td>
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{else}}
-				<td><i class="icon-trash hand hide_link"></i></td>
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand hide_link"></i></td>
 			{{/if}}
 		</tr>
 	{{/if}}
@@ -346,7 +348,6 @@
 </template>
 
 <template name="searchresultlist">
-	{{#if searchresults}}
 		<table class="table table-condensed table-striped">
 		<thead>
 			<th>Quelle</th>
@@ -359,9 +360,6 @@
 			{{> searchresult}}
 		{{/each}}
 		</table>
-	{{else}}
-		<p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
-	{{/if}}
 </template>
 
 <template name="searchresult">

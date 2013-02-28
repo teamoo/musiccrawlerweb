@@ -41,7 +41,6 @@ Meteor.autorun(function () {
 			// set a session key to true to indicate that the
 			// subscription is completed.
 			Session.set('links_completed', true);
-			Session.set('loading_results', false);
 		});
 	}
 
@@ -211,13 +210,15 @@ Template.link.isAdmin = function () {
 
 // Link-Größe von Kilobyte in MB umwandeln
 Template.link.getSizeinMB = function () {
-	if (this.size && this.size > 0) 
-	var sizeinMB = Math.round(this.size / 1048576);
-	if (Math.ceil(Math.log(sizeinMB +1) / Math.LN10) > 3) {
-		var sizeinGB = sizeinMB / 1024;
-		return sizeinGB.toFixed(1) + " GB";
+	if (this.size && this.size > 0)
+	{
+		var sizeinMB = Math.round(this.size / 1048576);
+		if (Math.ceil(Math.log(sizeinMB +1) / Math.LN10) > 3) {
+			var sizeinGB = sizeinMB / 1024;
+			return sizeinGB.toFixed(1) + " GB";
+		}
+		else return sizeinMB + " MB";
 	}
-	else return sizeinMB + " MB";
 	return undefined;
 };
 // Status-Icon auswählen je nach Status des Links
@@ -306,6 +307,7 @@ Template.link.getPlayerWidget = function () {
 
 Template.searchresult.getExternalSourceIcon = function() {
 	if (this.source == "soundcloud") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>"
+	if (this.source == "muzon") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>"
 	return undefined;
 };
 
@@ -665,6 +667,7 @@ Template.navigation.events({
 		//TODO: auto suggest for search terms
 	'submit #searchform': function (event, template) {
 		event.preventDefault();
+		event.stopPropagation();
 		var term = template.find('#searchfield').value;
 		
 		if (term && term != undefined && term != "") {
@@ -698,42 +701,47 @@ Template.navigation.events({
 		}
 		Session.set("filter_limit", 1);
 		SearchResults.remove({});
-
-		Session.set("loading_results", true);
 		
 		Meteor.setTimeout(function () {
 			Session.set("loading_results", false);
 		}, 8000);
 		
 		Meteor.setTimeout(function(){
-			if (Session.get("links_completed") === true) {
+			if (Session.get("links_completed") === true && !Links.findOne()) {
+				Session.set("loading_results", true);
+				
 				//XXX geht erst, wenn Meteor non UTF-8 encoding bei http responses versteht
 				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "");
 				
-				if (filter_term_external != "" && !Links.findOne())
+				if (filter_term_external != "" )
 				{
-				/*	Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
-							if (result && result.content) {
-								
-								var iterator = document.evaluate("//a[contains(@id,'aplayer')]::text()", result.content, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
-								 
-								try {
-								  var thisNode = iterator.iterateNext();
+					Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
+						if (result && result.content) {
+							console.log(result.content);
+							
+							var iterator = document.evaluate("//a[contains(@id,'aplayer')]::text()", result.content, null, XPathResult.ANY_TYPE, null );
+							
+							console.log(iterator);
+							
+							try {
+							  var thisNode = iterator.iterateNext();
 								   
-								  while (thisNode) {
-								    console.log( thisNode.textContent );
-								    thisNode = iterator.iterateNext();
-								  }
-								}
-								catch (e) {
-								  dump( 'Error: Document tree modified during iteration ' + e );
-								}
-								
+							  while (thisNode) {
+							    console.log( thisNode.textContent );
+							    thisNode = iterator.iterateNext();
+							  }
 							}
-						});*/
+							catch (e) {
+							  dump( 'Error: Document tree modified during iteration ' + e );
+							}	
+						}
+					});
+					
 					Session.set("filter_term_external", filter_term_external);
 					
-					SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
+					var tracks = undefined;
+					
+					//SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
 							if (tracks && tracks.length) {
 								for (var i = 0; i <= tracks.length; i++) {
 									if(tracks[i])
@@ -744,9 +752,9 @@ Template.navigation.events({
 											duration: moment(tracks[i].duration).format('mm:ss') + " min."
 										});
 								}
-								Session.set("loading_results", false);
+								if (SearchResults.findOne) Session.set("loading_results", false);
 							}
-					});
+					//});
 				}
 			}	
 		},1000);
