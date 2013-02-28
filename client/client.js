@@ -741,7 +741,7 @@ Template.navigation.events({
 					
 					var tracks = undefined;
 					
-					//SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
+					SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
 							if (tracks && tracks.length) {
 								for (var i = 0; i <= tracks.length; i++) {
 									if(tracks[i])
@@ -754,7 +754,7 @@ Template.navigation.events({
 								}
 								if (SearchResults.findOne) Session.set("loading_results", false);
 							}
-					//});
+					});
 				}
 			}	
 		},1000);
