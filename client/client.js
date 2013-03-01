@@ -695,7 +695,6 @@ Template.navigation.events({
 			if (Session.get("links_completed") === true && !Links.findOne()) {
 				Session.set("loading_results", true);
 				
-				//XXX geht erst, wenn Meteor non UTF-8 encoding bei http responses versteht
 				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "");
 				
 				if (filter_term_external != "" )
