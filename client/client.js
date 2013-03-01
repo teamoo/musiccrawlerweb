@@ -268,15 +268,10 @@ Template.link.getPlayerWidget = function () {
 	// Soundcloud: <a href="http://soundcloud.com/matas/hobnotropic"
 	// class="sc-player">My new dub track</a>
 	// Youtube: schauen
-
-	if (this.source == "soundcloud")
-		return "<i class=\" icon-play\"><a href=\"" + this.url + "\" class=\"sc-player\"></a></i>";
-	
-	if (this.source == "muzon")
-		return undefined;
 	
 	if (this.status != 'off') {
 		if (this.hoster == "soundcloud.com") return "<i class=\" icon-play\"><a href=\"" + this.url + "\" class=\"sc-player\"></a></i>";
+		if (this.hoster == "muzon.ws") return undefined;
 		else if (this.hoster == "zippyshare.com")
 			return undefined;
 		//return "<object width='30' height='30' name='zs_player23137972' id='zs_player23137972' classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' style='width: 60px; height: 80px;'><param value='http://api.zippyshare.com/api/player.swf' name='movie'><param value='false' name='allowfullscreen'><param value='always' name='allowscriptaccess'><param name='wmode' value='transparent'><param value='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' name='flashvars'><embed width='30' height='30' flashvars='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' allowfullscreen='false' allowscriptaccess='always' type='application/x-shockwave-flash' src='http://api.zippyshare.com/api/player.swf' name='zs_player23137972' wmode='transparent' id='zs_player23137972'></object>"
@@ -298,8 +293,8 @@ Template.link.getPlayerWidget = function () {
 };
 
 Template.searchresult.getExternalSourceIcon = function() {
-	if (this.source == "soundcloud") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>";
-	if (this.source == "muzon") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>";
+	if (this.hoster == "soundcloud.com") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>";
+	if (this.hoster == "muzon.ws") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>";
 	return undefined;
 };
 
@@ -450,6 +445,11 @@ Template.user_loggedin.events({
 });
 
 Template.navigation.rendered = function () {
+	$('#searchfield').typeahead({items: 5, minLength: 3, source: function(query, process) {
+		Meteor.call("getSuggestionsForSearchTerm", query, function(error, result) {
+			process(result);
+		});	
+	}});
 	$('li.linkfilter').removeClass("active");
 	var activenumber = parseInt(Session.get("selected_navitem"));
 	$('li.linkfilter #' + activenumber).parent().addClass("active");
@@ -653,8 +653,7 @@ Template.navigation.events({
 		$('li.linkfilter #' + activenumber).parent().addClass("active");
 
 		Session.set("filter_limit", 1);
-	},
-		//TODO: auto suggest for search terms
+	},	
 	'submit #searchform': function (event, template) {
 		event.preventDefault();
 		event.stopPropagation();
@@ -715,7 +714,14 @@ Template.navigation.events({
 							  var thisNode = iterator.iterateNext();
 								   
 							  while (thisNode) {
-							    console.log( thisNode.textContent );
+								console.log( thisNode.textContent );
+								SearchResults.insert({
+									hoster: "muzon.ws",
+									status: "unknown",
+									name: "test",
+									url: "test",
+									duration: moment("test").format('mm:ss') + " min."
+								});
 							    thisNode = iterator.iterateNext();
 							  }
 							}
@@ -733,7 +739,8 @@ Template.navigation.events({
 								for (var i = 0; i <= tracks.length; i++) {
 									if(tracks[i])
 										SearchResults.insert({
-											source: "soundcloud",
+											hoster: "soundcloud.com",
+											status: "on",
 											name: tracks[i].title,
 											url: tracks[i].permalink_url,
 											duration: moment(tracks[i].duration).format('mm:ss') + " min."
@@ -1213,7 +1220,10 @@ Template.addSiteDialog.events({
 						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>' + " " + error.details + "</small></p>");
 					break;
 			}
+			//TODO testen
 			if (result) {
+				newsite = Sites.findOne({_id: result});
+				
 				if (newsiteurl && newsiteurl.indexOf("groups/") !== -1)
 					Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
 			
@@ -1224,16 +1234,17 @@ Template.addSiteDialog.events({
 					Session.set("showAddSiteDialog", false);
 					Session.set("status", undefined);
 				}, 3000);
-
-				Meteor.call("scheduleCrawl", newsiteurl, function (error2, result2) {
-					if (result2 && result2.status == "ok") Sites.update({
-						_id: site._id
-					}, {
-						$set: {
-							next_crawl: result.jobid
-						}
+				
+				if (newsite)
+					Meteor.call("scheduleCrawl", newsite.feedurl, function (error2, result2) {
+						if (result2 && result2.status == "ok") Sites.update({
+							_id: result
+						}, {
+							$set: {
+								next_crawl: result.jobid
+							}
+						});
 					});
-				});
 			}
 		});
 		return false;

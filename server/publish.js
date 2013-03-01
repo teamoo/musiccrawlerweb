@@ -44,6 +44,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
             downloaders : 1,
             comments: 1,
             url: 1,
+			hoster: 1,
             source: 1,
             date_published: 1,
             status: 1,
