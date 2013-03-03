@@ -19,9 +19,14 @@ Meteor.publish("allUserData", function () {
 });
 
 // Publish filtered list to all clients
-Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit) {
+Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded) {
     var thelimit = Meteor.settings.itembadgesize * filter_limit;
-
+	
+	var thedownloaders = undefined;
+	
+	if (filter_already_downloaded === false)
+		thedownloaders = this.userId;
+	
     if (this.userId) return Links.find({
         date_published: {
             $gte: filter_date
@@ -35,6 +40,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
         }
     }, {
         limit: thelimit,
+        skip: filter_skip,
         fields: {
             _id: 1,
             name: 1,

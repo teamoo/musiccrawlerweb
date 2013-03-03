@@ -10,6 +10,8 @@ Session.setDefault("filter_date", new Date(new Date().setDate(new Date().getDate
 Session.setDefault("filter_status", ["on"]);
 Session.setDefault("filter_term", ".*");
 Session.setDefault("filter_limit", 1);
+Session.setDefault("filter_skip", 0);
+Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("selected_links", []);
 Session.setDefault("loading_results", true);
 
@@ -25,15 +27,17 @@ Meteor.autorun(function () {
 	var filter_status = Session.get('filter_status');
 	var filter_term = Session.get('filter_term');
 	var filter_limit = Session.get('filter_limit');
+	var filter_skip = Session.get('filter_skip');
+	var filter_show_already_downloaded = Session.get('filter_show_already_downloaded');
 	
-	if (filter_date && filter_status && filter_status && filter_limit) {
+	if (filter_date && filter_status && filter_term && filter_limit) {
 		Meteor.subscribe('sites', function onReady() {
 			// set a session key to true to indicate that the subscription is
 			// completed.
 			Session.set('sites_completed', true);
 		});
-
-		Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit, function onReady() {
+		//TODO already downloaded einbauen, skip einbauen, already_downloaded setzten wenn user profile verfügbar
+		Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_show_already_downloaded, function onReady() {
 			// set a session key to true to indicate that the
 			// subscription is completed.
 			Session.set('links_completed', true);
@@ -92,7 +96,9 @@ Meteor.startup(function () {
 
 	Meteor.setTimeout(function () {
 		// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
-		// auch 
+		// auch
+		if (Meteor.user() && Meteor.user().profile)
+			Session.setDefault("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		refreshJDOnlineStatus();
 		Meteor.call('updateFacebookTokensForUser');
 		Meteor.call('updateLinkContributionCount');
@@ -661,15 +667,19 @@ Template.navigation.events({
 		
 		if (term && term != undefined && term != "") {
 			var prev_filter_date = Session.get("filter_date");
+			var prev_filter_skip = Session.get("filter_skip");
+			Session.set("prev_filter_skip", prev_filter_skip);
 			Session.set("prev_filter_date", prev_filter_date);
 			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
 			Session.set("filter_term", ".*" + term.replace("\s", ".*") + ".*");
+			Session.set("filter_skip", 0);
 		} else {
 			Session.set("filter_term", ".*");
 
 			if (Session.get("prev_filter_date")) {
 				Session.set("filter_date", Session.get("prev_filter_date"));
+				Session.set("filter_skip", Session.get("prev_filter_skip"));
 				Session.set("selected_navitem", parseInt((new Date().getTime()-Session.get("prev_filter_date").getTime())/(24*3600*1000)));
 				$('li.linkfilter').removeClass("active");
 				var activenumber = parseInt(Session.get("selected_navitem"));
@@ -757,6 +767,10 @@ Template.navigation.events({
 
 //Events für das Template der Linkliste
 Template.linklist.events = ({
+	'click #paginate': function (event, template) {
+		Session.set("filter_limit",50);
+		Session.set("filter_skip", Session.get("filter_skip")+250);
+	},
 	//Links filtern (alle / auch unbekannte)
 	'click #filter_links': function (event, template) {
 		event.preventDefault();

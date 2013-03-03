@@ -204,7 +204,7 @@
 			{{! TODO: Source filtern}}
 			<th>Quelle</th>
 			<th>Größe</th>
-			<th>Veröffentlicht</th>
+			<th style="text-align:right">Veröffentlicht</th>
 			{{#if currentUser.profile.showdownloadedlinks}}
 			{{else}}
 				{{#if isAnyLinkSelected}}
@@ -219,7 +219,7 @@
 		</tbody>
 	</table>
 	{{#if isLinksLimit}}
-		<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt.</p>
+		<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt. <a class="hand" id="paginate">Nächste 50 Links anzeigen</a></p>
 	{{/if}}
 </template>
 
@@ -258,7 +258,7 @@
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
-			<td style="width:85px;min-width:85px;max-width:5px;text-align:right;">{{dateFormatPretty date_published}}</td>
+			<td style="width:130px;min-width:130px;max-width:130px;text-align:right;">{{dateFormatPretty date_published}}</td>
 			{{#if isAdmin}}	
 				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
@@ -296,7 +296,7 @@
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;color: gray;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;color:gray">{{getSizeinMB}}</td>
-			<td style="width:85px;min-width:85px;max-width:5px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
+			<td style="width:130px;min-width:130px;max-width:130px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
 			{{#if isAdmin}}	
 				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
@@ -336,7 +336,7 @@
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
-			<td style="width:85px;min-width:85px;max-width:5px;text-align:right;">{{dateFormatPretty date_published}}</td>
+			<td style="width:130px;min-width:130px;max-width:130px;text-align:right;">{{dateFormatPretty date_published}}</td>
 			{{#if isAdmin}}	
 				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{else}}
