@@ -768,7 +768,9 @@ Template.navigation.events({
 //Events für das Template der Linkliste
 Template.linklist.events = ({
 	'click #paginate': function (event, template) {
-		Session.set("filter_limit",50);
+		$("html, body").animate({ scrollTop: 0 }, "fast");
+             
+		Session.set("filter_limit" ,1);
 		Session.set("filter_skip", Session.get("filter_skip")+250);
 	},
 	//Links filtern (alle / auch unbekannte)

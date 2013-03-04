@@ -20,7 +20,8 @@ Meteor.publish("allUserData", function () {
 
 // Publish filtered list to all clients
 Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded) {
-    var thelimit = Meteor.settings.itembadgesize * filter_limit;
+	
+	var thelimit = Meteor.settings.itembadgesize * filter_limit;
 	
 	var thedownloaders = undefined;
 	
