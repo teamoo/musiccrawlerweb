@@ -159,3 +159,7 @@ textarea#new_comment, #postcomment {
 	color:white;
 	outline-color:white;
 }
+
+.typeahead  {
+	width: 320px;
+}

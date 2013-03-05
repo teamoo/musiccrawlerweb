@@ -219,7 +219,7 @@
 		</tbody>
 	</table>
 	{{#if isLinksLimit}}
-		<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt. <a class="hand" id="paginate">Nächste 50 Links anzeigen</a></p>
+		<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt ({{getCurrentLinksText}}). {{#if hasMoreLinks}}<a class="hand" id="paginate">Links {{getNextLinksText}} anzeigen</a>{{/if}}</p>
 	{{/if}}
 </template>
 

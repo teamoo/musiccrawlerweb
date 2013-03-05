@@ -21,9 +21,9 @@ Meteor.publish("allUserData", function () {
 // Publish filtered list to all clients
 Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded) {
 	
-	var thelimit = Meteor.settings.itembadgesize * filter_limit;
+	var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
 	
-	var thedownloaders = undefined;
+	var thedownloaders = "dummy";
 	
 	if (filter_already_downloaded === false)
 		thedownloaders = this.userId;
@@ -35,6 +35,9 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
         status: {
             $in: filter_status
         },
+		downloaders: {
+			$ne: thedownloaders
+		},
         name: {
             $regex: filter_term,
             $options: 'i'
@@ -79,7 +82,8 @@ Meteor.publish('sites', function () {
             next_crawl: 1,
             active: 1,
 			discovered_links: 1,
-			last_post: 1
+			last_post: 1,
+			groupid: 1
         },
         sort: {
             name: 1

@@ -30,13 +30,16 @@ Meteor.autorun(function () {
 	var filter_skip = Session.get('filter_skip');
 	var filter_show_already_downloaded = Session.get('filter_show_already_downloaded');
 	
-	if (filter_date && filter_status && filter_term && filter_limit) {
+	if (Meteor.user() && Meteor.user().profile)
+		filter_show_already_downloaded = Meteor.user().profile.showdownloadedlinks
+	
+	if (filter_date && filter_status && filter_term && filter_limit && filter_skip !== -1 && filter_show_already_downloaded !== undefined) {
 		Meteor.subscribe('sites', function onReady() {
 			// set a session key to true to indicate that the subscription is
 			// completed.
 			Session.set('sites_completed', true);
 		});
-		//TODO already downloaded einbauen, skip einbauen, already_downloaded setzten wenn user profile verfügbar
+
 		Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_show_already_downloaded, function onReady() {
 			// set a session key to true to indicate that the
 			// subscription is completed.
@@ -78,7 +81,7 @@ Meteor.startup(function () {
 		threshold = 10 * itemHeight + bottomMargin;
 		$(window).scroll(function () {
 			if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
-				if (Session.get("filter_limit") <= 4 && Session.get("wait_for_items") === false) {
+				if (Session.get("filter_limit") <= 4 && Session.get("wait_for_items") === false && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
 					Session.set("filter_limit", Session.get("filter_limit") + 1);
 					Session.set("wait_for_items", true);
 					Meteor.setTimeout(function () {
@@ -98,7 +101,7 @@ Meteor.startup(function () {
 		// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
 		// auch
 		if (Meteor.user() && Meteor.user().profile)
-			Session.setDefault("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		refreshJDOnlineStatus();
 		Meteor.call('updateFacebookTokensForUser');
 		Meteor.call('updateLinkContributionCount');
@@ -148,6 +151,18 @@ Template.page.linksFound = function () {
 Template.navigation.isAnyLinkSelected = function () {
 	if (Session.get("selected_links") && Session.get("selected_links").length) return true;
 	return false;
+};
+
+Template.linklist.getNextLinksText = function () {
+	return parseInt(Session.get("filter_skip"))+251 + "-" + (parseInt(Session.get("filter_skip"))+300);
+};
+
+Template.linklist.getCurrentLinksText = function () {
+	return parseInt(Session.get("filter_skip"))+1 + "-" + (parseInt(Session.get("filter_skip"))+250);
+};
+
+Template.linklist.hasMoreLinks = function () {
+	return (Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize));
 };
 
 Template.linklist.isLinksLimit = function () {
@@ -451,11 +466,38 @@ Template.user_loggedin.events({
 });
 
 Template.navigation.rendered = function () {
-	$('#searchfield').typeahead({items: 5, minLength: 3, source: function(query, process) {
-		Meteor.call("getSuggestionsForSearchTerm", query, function(error, result) {
-			process(result);
-		});	
-	}});
+	$('#searchfield').typeahead({items: 5, minLength: 3,
+		source: function(query, process) {
+			Meteor.call("getSuggestionsForSearchTerm", query, function(error, result) {
+				process(result);
+			});	
+		},
+		updater: function(name) {
+			var term = name;
+			var prev_filter_date = Session.get("filter_date");
+			var prev_filter_skip = Session.get("filter_skip");
+			Session.set("prev_filter_skip", prev_filter_skip);
+			Session.set("prev_filter_date", prev_filter_date);
+			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-365)));
+			Session.set("filter_status", ["on", "off", "unknown"]);
+			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace("\s", ".*") + ".*");
+			Session.set("filter_skip", 0);
+			return name;
+        },
+		matcher: function(item) {
+			return true;
+		},
+		highlighter: function (item) {
+			var searchterms = this.query.trim().split(" ");
+			
+			for (var i = 0; i < searchterms.length; i++) {
+				var regex = new RegExp( '(' + searchterms[i] + ')', 'i' );
+				item = item.replace( regex, "<strong>$1</strong>" );
+			};
+
+            return item;
+        },
+	});
 	$('li.linkfilter').removeClass("active");
 	var activenumber = parseInt(Session.get("selected_navitem"));
 	$('li.linkfilter #' + activenumber).parent().addClass("active");
@@ -659,6 +701,7 @@ Template.navigation.events({
 		$('li.linkfilter #' + activenumber).parent().addClass("active");
 
 		Session.set("filter_limit", 1);
+		Session.set("filter_skip", 0);
 	},	
 	'submit #searchform': function (event, template) {
 		event.preventDefault();
@@ -672,7 +715,7 @@ Template.navigation.events({
 			Session.set("prev_filter_date", prev_filter_date);
 			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
-			Session.set("filter_term", ".*" + term.replace("\s", ".*") + ".*");
+			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace("\s", ".*") + ".*");
 			Session.set("filter_skip", 0);
 		} else {
 			Session.set("filter_term", ".*");
@@ -772,6 +815,7 @@ Template.linklist.events = ({
              
 		Session.set("filter_limit" ,1);
 		Session.set("filter_skip", Session.get("filter_skip")+250);
+		Session.set("selected_links", []);
 	},
 	//Links filtern (alle / auch unbekannte)
 	'click #filter_links': function (event, template) {
@@ -1235,12 +1279,13 @@ Template.addSiteDialog.events({
 						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>' + " " + error.details + "</small></p>");
 					break;
 			}
-			//TODO testen
 			if (result) {
-				newsite = Sites.findOne({_id: result});
+				var aid = new Meteor.Collection.ObjectID(result._str);
+			
+				newsite = Sites.findOne({_id: aid});
 				
-				if (newsiteurl && newsiteurl.indexOf("groups/") !== -1)
-					Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
+				if (newsite && newsite.type == "facebook-group")
+					Meteor.call("updateFacebookGroupName", newsite.groupid);
 			
 				Session.set("status",
 					'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + "Seite hinzugefügt! Die Seite wird automatisch beim nächsten Suchlauf durchsucht.</small></p>");
@@ -1252,8 +1297,9 @@ Template.addSiteDialog.events({
 				
 				if (newsite)
 					Meteor.call("scheduleCrawl", newsite.feedurl, function (error2, result2) {
-						if (result2 && result2.status == "ok") Sites.update({
-							_id: result
+						if (error2) console.log("Error scheduling Crawl for Site " + newsite.url + " (" + error.details + ")");
+ 						if (result2 && result2.status == "ok") Sites.update({
+							_id: aid
 						}, {
 							$set: {
 								next_crawl: result.jobid
@@ -1459,12 +1505,14 @@ Template.accountSettingsDialog.events({
 		else $('#ip').prop("disabled", false);
 	},
 	//eingaben speichern und IP nochmal updaten, falls der User was komisches eingegeben hat
-	'click .save': function (event, template) {
+	'click .save': function (event, template) {	
 		var aip = template.find("#ip").value;
 		var aport = template.find("#port").value;
 		var aupdateip = template.find("#autoupdate").checked;
 		var ashowtooltips = template.find("#showtooltips").checked;
 		var ashowdownloadedlinks = template.find("#showdownloadedlinks").checked;
+		
+		Session.set("filter_show_already_downloaded",ashowdownloadedlinks);
 		
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
