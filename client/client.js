@@ -53,6 +53,20 @@ Meteor.autorun(function () {
 // zur Verfügung. Workaround: Timer auf 3 Sekunden, dann ist das Objekt im
 // Regelfall verfügbar.
 Meteor.startup(function () {
+	activateInput($('#searchfield'));
+	
+	// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
+	// auch
+	if (Meteor.user() && Meteor.user().profile)
+		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+	refreshJDOnlineStatus();
+	Meteor.call('updateFacebookTokensForUser');
+	Meteor.call('updateLinkContributionCount');
+	
+	SC.initialize({
+	  client_id: Meteor.settings.public.soundcloud.client_id
+	});
+	
 	$.fn.editable.defaults.validate = function(value) {
 		if($.trim(value) == '') {
 		     return 'Name darf nicht leer sein.';
@@ -74,19 +88,6 @@ Meteor.startup(function () {
 			}
 		});
 	});
-	SC.initialize({
-	  client_id: Meteor.settings.public.soundcloud.client_id
-	});
-	
-	activateInput($('#searchfield'));
-
-	// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
-	// auch
-	if (Meteor.user() && Meteor.user().profile)
-		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
-	refreshJDOnlineStatus();
-	Meteor.call('updateFacebookTokensForUser');
-	Meteor.call('updateLinkContributionCount');
 });
 
 // Template-Helper für handlebars
@@ -277,7 +278,6 @@ Template.searchresult.getExternalSourceIcon = function() {
 	if (this.hoster == "muzon.ws") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>";
 	return undefined;
 };
-
 // Funktion um alle Seiten ins Template zu geben (die subscription)
 Template.sitesDialog.sites = function () {
 	return Sites.find({});
@@ -299,13 +299,12 @@ Template.sitesDialog.isOwner = function () {
 	if (this.creator === Meteor.user().id) return true;
 	return false;
 };
-
+// Funktion die prüft, ob der letzte Crawl einer Seite mehr als 24 Stunden her ist
 Template.sitesDialog.canCrawlAgain = function () {
 	if (!this.last_crawled || this.last_crawled == null) return true;
 	if ((new Date() - this.last_crawled) > (1000 * 60 * 60 * 24)) return true;
 	return false;
 };
-
 
 // Funktion, um ein Eingabeelement auszuwählen und den Focus drauf zu setzen
 var activateInput = function (input) {
@@ -349,14 +348,14 @@ Template.page.events({
 });
 // Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
 Template.connectionLostWarning.events({
-	'click #terminateappbutton': function (event, template) {
+	'click #terminateappbutton': function () {
 		if ($.browser.opera || $.browser.mozilla) window.close();
 		else {
 			window.open('', '_self', '');
 			window.close();
 		}
 	},
-	'click #waitbutton': function (event, template) {
+	'click #waitbutton': function (event) {
 		event.preventDefault();
 		event.target.disabled = true;
 		event.target.innerHTML = "<i class='icon-loader'></i> Warten";
@@ -455,7 +454,7 @@ Template.navigation.rendered = function () {
 			for (var i = 0; i < searchterms.length; i++) {
 				var regex = new RegExp( '(' + searchterms[i] + ')', 'i' );
 				item = item.replace( regex, "<strong>$1</strong>" );
-			};
+			}
 
             return item;
         },
@@ -1230,7 +1229,7 @@ Template.addSiteDialog.events({
 						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>' + " " + error.details + "</small></p>");
 					break;
 			}
-			if (result) {
+			if (result && result._str) {
 				var aid = new Meteor.Collection.ObjectID(result._str);
 			
 				newsite = Sites.findOne({_id: aid});

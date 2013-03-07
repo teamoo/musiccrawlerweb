@@ -29,7 +29,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 		
 	for (var i = 0; i < searchterms.length; i++) {
 		searchterms[i] = new RegExp(searchterms[i],"i");
-	};
+	}
 	
 	if (filter_already_downloaded === false)
 		thedownloaders = this.userId;
