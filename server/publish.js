@@ -25,6 +25,12 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 	
 	var thedownloaders = "dummy";
 	
+	var searchterms = filter_term.trim().split(" ");
+		
+	for (var i = 0; i < searchterms.length; i++) {
+		searchterms[i] = new RegExp(searchterms[i],"i");
+	};
+	
 	if (filter_already_downloaded === false)
 		thedownloaders = this.userId;
 	
@@ -39,8 +45,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 			$ne: thedownloaders
 		},
         name: {
-            $regex: filter_term,
-            $options: 'i'
+            $all: searchterms
         }
     }, {
         limit: thelimit,

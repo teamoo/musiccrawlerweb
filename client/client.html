@@ -77,7 +77,7 @@
 		<p>Anscheinend hast du die Verbindung zum Server verloren. Wir versuchen dich automatisch wieder zu verbinden. Sollte dies innerhalb von 1 Minute nicht klappen, schließe bitte diese Seite und öffne sie erneut.</p>
 		<p>
 			<a class="btn btn-danger" id="terminateappbutton">Anwendung beenden</a>
-			<a class="btn">Warten</a>
+			<a class="btn" id="waitbutton">Warten</a>
 		</p>
 	</div>
 </template>
@@ -205,7 +205,7 @@
 			<th>Quelle</th>
 			<th>Größe</th>
 			<th style="text-align:right">Veröffentlicht</th>
-			{{#if currentUser.profile.showdownloadedlinks}}
+			{{#if session "filter_show_already_downloaded"}}
 			{{else}}
 				{{#if isAnyLinkSelected}}
 					<th><i class="icon-trash hand" id="hide_selected_links"></i></th>
@@ -216,6 +216,9 @@
 			{{#each links}}
 				{{> link}}
 			{{/each}}
+			{{#if session "wait_for_items"}}
+				<tr><td></td><td></td><td></td><td colspan="8"><i class="icon-loader"></i>weitere Links werden geladen...</td></tr>
+			{{/if}}
 		</tbody>
 	</table>
 	{{#if isLinksLimit}}
@@ -224,7 +227,7 @@
 </template>
 
 <template name="link">
-{{#if currentUser.profile.showdownloadedlinks}}
+{{#if session "filter_show_already_downloaded"}}
 	{{#if isNotAlreadyDownloaded}}
 		<tr>
 			<td>
@@ -259,7 +262,7 @@
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
 			<td style="width:130px;min-width:130px;max-width:130px;text-align:right;">{{dateFormatPretty date_published}}</td>
-			{{#if isAdmin}}	
+			{{#if currentUser.profile.admin}}	
 				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
@@ -297,7 +300,7 @@
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;color: gray;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;color:gray">{{getSizeinMB}}</td>
 			<td style="width:130px;min-width:130px;max-width:130px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
-			{{#if isAdmin}}	
+			{{#if currentUser.profile.admin}}	
 				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
@@ -337,7 +340,7 @@
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
 			<td style="width:130px;min-width:130px;max-width:130px;text-align:right;">{{dateFormatPretty date_published}}</td>
-			{{#if isAdmin}}	
+			{{#if currentUser.profile.admin}}	
 				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{else}}
 				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand hide_link"></i></td>
@@ -403,7 +406,7 @@
 		IP-Adresse automatisch updaten?
 		</label>
 		<label class="checkbox">
-		{{#if currentUser.profile.showdownloadedlinks}}
+		{{#if session "filter_show_already_downloaded"}}
 			<input id="showdownloadedlinks" type="checkbox" checked="checked">
 		{{else}}
 			<input id="showdownloadedlinks" type="checkbox">
@@ -493,11 +496,11 @@
 			<th>zuletzt durchsucht</th>
 			<th>Typ</th>
 			<th>aktiv</th>
-			{{#if isAdmin}}
+			{{#if currentUser.profile.admin}}
 				<th>zuletzt aktualisiert</th>
 			{{/if}}
 			<th>
-				{{#if isAdmin}}
+				{{#if currentUser.profile.admin}}
 					<i class="icon-search hand" id="crawl_all_sites"></i>
 				{{/if}}
 			</th>
@@ -526,11 +529,11 @@
 							<i class="icon-ok-sign"></i>
 						{{/if}}
 					</td>
-					{{#if isAdmin}}
+					{{#if currentUser.profile.admin}}
 						<td>{{dateFormatPretty last_post}}</td>
 					{{/if}}
 					<td>
-						{{#if isAdmin}}
+						{{#if currentUser.profile.admin}}
 							{{#if next_crawl}}
 								<i class="icon-time" id="{{_id}}_crawlstatus"></i>
 							{{else}}
@@ -544,7 +547,7 @@
 							{{/if}}
 						{{/if}}
 						{{#if isOwner}}
-							{{#if isAdmin}}
+							{{#if currentUser.profile.admin}}
 							{{else}}
 								{{#if next_crawl}}
 									<i class="icon-time" id="{{_id}}_crawlstatus"></i>

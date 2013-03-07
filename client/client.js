@@ -17,47 +17,30 @@ Session.setDefault("loading_results", true);
 
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, 0);
+	Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
+		Session.set("links_count_" + timespan, count);
+	});
 });
 
 //lokale Collection für Suchergebnisse, damit wir auch diese mit reactivity anzeigen können.
 SearchResults = new Meteor.Collection(null);
 // Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
 Meteor.autorun(function () {
-	var filter_date = Session.get('filter_date');
-	var filter_status = Session.get('filter_status');
-	var filter_term = Session.get('filter_term');
-	var filter_limit = Session.get('filter_limit');
-	var filter_skip = Session.get('filter_skip');
-	var filter_show_already_downloaded = Session.get('filter_show_already_downloaded');
-	
-	if (Meteor.user() && Meteor.user().profile)
-		filter_show_already_downloaded = Meteor.user().profile.showdownloadedlinks
-	
-	if (filter_date && filter_status && filter_term && filter_limit && filter_skip !== -1 && filter_show_already_downloaded !== undefined) {
-		Meteor.subscribe('sites', function onReady() {
-			// set a session key to true to indicate that the subscription is
-			// completed.
-			Session.set('sites_completed', true);
-		});
-
-		Meteor.subscribe('links', filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_show_already_downloaded, function onReady() {
-			// set a session key to true to indicate that the
-			// subscription is completed.
-			Session.set('links_completed', true);
-		});
-	}
-
 	Meteor.subscribe('userData');
 	Meteor.subscribe('allUserData', function onReady() {
 		Session.set('users_completed', true);
+	});	
+		
+	Meteor.subscribe('sites', function onReady() {
+		// set a session key to true to indicate that the subscription is
+		// completed.
+		Session.set('sites_completed', true);
 	});
 	
-	var timespans = [1, 14, 30, 90, 365];
-	
-	timespans.forEach(function (timespan) {
-		Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
-			Session.set("links_count_" + timespan, count);
-		});
+	Meteor.subscribe('links', Session.get("filter_date"), Session.get("filter_status"), Session.get('filter_term'), Session.get('filter_limit'), Session.get('filter_skip'), Session.get('filter_show_already_downloaded'), function onReady() {
+		// set a session key to true to indicate that the
+		// subscription is completed.
+		Session.set('links_completed', true);
 	});
 });
 //
@@ -82,8 +65,8 @@ Meteor.startup(function () {
 		$(window).scroll(function () {
 			if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
 				if (Session.get("filter_limit") <= 4 && Session.get("wait_for_items") === false && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
-					Session.set("filter_limit", Session.get("filter_limit") + 1);
 					Session.set("wait_for_items", true);
+					Session.set("filter_limit", Session.get("filter_limit") + 1);
 					Meteor.setTimeout(function () {
 						Session.set("wait_for_items", false);
 					}, 2500);
@@ -97,15 +80,13 @@ Meteor.startup(function () {
 	
 	activateInput($('#searchfield'));
 
-	Meteor.setTimeout(function () {
-		// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
-		// auch
-		if (Meteor.user() && Meteor.user().profile)
-			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
-		refreshJDOnlineStatus();
-		Meteor.call('updateFacebookTokensForUser');
-		Meteor.call('updateLinkContributionCount');
-	}, 2000);
+	// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
+	// auch
+	if (Meteor.user() && Meteor.user().profile)
+		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+	refreshJDOnlineStatus();
+	Meteor.call('updateFacebookTokensForUser');
+	Meteor.call('updateLinkContributionCount');
 });
 
 // Template-Helper für handlebars
@@ -118,9 +99,9 @@ Handlebars.registerHelper('dateFormatPretty', function (context) {
 	if (window.moment) {
 		moment().lang('de');
 		if (context && moment(context).isValid()) return moment(context).fromNow();
-		return "kein Datum";
+		return "noch nie";
 	}
-	return "kein Datum"; // moment plugin not available. return data as is.;
+	return context; // moment plugin not available. return data as is.;
 });
 
 // Template-Helper für handlebars
@@ -149,7 +130,7 @@ Template.page.linksFound = function () {
 
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
 Template.navigation.isAnyLinkSelected = function () {
-	if (Session.get("selected_links") && Session.get("selected_links").length) return true;
+	if (Session.get("selected_links").length) return true;
 	return false;
 };
 
@@ -170,35 +151,20 @@ Template.linklist.isLinksLimit = function () {
 };
 
 Template.linklist.isAnyLinkSelected = function () {
-	if (Session.get("selected_links") && Session.get("selected_links").length) return true;
-	return false;
-};
-
-Template.link.isAnyLinkSelected = function () {
-	if (Session.get("selected_links") && Session.get("selected_links").length) return true;
+	if (Session.get("selected_links").length) return true;
 	return false;
 };
 
 // Funktion um den letzten Suchbegriff wieder ins Input Feld einzutragen
 Template.navigation.getLastSearchTerm = function () {
 	var lastterm = Session.get("filter_term");
-	if (lastterm && lastterm != "" && lastterm != ".*") return lastterm.replace(/\.\*/g, "");
-	SearchResults.remove({
-		_id: /.*/gi
-	});
+	if (lastterm != "" && lastterm != ".*") return lastterm.replace(/\.\*/g, "").replace(/\\/g,"");
+	SearchResults.remove({});
 	return undefined;
 };
 // Funktion um die Anzahl der Seiten als badge anzuzeigen
 Template.navigation.getSiteCount = function () {
 	return Sites.find({}).count();
-};
-
-Template.linklist.isAdmin = function () {
-	if (!Meteor.user()) return false;
-	var admin = Meteor.user().admin;
-
-	if (admin && admin === true) return admin;
-	return false;
 };
 
 // Links-Outlet: alle Links, die gerade in der Subscription sind
@@ -214,13 +180,6 @@ Template.link.isNotAlreadyDownloaded = function () {
 	if (this.downloaders && this.downloaders.length)
 		return !_.contains(this.downloaders, Meteor.userId());
 	return true;
-};
-Template.link.isAdmin = function () {
-	if (!Meteor.user()) return false;
-	var admin = Meteor.user().admin;
-
-	if (admin && admin === true) return admin;
-	return false;
 };
 
 // Link-Größe von Kilobyte in MB umwandeln
@@ -341,14 +300,6 @@ Template.sitesDialog.isOwner = function () {
 	return false;
 };
 
-Template.sitesDialog.isAdmin = function () {
-	if (!Meteor.user()) return false;
-	var admin = Meteor.user().admin;
-
-	if (admin && admin === true) return admin;
-	return false;
-};
-
 Template.sitesDialog.canCrawlAgain = function () {
 	if (!this.last_crawled || this.last_crawled == null) return true;
 	if ((new Date() - this.last_crawled) > (1000 * 60 * 60 * 24)) return true;
@@ -398,12 +349,21 @@ Template.page.events({
 });
 // Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
 Template.connectionLostWarning.events({
-	'click #terminateappbutton': function (context) {
+	'click #terminateappbutton': function (event, template) {
 		if ($.browser.opera || $.browser.mozilla) window.close();
 		else {
 			window.open('', '_self', '');
 			window.close();
 		}
+	},
+	'click #waitbutton': function (event, template) {
+		event.preventDefault();
+		event.target.disabled = true;
+		event.target.innerHTML = "<i class='icon-loader'></i> Warten";
+		
+		Meteor.setTimeout(function () {
+			event.target.innerHTML = "<i class='icon-warning-sign'></i> Verbindung verloren";
+		}, 10000);
 	}
 });
 
@@ -468,7 +428,8 @@ Template.user_loggedin.events({
 Template.navigation.rendered = function () {
 	$('#searchfield').typeahead({items: 5, minLength: 3,
 		source: function(query, process) {
-			Meteor.call("getSuggestionsForSearchTerm", query, function(error, result) {
+			Meteor.call("getSuggestionsForSearchTerm", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function(error, result) {
+				result.unshift(query);
 				process(result);
 			});	
 		},
@@ -478,9 +439,10 @@ Template.navigation.rendered = function () {
 			var prev_filter_skip = Session.get("filter_skip");
 			Session.set("prev_filter_skip", prev_filter_skip);
 			Session.set("prev_filter_date", prev_filter_date);
+			Session.set("filter_show_already_downloaded", true);
 			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
-			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace("\s", ".*") + ".*");
+			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
 			Session.set("filter_skip", 0);
 			return name;
         },
@@ -554,7 +516,7 @@ Template.navigation.events({
 	'click #downloadbutton': function (event, template) {
 		var selected = Session.get("selected_links");
 
-		if (selected.length > 0 && Session.get("JDOnlineStatus") === true) {
+		if (selected.length && Session.get("JDOnlineStatus") === true) {
 			Session.set("progressActive", true);
 			Session.set("progress", 5);
 
@@ -615,13 +577,10 @@ Template.navigation.events({
 						query = {
 							url: {
 								'$in': sel_links
-							},
-							downloaders: {
-								'$ne': Meteor.userId()
 							}
 						};
 						update = {
-							'$push': {
+							'$addToSet': {
 								'downloaders': Meteor.userId()
 							}
 						};
@@ -651,7 +610,7 @@ Template.navigation.events({
 	'click #copybutton': function (event, template) {
 		var selected = Session.get("selected_links");
 
-		if (selected.length > 0) {
+		if (selected.length) {
 			var selectedurls = _.pluck(Links.find({
 				_id: {
 					'$in': selected
@@ -665,13 +624,10 @@ Template.navigation.events({
 			query = {
 				_id: {
 					'$in': selected
-				},
-				downloaders: {
-					'$ne': Meteor.userId()
 				}
 			};
 			update = {
-				'$push': {
+				'$addToSet': {
 					'downloaders': Meteor.userId()
 				}
 			};
@@ -708,16 +664,20 @@ Template.navigation.events({
 		event.stopPropagation();
 		var term = template.find('#searchfield').value;
 		
+		Session.set("filter_limit", 1);
+		Session.set("filter_skip", 0);
+		
 		if (term && term != undefined && term != "") {
 			var prev_filter_date = Session.get("filter_date");
 			var prev_filter_skip = Session.get("filter_skip");
 			Session.set("prev_filter_skip", prev_filter_skip);
 			Session.set("prev_filter_date", prev_filter_date);
+			Session.set("filter_show_already_downloaded", true);
 			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
-			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace("\s", ".*") + ".*");
-			Session.set("filter_skip", 0);
+			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
 		} else {
+			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 			Session.set("filter_term", ".*");
 
 			if (Session.get("prev_filter_date")) {
@@ -737,7 +697,6 @@ Template.navigation.events({
 			}
 			Session.set("filter_status", ["on"]);
 		}
-		Session.set("filter_limit", 1);
 		SearchResults.remove({});
 		
 		Meteor.setTimeout(function () {
@@ -820,6 +779,9 @@ Template.linklist.events = ({
 	//Links filtern (alle / auch unbekannte)
 	'click #filter_links': function (event, template) {
 		event.preventDefault();
+		Session.set("filter_limit", 1);
+		Session.set("filter_skip", 0);
+		
 		var tmp_status = Session.get("filter_status");
 
 		if (_.indexOf(tmp_status, "unknown") != -1) tmp_status = _.without(tmp_status, "off", "unknown");
@@ -827,7 +789,6 @@ Template.linklist.events = ({
 			tmp_status = new Array("on", "unknown");
 		}
 		Session.set("filter_status", _.uniq(tmp_status));
-		Session.set("filter_limit", 1);
 	},
 	//alle Links anhaken, die gerade zu sehen sind
 	'click #select_all': function (event, template) {
@@ -843,17 +804,14 @@ Template.linklist.events = ({
 	'click #hide_selected_links' : function (event, template) {
 		var selected = Session.get("selected_links");
 
-		if (selected.length > 0) {			
+		if (selected.length) {			
 			query = {
 				_id: {
 					'$in': selected
-				},
-				downloaders: {
-					'$ne': Meteor.userId()
 				}
 			};
 			update = {
-				'$push': {
+				'$addToSet': {
 					'downloaders': Meteor.userId()
 				}
 			};
@@ -872,7 +830,7 @@ Template.link.rendered = function () {
 		htmlstr = "<form class='newcommentform' id=" + link._id._str + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='5' style='width:248px' type='text' required></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
 		var commentsstr = "";
 
-		if (link.comments && link.comments !== null && link.comments.length > 0) {
+		if (link.comments && link.comments !== null && link.comments.length) {
 			for (var i = 0; i <= link.comments.length; i++) {
 				if (link.comments[i]) {
 					var creatorname = Meteor.users.findOne({
@@ -1073,7 +1031,7 @@ Template.link.events({
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
 		
-		if (Meteor.userId() && newName != "") Links.update({
+		if (newName != "") Links.update({
 			_id: this._id
 		}, {
 			$set: {
@@ -1098,7 +1056,7 @@ Template.link.events({
 		// Update to add the user to the array and increment the number of
 		// votes.
 		update = {
-			'$push': {
+			'$addToSet': {
 				'likers': Meteor.userId()
 			},
 			'$inc': {
@@ -1115,19 +1073,13 @@ Template.link.events({
 	'click .hide_link': function (event, template) {
 		query = {
 			_id: this._id,
-			downloaders: {
-				'$ne': Meteor.userId()
-			}
 		};
 		update = {
-			'$push': {
+			'$addToSet': {
 				'downloaders': Meteor.userId()
 			}
 		};
-		options = {
-			multi: true
-		};
-		Links.update(query, update, options);
+		Links.update(query, update);
 	}
 });
 //Events im Link hinzufügen Dialog
@@ -1178,7 +1130,6 @@ Template.addLinkDialog.events({
 
 Template.searchresult.events({
 	'click .add_external_link': function (event, template) {
-		console.log(event);
 		event.preventDefault();
 		event.target.disabled = true;
 		event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";
