@@ -5,6 +5,9 @@
 
 <body>
 	{{> page}}
+	{{#constant}}
+		<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':0,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
+	{{/constat}}
 </body>
 
 <template name="page">
@@ -217,12 +220,18 @@
 				{{> link}}
 			{{/each}}
 			{{#if session "wait_for_items"}}
-				<tr><td></td><td></td><td></td><td colspan="8"><i class="icon-loader"></i>weitere Links werden geladen...</td></tr>
+				<tr><td></td><td></td><td></td><td colspan="8"><i class="icon-loader"></i> weitere Links werden geladen...</td></tr>
 			{{/if}}
 		</tbody>
 	</table>
 	{{#if isLinksLimit}}
-		<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt ({{getCurrentLinksText}}). {{#if hasMoreLinks}}<a class="hand" id="paginate">Links {{getNextLinksText}} anzeigen</a>{{/if}}</p>
+		{{#if hasMoreLinks}}
+			<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt ({{getCurrentLinksText}}). <a class="hand" id="paginate">Links {{getNextLinksText}} anzeigen</a></p>
+		{{/if}}
+	{{else}}
+		{{#unless hasMoreLinks}}
+			<p class="lead text-center">{{getCurrentLinksText}}</p>
+		{{/unless}}
 	{{/if}}
 </template>
 
@@ -241,7 +250,9 @@
 				<i class="icon-refresh hand refreshlink"></i>
 			</td>
 			<td style="width:14px;min-width:14px;max-width:14px">
-				{{{getPlayerWidget}}}
+				{{#if isPlayable}}
+					<i class="icon-play player hand"></i>
+				{{/if}}
 			</td>
 		  <td style="max-width: 400px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
 		  <td class="hidden-phone" style="max-width: 200px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
@@ -279,7 +290,9 @@
 				<i class="icon-refresh hand refreshlink"></i>
 			</td>
 			<td style="width:14px;min-width:14px;max-width:14px">
-				{{{getPlayerWidget}}}
+				{{#if isPlayable}}
+					<i class="icon-play player hand"></i>
+				{{/if}}
 			</td>
 		  <td style="max-width: 400px;color: gray;"><a style="color: gray;" class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
 		  <td class="hidden-phone" style="max-width: 200px;color: gray;"><a style="color: gray;" href="{{url}}" target="_blank">{{url}}</a></td>
@@ -319,7 +332,9 @@
 				<i class="icon-refresh hand refreshlink"></i>
 			</td>
 			<td style="width:14px;min-width:14px;max-width:14px">
-				{{{getPlayerWidget}}}
+				{{#if isPlayable}}
+					<i class="icon-play player hand"></i>
+				{{/if}}
 			</td>
 		  <td style="max-width: 400px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
 		  <td class="hidden-phone" style="max-width: 200px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
@@ -370,11 +385,16 @@
 	<td style="width:142px;min-width:142px;max-width:142px;text-align:center">
 		{{{getExternalSourceIcon}}}
 	</td>
-	<td style="width:14px;min-width:14px;max-width:14px">{{getPlayerWidget}}</td>
+	<td style="width:14px;min-width:14px;max-width:14px">
+		{{#if isPlayable}}
+			<i class="icon-play player hand"></i>
+		{{/if}}
+	</td>
     <td style="min-width:400px;"><a href="{{url}}" target="_blank">{{name}}</a></td>
-	<td style="width:101px;min-width:101px;max-width:101px">{{duration}}</td>	
+	<td style="width:71px;min-width:71px;max-width:71px">{{duration}}</td>	
 	<td style="width:239px;min-width:239px;max-width:239px">
-	<button class="btn add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</button></td>
+		<button class="btn btn-small add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</button>
+	</td>
   </tr>
 </template>
 

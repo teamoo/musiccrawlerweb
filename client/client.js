@@ -1,10 +1,17 @@
 //Session Variablen initialisieren
+Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
 Session.setDefault("sites_completed", false);
 Session.setDefault("links_completed", false);
 Session.setDefault('users_completed', false);
 Session.setDefault("status", undefined);
 Session.setDefault("showAccountSettingsDialog", false);
+Session.setDefault("showAddLinkDialog", false);
+Session.setDefault("showAddSiteDialog", false);
+Session.setDefault("showSitesDialog", false);
+Session.setDefault("progressActive", false);
+Session.setDefault("progress", undefined);
+Session.setDefault("progressState", undefined);
 Session.setDefault("selected_navitem", 14);
 Session.setDefault("filter_date", new Date(new Date().setDate(new Date().getDate()-14)));
 Session.setDefault("filter_status", ["on"]);
@@ -13,12 +20,14 @@ Session.setDefault("filter_limit", 1);
 Session.setDefault("filter_skip", 0);
 Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("selected_links", []);
-Session.setDefault("loading_results", true);
+
+var soundsmap = {};
 
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, 0);
 	Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
-		Session.set("links_count_" + timespan, count);
+		if (count)
+			Session.set("links_count_" + timespan, count);
 	});
 });
 
@@ -72,29 +81,25 @@ Meteor.startup(function () {
 		     return 'Name darf nicht leer sein.';
 		 }
 	};
-	$(document).ready(function () {
-		bottomMargin = 49;
-		itemHeight = 30;
-		threshold = 10 * itemHeight + bottomMargin;
-		$(window).scroll(function () {
-			if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
-				if (Session.get("filter_limit") <= 4 && Session.get("wait_for_items") === false && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
-					Session.set("wait_for_items", true);
-					Session.set("filter_limit", Session.get("filter_limit") + 1);
-					Meteor.setTimeout(function () {
-						Session.set("wait_for_items", false);
-					}, 2500);
-				}
+	
+	bottomMargin = 49;
+	itemHeight = 30;
+	threshold = 10 * itemHeight + bottomMargin;
+	$(window).scroll(function () {
+		if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
+			if (Session.get("filter_limit") <= 4 && Session.get("wait_for_items") === false && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
+				Session.set("wait_for_items", true);
+				Session.set("filter_limit", Session.get("filter_limit") + 1);
+				Meteor.setTimeout(function () {
+					Session.set("wait_for_items", false);
+				}, 2500);
 			}
-		});
+		}
 	});
 });
 
 // Template-Helper für handlebars
-// format an ISO date using Moment.js
-// http://momentjs.com/
-// moment syntax example: moment(Date("2011-07-18T15:50:52")).format("MMMM
-// YYYY")
+// represent ISO Date as String from now (e.g. 3 minute before, in 1 hour)
 // usage: {{dateFormatPretty creation_date}}
 Handlebars.registerHelper('dateFormatPretty', function (context) {
 	if (window.moment) {
@@ -140,7 +145,11 @@ Template.linklist.getNextLinksText = function () {
 };
 
 Template.linklist.getCurrentLinksText = function () {
-	return parseInt(Session.get("filter_skip"))+1 + "-" + (parseInt(Session.get("filter_skip"))+250);
+	if (Links.find().count() === 1)
+		return undefined;
+	if (Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize))
+		return parseInt(Session.get("filter_skip"))+1 + "-" + (parseInt(Session.get("filter_skip"))+250);
+	return parseInt(Session.get("filter_skip"))+1 + "-" + Links.find().count();
 };
 
 Template.linklist.hasMoreLinks = function () {
@@ -160,7 +169,6 @@ Template.linklist.isAnyLinkSelected = function () {
 Template.navigation.getLastSearchTerm = function () {
 	var lastterm = Session.get("filter_term");
 	if (lastterm != "" && lastterm != ".*") return lastterm.replace(/\.\*/g, "").replace(/\\/g,"");
-	SearchResults.remove({});
 	return undefined;
 };
 // Funktion um die Anzahl der Seiten als badge anzuzeigen
@@ -245,32 +253,44 @@ Template.link.getSourceName = function () {
 	return undefined;
 };
 // TODO Player-Widget zurückgeben, wenn es einen embedabble player gibt
-Template.link.getPlayerWidget = function () {
-	// Soundcloud: <a href="http://soundcloud.com/matas/hobnotropic"
-	// class="sc-player">My new dub track</a>
-	// Youtube: schauen
-	
+Template.link.isPlayable = function () {	
 	if (this.status != 'off') {
-		if (this.hoster == "soundcloud.com") return "<i class=\" icon-play\"><a href=\"" + this.url + "\" class=\"sc-player\"></a></i>";
-		if (this.hoster == "muzon.ws") return undefined;
-		else if (this.hoster == "zippyshare.com")
-			return undefined;
-		//return "<object width='30' height='30' name='zs_player23137972' id='zs_player23137972' classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' style='width: 60px; height: 80px;'><param value='http://api.zippyshare.com/api/player.swf' name='movie'><param value='false' name='allowfullscreen'><param value='always' name='allowscriptaccess'><param name='wmode' value='transparent'><param value='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' name='flashvars'><embed width='30' height='30' flashvars='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' allowfullscreen='false' allowscriptaccess='always' type='application/x-shockwave-flash' src='http://api.zippyshare.com/api/player.swf' name='zs_player23137972' wmode='transparent' id='zs_player23137972'></object>"
-		//return "<script type='text/javascript'>var zippywww='" + this.url.split("http://www")[1].split(".zippyshare")[0] +"';var zippyfile='" + this.url.split("/v/")[1].split("/file.html")[0] + "';var zippytext='#000000';var zippyback='#ffffff';var zippyplay='#000000';var zippywidth=60;var zippyauto=false;var zippyvol=80;var zippywave = '#ffffff';var zippyborder = '#ffffff';</script><script type='text/javascript' src='http://api.zippyshare.com/api/embed_new.js'></script>";
-		else if (this.hoster == "youtube.com") return undefined;
-		else if (this.hoster == "vimeo.com") {
-			// diese Links müssen asynchron erstellt werden, das dauert
-			// sonst zu lange...
-			
-			var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
-			var callback = function (video) {
-				return unescape(video.html);
-			};
-			var aurl = vimeoEndpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
-
-			// Meteor.http.get(aurl);
+		switch (this.hoster) {
+			case "soundcloud.com":
+				return true;
+			case "youtube.com":
+				return false;
+			case "vimeo.com":
+				return false;
+			case "zippyshare.com":
+				return false;
+			case "muzon.ws":
+				return false;
+			default:
+				return false;
 		}
-	} else return "<i class=\"icon-ban-circle\"></i>";
+	}
+	return false;
+};
+
+Template.searchresult.isPlayable = function () {	
+	if (this.status != 'off') {
+		switch (this.hoster) {
+			case "soundcloud.com":
+				return true;
+			case "youtube.com":
+				return false;
+			case "vimeo.com":
+				return false;
+			case "zippyshare.com":
+				return false;
+			case "muzon.ws":
+				return false;
+			default:
+				return false;
+		}
+	}
+	return false;
 };
 
 Template.searchresult.getExternalSourceIcon = function() {
@@ -425,15 +445,16 @@ Template.user_loggedin.events({
 });
 
 Template.navigation.rendered = function () {
-	$('#searchfield').typeahead({items: 5, minLength: 3,
+	$('#searchfield').typeahead({items: 6, minLength: 3,
 		source: function(query, process) {
 			Meteor.call("getSuggestionsForSearchTerm", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function(error, result) {
-				result.unshift(query);
+				if (result.length)
+					result.unshift(query.trim());
 				process(result);
 			});	
 		},
 		updater: function(name) {
-			var term = name;
+			var term = name.trim();
 			var prev_filter_date = Session.get("filter_date");
 			var prev_filter_skip = Session.get("filter_skip");
 			Session.set("prev_filter_skip", prev_filter_skip);
@@ -459,25 +480,27 @@ Template.navigation.rendered = function () {
             return item;
         },
 	});
+	
 	$('li.linkfilter').removeClass("active");
 	var activenumber = parseInt(Session.get("selected_navitem"));
 	$('li.linkfilter #' + activenumber).parent().addClass("active");
 
 	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>";
-
 	strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
-	$('#brand').popover({
-		animation: true,
-		placement: "bottom",
-		trigger: "hover",
-		title: "Impressum",
-		html: true,
-		content: straddress + strdonatebutton,
-		delay: {
-			show: 1000,
-			hide: 3000
-		}
-	});
+	
+	if (Meteor.userId())
+		$('#brand').popover({
+			animation: true,
+			placement: "bottom",
+			trigger: "hover",
+			title: "Impressum",
+			html: true,
+			content: straddress + strdonatebutton,
+			delay: {
+				show: 1000,
+				hide: 3000
+			}
+		});
 
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
 		if ($('#downloadbutton').attr("disabled") == "disabled") $('#downloadbutton').tooltip({
@@ -511,10 +534,10 @@ Template.navigation.events({
 		return false;
 	},
 	//Links downloaden Aktion ausführen
-
 	'click #downloadbutton': function (event, template) {
 		var selected = Session.get("selected_links");
-
+		
+		//TODO nochmal die lokale Route testen, als Fallback? Gibt es Fehler beim Senden?
 		if (selected.length && Session.get("JDOnlineStatus") === true) {
 			Session.set("progressActive", true);
 			Session.set("progress", 5);
@@ -525,6 +548,7 @@ Template.navigation.events({
 				}
 			}, {
 				fields: {
+					_id: -1,
 					url: 1
 				}
 			}).fetch(), 'url');
@@ -552,7 +576,7 @@ Template.navigation.events({
 				else grabberoption = "grabber0";
 
 				var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
-
+				//TODO geht das nicht mit Escape sicherer?
 				requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
 
 				Meteor.call("sendLinks", requeststring, function (error, result) {
@@ -586,7 +610,10 @@ Template.navigation.events({
 						options = {
 							multi: true
 						};
-						Links.update(query, update, options);
+
+						var ret = Links.update(query, update, options);
+						if (ret)
+							console.log("Error updating Links after Download.");
 					}
 
 					var oldprogress = Session.get("progress");
@@ -616,6 +643,7 @@ Template.navigation.events({
 				}
 			}, {
 				fields: {
+					_id: -1,
 					url: 1
 				}
 			}).fetch(), 'url');
@@ -633,7 +661,11 @@ Template.navigation.events({
 			options = {
 				multi: true
 			};
-			Links.update(query, update, options);
+
+			var ret = Links.update(query, update, options);
+			
+			if (ret)
+				console.log("Error updating Links while copying to clipboard.");
 			
 			writeConsole(_.reduce(selectedurls, function (memo, aUrl) {
 				return memo + "<br/>" + aUrl;
@@ -649,19 +681,19 @@ Template.navigation.events({
 		return false;
 	},
 	'click .linkfilter': function (event, template) {
+		Session.set("filter_limit", 1);
+		Session.set("filter_skip", 0);
 		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-event.target.id)));
 		Session.set("selected_navitem", parseInt(event.target.id));
 		$('li.linkfilter').removeClass("active");
 		var activenumber = parseInt(Session.get("selected_navitem"));
 		$('li.linkfilter #' + activenumber).parent().addClass("active");
-
-		Session.set("filter_limit", 1);
-		Session.set("filter_skip", 0);
+		SearchResults.remove({});
 	},	
 	'submit #searchform': function (event, template) {
 		event.preventDefault();
 		event.stopPropagation();
-		var term = template.find('#searchfield').value;
+		var term = template.find('#searchfield').value.trim();
 		
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
@@ -708,7 +740,7 @@ Template.navigation.events({
 				
 				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "");
 				
-				if (filter_term_external != "" )
+				if (filter_term_external != "")
 				{
 					//TODO testen wenn iconv läuft
 					/*
@@ -958,6 +990,82 @@ Template.user_loggedin.rendered = function () {
 
 //Events für die einzelnen Link-Objekte
 Template.link.events({
+	'click .player' : function(event, template) {		
+		if (event.target.className.indexOf("icon-pause") !== -1)
+		{
+			if (window.soundManager && soundManager.ok() === true)
+			{
+				if (soundsmap[this.url])
+					soundManager.pause(soundsmap[this.url]);
+				else
+				{
+					soundManager.pauseAll();
+					$('.player').removeClass("icon-pause");
+					$('.player').addClass("icon-play");
+				}
+			}
+			else
+				SC.streamStopAll();
+	
+			event.target.className="icon-play player hand";
+			return;
+		}
+	
+		if (this.status != 'off') {
+			switch (this.hoster) {
+				case "soundcloud.com":
+					event.target.className = "icon-refreshing";
+					if (window.soundManager && soundManager.ok() === true)
+					{
+						soundManager.pauseAll();
+						$('.player').removeClass("icon-pause");
+						$('.player').addClass("icon-play");
+					}
+					if (soundsmap[this.url])
+					{
+						if (window.soundManager && soundManager.ok() === true)
+							soundManager.resume(soundsmap[this.url]);
+						event.target.className="icon-pause player hand";
+						break;
+					}
+					else {
+						var theurl = this.url
+						SC.get('/resolve', { url: this.url }, function(track) {
+							SC.stream(track.stream_url, function(sound){
+								event.target.className="icon-pause player hand";
+								var soundobj = sound.play();
+								soundsmap[theurl] = soundobj.sID;
+							});
+						});
+						break;
+					}
+				case "youtube.com":
+					event.target.className = "icon-remove";
+					break;
+				case "vimeo.com":
+					var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
+					var callback = function (video) {
+						return unescape(video.html);
+					};
+					var aurl = vimeoEndpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
+					event.target.className = "icon-remove";
+					break;
+				case "zippyshare.com":
+					//return "<object width='30' height='30' name='zs_player23137972' id='zs_player23137972' classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' style='width: 60px; height: 80px;'><param value='http://api.zippyshare.com/api/player.swf' name='movie'><param value='false' name='allowfullscreen'><param value='always' name='allowscriptaccess'><param name='wmode' value='transparent'><param value='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' name='flashvars'><embed width='30' height='30' flashvars='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' allowfullscreen='false' allowscriptaccess='always' type='application/x-shockwave-flash' src='http://api.zippyshare.com/api/player.swf' name='zs_player23137972' wmode='transparent' id='zs_player23137972'></object>"
+					//return "<script type='text/javascript'>var zippywww='" + this.url.split("http://www")[1].split(".zippyshare")[0] +"';var zippyfile='" + this.url.split("/v/")[1].split("/file.html")[0] + "';var zippytext='#000000';var zippyback='#ffffff';var zippyplay='#000000';var zippywidth=60;var zippyauto=false;var zippyvol=80;var zippywave = '#ffffff';var zippyborder = '#ffffff';</script><script type='text/javascript' src='http://api.zippyshare.com/api/embed_new.js'></script>";
+					event.target.className = "icon-remove";
+					break;
+				case "muzon.ws":
+					event.target.className = "icon-remove";
+					break;
+				default:
+					event.target.className = "icon-remove";
+					break;
+			}
+		}
+		else
+			event.target.className = "icon-remove";
+	},
 	'input #new_comment': function (event, template) {
 		if (!event.target.validity.valid) {
 			template.find('#postcomment').disabled = true;
@@ -1128,6 +1236,66 @@ Template.addLinkDialog.events({
 });
 
 Template.searchresult.events({
+	'click .player' : function(event, template) {		
+		if (event.target.className.indexOf("icon-pause") !== -1)
+		{
+			if (window.soundManager && soundManager.ok() === true)
+			{
+				if (soundsmap[this.url])
+					soundManager.pause(soundsmap[this.url]);
+				else
+				{
+					soundManager.pauseAll();
+					$('.player').removeClass("icon-pause");
+					$('.player').addClass("icon-play");
+				}
+			}
+			else
+				SC.streamStopAll();
+	
+			event.target.className="icon-play player hand";
+			return;
+		}
+	
+		if (this.status != 'off') {
+			switch (this.hoster) {
+				case "soundcloud.com":
+					event.target.className = "icon-refreshing";
+					if (window.soundManager && soundManager.ok() === true)
+					{
+						soundManager.pauseAll();
+						$('.player').removeClass("icon-pause");
+						$('.player').addClass("icon-play");
+					}
+					if (soundsmap[this.url])
+					{
+						if (window.soundManager && soundManager.ok() === true)
+							soundManager.resume(soundsmap[this.url]);
+						event.target.className="icon-pause player hand";
+						break;
+					}
+					else {
+						var theurl = this.url
+						SC.get('/resolve', { url: this.url }, function(track) {
+							SC.stream(track.stream_url, function(sound){
+								event.target.className="icon-pause player hand";
+								var soundobj = sound.play();
+								soundsmap[theurl] = soundobj.sID;
+							});
+						});
+						break;
+					}
+				case "muzon.ws":
+					event.target.className = "icon-remove";
+					break;
+				default:
+					event.target.className = "icon-remove";
+					break;
+			}
+		}
+		else
+			event.target.className = "icon-remove";
+	},
 	'click .add_external_link': function (event, template) {
 		event.preventDefault();
 		event.target.disabled = true;
