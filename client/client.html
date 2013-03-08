@@ -1,13 +1,13 @@
 <head>
-  <title>MusicCrawler</title> 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	{{#constant}}
+		<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':0,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
+	{{/constant}}
+	<title>MusicCrawler</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
 	{{> page}}
-	{{#constant}}
-		<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':0,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
-	{{/constat}}
 </body>
 
 <template name="page">
@@ -26,6 +26,11 @@
 				{{#if session "showSitesDialog"}}
 				  {{> sitesDialog}}
 				{{/if}}
+				
+				{{#if session "showFilterSitesDialog"}}
+				  {{> filterSitesDialog}}
+				{{/if}}
+				
 	<div class="container-fluid">
 		<div class="row-fluid">
 			<div class="span12">
@@ -179,6 +184,7 @@
 		<a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
 		<ul class="dropdown-menu pull-right">
 			<li><a id="showsettings"><i class="icon-wrench"></i> Einstellungen</a></li>
+			<li><a id="showsitefilter"><i class="icon-filter"></i> Seitenfilter</a></li>
 			<li class="divider"></li>
 			<li><a id="logout"><i class="icon-off"></i> Abmelden</a></li>
 		</ul>
@@ -204,7 +210,6 @@
 			<th>
 				<i class="icon-filter hand" id="filter_links"></i>
 			</th>
-			{{! TODO: Source filtern}}
 			<th>Quelle</th>
 			<th>Größe</th>
 			<th style="text-align:right">Veröffentlicht</th>
@@ -582,6 +587,46 @@
 								{{/if}}
 							{{/if}}
 						{{/if}}
+					</td>
+				</tr>
+			{{/each}}
+		</tbody>
+		</table>
+  </div>
+</div>
+</template>
+
+<template name="filterSitesDialog">
+<div class="mask"> </div>
+<div id="showFilterSitesModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close cancel">&times;</button>
+    <h3 align="center">Seitenfilter</h3>
+  </div>
+  <div class="modal-body">
+		<table class="table table-condensed">
+		<thead>
+			<th>
+				{{#if noSitefiltered}}
+					<input type="checkbox" id="filter_all" checked="checked">
+				{{else}}
+					<input type="checkbox" id="filter_all">
+				{{/if}}
+			</th>
+			<th>Name</th>
+		</thead>
+		<tbody>
+			{{#each sites}}
+				<tr>
+					<td>
+					{{#if isSiteFiltered}}
+						<input type="checkbox" class="site_checkbox">
+					{{else}}
+						<input type="checkbox" class="site_checkbox" checked="checked">
+					{{/if}}	
+					</td>
+					<td>
+						{{name}}
 					</td>
 				</tr>
 			{{/each}}

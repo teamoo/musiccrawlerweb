@@ -19,14 +19,14 @@ Meteor.publish("allUserData", function () {
 });
 
 // Publish filtered list to all clients
-Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded) {
+Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites) {
 	
 	var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
 	
 	var thedownloaders = "dummy";
 	
 	var searchterms = filter_term.trim().split(" ");
-		
+	
 	for (var i = 0; i < searchterms.length; i++) {
 		searchterms[i] = new RegExp(searchterms[i],"i");
 	}
@@ -41,12 +41,20 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
         status: {
             $in: filter_status
         },
+		source: {
+			$ne: filter_sites
+		},
 		downloaders: {
 			$ne: thedownloaders
 		},
         name: {
             $all: searchterms
-        }
+        },
+		source: {
+			$not: {
+				$in: filter_sites
+			}
+		}
     }, {
         limit: thelimit,
         skip: filter_skip,

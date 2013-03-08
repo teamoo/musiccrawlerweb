@@ -32,6 +32,7 @@ Accounts.onCreateUser(function (options, user) {
 	user.profile.autoupdateip = true;
 	user.profile.showtooltips = true;
 	user.profile.showdownloadedlinks = false;
+	user.profile.filteredsites = [];
 	user.profile.ip = "";
 	user.profile.port = 10025;
 	user.profile.pictureurl = result.data.data.url;
