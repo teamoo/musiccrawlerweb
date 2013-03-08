@@ -1,4 +1,6 @@
 //TODO bei keinen Treffern will er wieder extern suchen...ist falsch.
+//TODO Seitenfilter für alles ohne Seite
+//TODO bei Filter Change ist noch was falsch, lädt gleich 250
 
 //Session Variablen initialisieren
 Session.setDefault("loading_results", false);
@@ -79,7 +81,6 @@ Meteor.startup(function () {
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		if(Meteor.user().profile.filteredsites !== undefined)
 		{
-			Session.set("filter_sites", Meteor.user().profile.filteredsites);
 			Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
 		}
 	}
@@ -719,6 +720,7 @@ Template.navigation.events({
 		return false;
 	},
 	'click .linkfilter': function (event, template) {
+		$("html, body").animate({ scrollTop: 0 }, "fast");
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
 		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-event.target.id)));
@@ -1033,7 +1035,38 @@ Template.link.events({
 	'click .player' : function(event, template) {		
 		if (this.status != 'off') {
 			switch (this.hoster) {
-				case "soundcloud.com": case "youtube.com":
+				case "soundcloud.com":
+					event.target.className = "icon-loader";
+					if (window.SCM)
+					{
+						SCM.play({title:this.name,url:this.url.replace("/download","")});
+						event.target.className="icon-list";
+					}
+					else
+						event.target.clasName = "icon-remove";
+					break;
+					/*
+					TODO: sets resolven
+					event.target.className = "icon-loader";
+					SC.get('/resolve', { url: this.url }, function(track) {
+						if (track.errors) {
+							event.target.clasName = "icon-remove";
+							return;
+						}
+						else {
+							if (window.SCM)
+							{
+								SCM.play({title:this.name,url:track.stream_url});
+								event.target.className="icon-list";
+							}
+							else
+								event.target.clasName = "icon-remove";
+							return;
+						}
+					});
+					break;
+					*/
+				 case "youtube.com":
 					event.target.className = "icon-loader";
 					if (window.SCM)
 					{
