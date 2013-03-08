@@ -169,3 +169,19 @@ settings.json
 *.lock
 
 smart.lock
+
+.idea/.name
+
+.idea/encodings.xml
+
+.idea/misc.xml
+
+.idea/modules.xml
+
+.idea/musiccrawlerweb.iml
+
+.idea/scopes/scope_settings.xml
+
+.idea/vcs.xml
+
+.idea/workspace.xml

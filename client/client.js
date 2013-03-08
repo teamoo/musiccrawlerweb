@@ -1,13 +1,9 @@
-//TODO bei keinen Treffern will er wieder extern suchen...ist falsch.
-//TODO Seitenfilter für alles ohne Seite
-//TODO bei Filter Change ist noch was falsch, lädt gleich 250
-
 //Session Variablen initialisieren
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
 Session.setDefault("sites_completed", false);
 Session.setDefault("links_completed", false);
-Session.setDefault('users_completed', false);
+Session.setDefault("users_completed", false);
 Session.setDefault("status", undefined);
 Session.setDefault("showAccountSettingsDialog", false);
 Session.setDefault("showAddLinkDialog", false);
@@ -58,9 +54,6 @@ Meteor.autorun(function () {
 		// subscription is completed.
 		Session.set('links_completed', true);
 	});
-	
-	if (Meteor.user() && Meteor.user().profile.filteredsites !== undefined)
-		Session.set("filter_sites", Meteor.user().profile.filteredsites);
 });
 //
 // Startup-Funktion
@@ -80,9 +73,7 @@ Meteor.startup(function () {
 	{
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		if(Meteor.user().profile.filteredsites !== undefined)
-		{
 			Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
-		}
 	}
 	refreshJDOnlineStatus();
 	Meteor.call('updateFacebookTokensForUser');
@@ -148,6 +139,10 @@ Template.page.searchresultsFound = function () {
 Template.page.linksFound = function () {
 	if (Links.findOne()) return true;
 	return false;
+};
+
+Template.page.isExternalSearch = function () {
+	return (Session.get("filter_term") !== ".*");
 };
 
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
@@ -751,7 +746,9 @@ Template.navigation.events({
 		} else {
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 			Session.set("filter_term", ".*");
-			Session.set("filter_sites", Meteor.user().profile.filteredsites);
+                           
+            if (Meteor.user().profile.filteredsites)
+                Session.set("filter_sites", Meteor.user().profile.filteredsites);
 			
 			if (Session.get("prev_filter_date")) {
 				Session.set("filter_date", Session.get("prev_filter_date"));
@@ -778,12 +775,12 @@ Template.navigation.events({
 		
 		Meteor.setTimeout(function(){
 			if (Session.get("links_completed") === true && !Links.findOne()) {
-				Session.set("loading_results", true);
 				
 				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "");
 				
 				if (filter_term_external != "")
 				{
+                    Session.set("loading_results", true);
 					//TODO testen wenn iconv läuft
 					/*
 					Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
@@ -835,7 +832,7 @@ Template.navigation.events({
 					});
 				}
 			}	
-		},1000);
+		},100);
 		return false;
 	}
 });
