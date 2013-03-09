@@ -116,6 +116,15 @@ Handlebars.registerHelper('dateFormatPretty', function (context) {
 	}
 	return context; // moment plugin not available. return data as is.;
 });
+Handlebars.registerHelper('millisecondsFormatPretty', function (context) {
+    if (window.moment) {
+        moment().lang('de');
+        if (context && moment(context).isValid()) return moment(context).format('mm:ss') + " min.";
+        return "unbekannt";
+    }
+    return context; // moment plugin not available. return data as is.;
+});
+
 
 // Template-Helper für handlebars
 // Session Objekt in Handlebars direkt nutzen
@@ -294,7 +303,7 @@ Template.searchresult.isPlayable = function () {
 			case "zippyshare.com":
 				return false;
 			case "muzon.ws":
-				return false;
+				return true;
 			default:
 				return false;
 		}
@@ -781,39 +790,73 @@ Template.navigation.events({
 				if (filter_term_external != "")
 				{
                     Session.set("loading_results", true);
-					//TODO testen wenn iconv läuft
-					/*
+                    Session.set("filter_term_external", filter_term_external);
+                          
 					Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
-						if (result && result.content) {
-							console.log(result.content);
-							
-							var iterator = document.evaluate("//a[contains(@id,'aplayer')]::text()", result.content, null, XPathResult.ANY_TYPE, null );
-							
-							console.log(iterator);
-							
-							try {
-							  var thisNode = iterator.iterateNext();
-								   
-							  while (thisNode) {
-								console.log( thisNode.textContent );
-								SearchResults.insert({
-									hoster: "muzon.ws",
-									status: "unknown",
-									name: "test",
-									url: "test",
-									duration: moment("test").format('mm:ss') + " min."
-								});
-							    thisNode = iterator.iterateNext();
-							  }
-							}
-							catch (e) {
-							  dump( 'Error: Document tree modified during iteration ' + e );
-							}	
+						if (result) {
+                                var pattern1 = /<span.*id.*(aid|oid|autor|title|time).*>.*(?=<\/span>)/gi
+                                var pattern2 = /http.*(?=<img src="\/JJS\/download.png)/gi
+                                
+                                var tempaid;
+                                var tempoid;
+                                var tempautor;
+                                var temptitle;
+                                var temptime;
+                                var tempurl;
+                                
+                                var matches;
+                                
+                                while (matches = pattern1.exec(result)) {
+                                    if (matches[0].indexOf("aid\">") !== -1)
+                                    {
+                                        tempaid = (matches[0].split("aid\">")[1]);
+                                    }
+                                    if (matches[0].indexOf("oid\">") !== -1)
+                                    {
+                                        tempoid = (matches[0].split("oid\">")[1]);
+                                    }
+                                    if (matches[0].indexOf("autor\">") !== -1)
+                                    {
+                                        tempautor = (matches[0].split("autor\">")[1]);
+                                    }
+                                    if (matches[0].indexOf("title\">") !== -1)
+                                    {
+                                        temptitle = (matches[0].split("title\">")[1]);
+                                    }
+                                    if (matches[0].indexOf("time\">") !== -1)
+                                    {
+                                        temptime = (matches[0].split("time\">")[1]);
+                                    }
+                 
+                                    if (tempaid && tempoid && tempautor && temptitle && temptime)
+                                    {
+                                        var matches2;
+                                        while (matches2 = pattern2.exec(result)) {
+                                            var temp = matches2[0].split(" ")[0];
+                                            if (temp.indexOf(tempoid) !== -1 && temp.indexOf(tempaid) !== -1)
+                                            {
+                                                tempurl = temp;
+                                                SearchResults.insert({
+                                                    hoster: "muzon.ws",
+                                                    status: "unknown",
+                                                    name: tempautor + " - " + temptitle,
+                                                    url: tempurl,
+                                                    duration: moment(temptime*1000),
+                                                    stream_url: "http://s2.muzon.ws/audio/" + tempaid + "/" + tempoid + "/play.mp3"
+                                                });
+                                                
+                                                tempaid = undefined;
+                                                tempoid = undefined;
+                                                tempautor = undefined;
+                                                temptitle = undefined;
+                                                temptile = undefined;
+                                                tempurl = undefined;
+                                            }
+                                        }
+                                    }
+                                }
 						}
 					});
-					*/
-					
-					Session.set("filter_term_external", filter_term_external);
 					
 					SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
 							if (tracks && tracks.length) {
@@ -824,7 +867,7 @@ Template.navigation.events({
 											status: "on",
 											name: tracks[i].title,
 											url: tracks[i].permalink_url,
-											duration: moment(tracks[i].duration).format('mm:ss') + " min."
+											duration: moment(tracks[i].duration)
 										});
 								}
 								if (SearchResults.findOne) Session.set("loading_results", false);
@@ -1281,22 +1324,16 @@ Template.searchresult.events({
 					else
 						event.target.clasName = "icon-remove";
 					break;
-				case "vimeo.com":
-					var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
-					var callback = function (video) {
-						return unescape(video.html);
-					};
-					var aurl = vimeoEndpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
-					event.target.className = "icon-remove";
-					break;
-				case "zippyshare.com":
-					//return "<object width='30' height='30' name='zs_player23137972' id='zs_player23137972' classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' style='width: 60px; height: 80px;'><param value='http://api.zippyshare.com/api/player.swf' name='movie'><param value='false' name='allowfullscreen'><param value='always' name='allowscriptaccess'><param name='wmode' value='transparent'><param value='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' name='flashvars'><embed width='30' height='30' flashvars='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' allowfullscreen='false' allowscriptaccess='always' type='application/x-shockwave-flash' src='http://api.zippyshare.com/api/player.swf' name='zs_player23137972' wmode='transparent' id='zs_player23137972'></object>"
-					//return "<script type='text/javascript'>var zippywww='" + this.url.split("http://www")[1].split(".zippyshare")[0] +"';var zippyfile='" + this.url.split("/v/")[1].split("/file.html")[0] + "';var zippytext='#000000';var zippyback='#ffffff';var zippyplay='#000000';var zippywidth=60;var zippyauto=false;var zippyvol=80;var zippywave = '#ffffff';var zippyborder = '#ffffff';</script><script type='text/javascript' src='http://api.zippyshare.com/api/embed_new.js'></script>";
-					event.target.className = "icon-remove";
-					break;
 				case "muzon.ws":
-					event.target.className = "icon-remove";
-					break;
+                    event.target.className = "icon-loader";
+                    if (window.SCM && this.stream_url)
+                    {
+                        SCM.play({title:this.name,url:this.stream_url});
+                        event.target.className="icon-list";
+                    }
+                    else
+                        event.target.clasName = "icon-remove";
+                    break;
 				default:
 					event.target.className = "icon-remove";
 					break;
