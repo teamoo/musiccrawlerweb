@@ -70,6 +70,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 			hoster: 1,
             source: 1,
             date_published: 1,
+            stream_url: 1,
             status: 1,
             creator: 1
         },

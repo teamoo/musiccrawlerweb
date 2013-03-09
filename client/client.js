@@ -24,8 +24,6 @@ Session.setDefault("temp_filter_sites", []);
 Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("selected_links", []);
 
-var soundsmap = {};
-
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, 0);
 	Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
@@ -291,7 +289,9 @@ Template.link.isPlayable = function () {
 			case "zippyshare.com":
 				return false;
 			case "muzon.ws":
-				return true;
+				if (this.stream_url)
+					return true;
+				return false;
 			case "ex.fm":
 				return true;
 			default:
@@ -1221,7 +1221,7 @@ Template.link.events({
 					else
 						event.target.clasName = "icon-remove";
 					break;
-				//TODO: Player für Vimeo und Zippyshare und Muzon, bei muzon vll. stream URL speichern oder direkt abfragen
+				//TODO: Player für Vimeo und Zippyshare
 				case "vimeo.com":
 					var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
 					var callback = function (video) {
@@ -1236,8 +1236,15 @@ Template.link.events({
 					event.target.className = "icon-remove";
 					break;
 				case "muzon.ws":
-					event.target.className = "icon-remove";
-					break;
+				    event.target.className = "icon-loader";
+				    if (window.SCM && this.stream_url)
+				    {
+				        SCM.play({title:this.name,url:this.stream_url});
+				        event.target.className="icon-list";
+				    }
+				    else
+				        event.target.clasName = "icon-remove";
+				    break;
 				default:
 					event.target.className = "icon-remove";
 					break;
@@ -1392,7 +1399,7 @@ Template.addLinkDialog.events({
 			'<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird überprüft</small></p>');
 		var newlinkurl = template.find("#newlinkurl").value;
 
-		Meteor.call('createLink', newlinkurl, function (error, result) {
+		Meteor.call('createLink', newlinkurl, undefined, function (error, result) {
 			if (error) switch (error.error) {
 				case 409:
 					Session.set("status",
@@ -1456,7 +1463,7 @@ Template.searchresult.events({
 		var sitefilter = Session.get("filter_sites");
 		sitefilter.push(Meteor.user().id);
 		Session.set("filter_sites",sitefilter);
-		Meteor.call('createLink', this.url, function (error, result) {
+		Meteor.call('createLink', this.url, this.stream_url, function (error, result) {
 			if (error) {
 				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
 				event.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";
