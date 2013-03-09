@@ -279,9 +279,9 @@
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
-			<td style="width:130px;min-width:130px;max-width:130px;text-align:right;">{{dateFormatPretty date_published}}</td>
+			<td style="width:150px;min-width:150px;max-width:150px;text-align:right;">{{dateFormatPretty date_published}}</td>
 			{{#if currentUser.profile.admin}}	
-				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{else}}
@@ -319,9 +319,9 @@
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;color: gray;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;color:gray">{{getSizeinMB}}</td>
-			<td style="width:130px;min-width:130px;max-width:130px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
+			<td style="width:150px;min-width:150px;max-width:150px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
 			{{#if currentUser.profile.admin}}	
-				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{/if}}
@@ -361,9 +361,9 @@
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
-			<td style="width:130px;min-width:130px;max-width:130px;text-align:right;">{{dateFormatPretty date_published}}</td>
+			<td style="width:150px;min-width:150px;max-width:150px;text-align:right;">{{dateFormatPretty date_published}}</td>
 			{{#if currentUser.profile.admin}}	
-				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand delete_link"></i></td>
 			{{else}}
 				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand hide_link"></i></td>
 			{{/if}}
@@ -397,7 +397,7 @@
 			<i class="icon-play player hand"></i>
 		{{/if}}
 	</td>
-    <td style="min-width:400px;"><a href="{{url}}" target="_blank">{{name}}</a></td>
+    <td style="min-width:400px;max-width: 400px;"><a href="{{url}}" target="_blank">{{name}}</a></td>
 	<td style="width:71px;min-width:71px;max-width:71px">{{millisecondsFormatPretty duration}}</td>	
 	<td style="width:239px;min-width:239px;max-width:239px">
 		<button class="btn btn-small add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</button>
@@ -448,6 +448,46 @@
 		{{/if}}
 		Tooltips anzeigen?
 		</label>
+		<br/>
+		<label><strong>externe Suchanbieter</strong></label>
+		<label class="checkbox">
+		{{#if searchProviderEnabled "muzon"}}
+			<input id="searchmuzon" type="checkbox" checked="checked">
+		{{else}}
+			<input id="searchmuzon" type="checkbox">
+		{{/if}}
+		<a href='http://www.muzon.ws'><img alt='muzon' src='muzon.png'></a>
+		</label>
+		
+		<label class="checkbox">
+		{{#if searchProviderEnabled "soundcloud"}}
+			<input id="searchsoundcloud" type="checkbox" checked="checked">
+		{{else}}
+			<input id="searchsoundcloud" type="checkbox">
+		{{/if}}
+		<a href="http://www.soundcloud.com"><img alt='soundcloud' src='soundcloud.png'></a>
+		</label>
+		
+		<label class="checkbox">
+		{{#if searchProviderEnabled "youtube"}}
+			<input id="searchyoutube" type="checkbox" checked="checked">
+		{{else}}
+			<input id="searchyoutube" type="checkbox">
+		{{/if}}
+		<a href="http://www.youtube.com"><img alt='youtube' src='youtube.png'></a>
+		</label>
+		
+		<label class="checkbox">
+		{{#if searchProviderEnabled "ex.fm"}}
+			<input id="searchexfm" type="checkbox" checked="checked">
+		{{else}}
+			<input id="searchexfm" type="checkbox">
+		{{/if}}
+		<a href="http://www.ex.fm"><img alt='ex.fm' src='exfm.png'></a>
+		</label>
+		
+		
+		
 	</form>
   </div>
   <div class="modal-footer">

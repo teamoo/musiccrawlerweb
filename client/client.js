@@ -124,7 +124,13 @@ Handlebars.registerHelper('millisecondsFormatPretty', function (context) {
     }
     return context; // moment plugin not available. return data as is.;
 });
-
+Handlebars.registerHelper('searchProviderEnabled', function (context) {
+	if (Meteor.user() && Meteor.user().profile)
+	{
+		return _.contains(Meteor.user().profile.searchproviders, context);
+	}
+	return true;
+});
 
 // Template-Helper für handlebars
 // Session Objekt in Handlebars direkt nutzen
@@ -151,7 +157,7 @@ Template.page.linksFound = function () {
 };
 
 Template.page.isExternalSearch = function () {
-	return (Session.get("filter_term") !== ".*");
+	return ((Session.get("filter_term") !== ".*") && Meteor.user().profile.searchproviders.length);
 };
 
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
@@ -276,14 +282,18 @@ Template.link.getSourceName = function () {
 Template.link.isPlayable = function () {	
 	if (this.status != 'off') {
 		switch (this.hoster) {
-			case "soundcloud.com": case "youtube.com":
+			case "soundcloud.com":
+				return true;
+			case "youtube.com":
 				return true;
 			case "vimeo.com":
 				return false;
 			case "zippyshare.com":
 				return false;
 			case "muzon.ws":
-				return false;
+				return true;
+			case "ex.fm":
+				return true;
 			default:
 				return false;
 		}
@@ -297,12 +307,16 @@ Template.searchresult.isPlayable = function () {
 			case "soundcloud.com":
 				return true;
 			case "youtube.com":
-				return false;
+				return true;
 			case "vimeo.com":
 				return false;
 			case "zippyshare.com":
 				return false;
 			case "muzon.ws":
+				if (this.stream_url)
+					return true;
+				return false;
+			case "ex.fm":
 				return true;
 			default:
 				return false;
@@ -314,6 +328,8 @@ Template.searchresult.isPlayable = function () {
 Template.searchresult.getExternalSourceIcon = function() {
 	if (this.hoster == "soundcloud.com") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>";
 	if (this.hoster == "muzon.ws") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>";
+	if (this.hoster == "youtube.com") return "<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='youtube.png'></a>";
+	if (this.hoster == "ex.fm") return "<a href='http://ex.fm'><img alt='ex.fm Attribution' src='exfm.png'></a>";
 	return undefined;
 };
 // Funktion um alle Seiten ins Template zu geben (die subscription)
@@ -471,6 +487,7 @@ Template.user_loggedin.events({
 	//Accounteinstellungen anzeigen
 	'click #showsettings': function (event) {
 		event.preventDefault();
+		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		openAccountSettingsDialog();
 		return false;
 	},
@@ -496,6 +513,7 @@ Template.navigation.rendered = function () {
 			});	
 		},
 		updater: function(name) {
+			SearchResults.remove({});
 			var term = name.trim();
 			var prev_filter_date = Session.get("filter_date");
 			var prev_filter_skip = Session.get("filter_skip");
@@ -506,7 +524,7 @@ Template.navigation.rendered = function () {
 			Session.set("filter_status", ["on", "off", "unknown"]);
 			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
 			Session.set("filter_skip", 0);
-			Session.set("filter_sites", []);
+			Session.set("filter_sites", []);			
 			return name;
         },
 		matcher: function(item) {
@@ -725,6 +743,8 @@ Template.navigation.events({
 	},
 	'click .linkfilter': function (event, template) {
 		$("html, body").animate({ scrollTop: 0 }, "fast");
+		var sitefilter = Session.get("filter_sites");
+		Session.set("filter_sites",_.without(sitefilter,Meteor.user().id));
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
 		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-event.target.id)));
@@ -742,7 +762,11 @@ Template.navigation.events({
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
 		
+		var sitefilter = Session.get("filter_sites");
+		Session.set("filter_sites",_.without(sitefilter,Meteor.user().id));
+		
 		if (term && term != undefined && term != "") {
+			SearchResults.remove({});
 			var prev_filter_date = Session.get("filter_date");
 			var prev_filter_skip = Session.get("filter_skip");
 			Session.set("prev_filter_skip", prev_filter_skip);
@@ -776,7 +800,9 @@ Template.navigation.events({
 			}
 			Session.set("filter_status", ["on"]);
 		}
-		SearchResults.remove({});
+		
+		if (Meteor.user().profile.searchproviders.length)
+			Session.set("loading_results", true);
 		
 		Meteor.setTimeout(function () {
 			Session.set("loading_results", false);
@@ -789,93 +815,159 @@ Template.navigation.events({
 				
 				if (filter_term_external != "")
 				{
-                    Session.set("loading_results", true);
+					if (!Meteor.user().profile.searchproviders.length)
+					{
+						Session.set("loading_results", false);
+						return;
+					}	                    
+
                     Session.set("filter_term_external", filter_term_external);
+                    
+                    if (_.contains(Meteor.user().profile.searchproviders,"muzon"))
+                    {
+                    	Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
+                    		if (result) {
+                                   var pattern1 = /<span.*id.*(aid|oid|autor|title|time).*>.*(?=<\/span>)/gi
+                                   var pattern2 = /http.*(?=<img src="\/JJS\/download.png)/gi
+                                   
+                                   var tempaid;
+                                   var tempoid;
+                                   var tempautor;
+                                   var temptitle;
+                                   var temptime;
+                                   var tempurl;
+                                   
+                                   var matches;
+                                   
+                                   while (matches = pattern1.exec(result)) {
+                                       if (matches[0].indexOf("aid\">") !== -1)
+                                       {
+                                           tempaid = (matches[0].split("aid\">")[1]);
+                                       }
+                                       if (matches[0].indexOf("oid\">") !== -1)
+                                       {
+                                           tempoid = (matches[0].split("oid\">")[1]);
+                                       }
+                                       if (matches[0].indexOf("autor\">") !== -1)
+                                       {
+                                           tempautor = (matches[0].split("autor\">")[1]);
+                                       }
+                                       if (matches[0].indexOf("title\">") !== -1)
+                                       {
+                                           temptitle = (matches[0].split("title\">")[1]);
+                                       }
+                                       if (matches[0].indexOf("time\">") !== -1)
+                                       {
+                                           temptime = (matches[0].split("time\">")[1]);
+                                       }
+                    
+                                       if (tempaid && tempoid && tempautor && temptitle && temptime)
+                                       {
+                                           var matches2;
+                                           while (matches2 = pattern2.exec(result)) {
+                                               var temp = matches2[0].split(" ")[0];
+                                               if (temp.indexOf(tempoid) !== -1 && temp.indexOf(tempaid) !== -1)
+                                               {
+                                               		var tempname = temptitle;
+                                               		
+                                               		if (temptitle.indexOf(tempautor) === -1)
+                                               			tempname = tempautor + " - " + temptitle
+                                               
+                                                   tempurl = temp;
+                                                   SearchResults.insert({
+                                                       hoster: "muzon.ws",
+                                                       status: "on",
+                                                       name: tempname,
+                                                       url: tempurl,
+                                                       duration: moment(temptime*1000),
+                                                       stream_url: "http://s2.muzon.ws/audio/" + tempaid + "/" + tempoid + "/play.mp3"
+                                                   });
+                                                   
+                                                   tempaid = undefined;
+                                                   tempoid = undefined;
+                                                   tempautor = undefined;
+                                                   temptitle = undefined;
+                                                   temptile = undefined;
+                                                   tempurl = undefined;
+                                               }
+                                           }
+                                           Session.set("loading_results", false);
+                                       }
+                                   }
+                    		}
+                    	});
+                    }
                           
-					Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
-						if (result) {
-                                var pattern1 = /<span.*id.*(aid|oid|autor|title|time).*>.*(?=<\/span>)/gi
-                                var pattern2 = /http.*(?=<img src="\/JJS\/download.png)/gi
-                                
-                                var tempaid;
-                                var tempoid;
-                                var tempautor;
-                                var temptitle;
-                                var temptime;
-                                var tempurl;
-                                
-                                var matches;
-                                
-                                while (matches = pattern1.exec(result)) {
-                                    if (matches[0].indexOf("aid\">") !== -1)
-                                    {
-                                        tempaid = (matches[0].split("aid\">")[1]);
-                                    }
-                                    if (matches[0].indexOf("oid\">") !== -1)
-                                    {
-                                        tempoid = (matches[0].split("oid\">")[1]);
-                                    }
-                                    if (matches[0].indexOf("autor\">") !== -1)
-                                    {
-                                        tempautor = (matches[0].split("autor\">")[1]);
-                                    }
-                                    if (matches[0].indexOf("title\">") !== -1)
-                                    {
-                                        temptitle = (matches[0].split("title\">")[1]);
-                                    }
-                                    if (matches[0].indexOf("time\">") !== -1)
-                                    {
-                                        temptime = (matches[0].split("time\">")[1]);
-                                    }
-                 
-                                    if (tempaid && tempoid && tempautor && temptitle && temptime)
-                                    {
-                                        var matches2;
-                                        while (matches2 = pattern2.exec(result)) {
-                                            var temp = matches2[0].split(" ")[0];
-                                            if (temp.indexOf(tempoid) !== -1 && temp.indexOf(tempaid) !== -1)
-                                            {
-                                                tempurl = temp;
-                                                SearchResults.insert({
-                                                    hoster: "muzon.ws",
-                                                    status: "unknown",
-                                                    name: tempautor + " - " + temptitle,
-                                                    url: tempurl,
-                                                    duration: moment(temptime*1000),
-                                                    stream_url: "http://s2.muzon.ws/audio/" + tempaid + "/" + tempoid + "/play.mp3"
-                                                });
-                                                
-                                                tempaid = undefined;
-                                                tempoid = undefined;
-                                                tempautor = undefined;
-                                                temptitle = undefined;
-                                                temptile = undefined;
-                                                tempurl = undefined;
-                                            }
-                                        }
-                                    }
-                                }
-						}
-					});
-					
-					SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
-							if (tracks && tracks.length) {
-								for (var i = 0; i <= tracks.length; i++) {
-									if(tracks[i])
-										SearchResults.insert({
-											hoster: "soundcloud.com",
-											status: "on",
-											name: tracks[i].title,
-											url: tracks[i].permalink_url,
-											duration: moment(tracks[i].duration)
-										});
+					if (_.contains(Meteor.user().profile.searchproviders,"soundcloud"))
+					{
+						SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
+								if (tracks && tracks.length) {
+									for (var i = 0; i <= tracks.length; i++) {
+										if(tracks[i])
+											SearchResults.insert({
+												hoster: "soundcloud.com",
+												status: "on",
+												name: tracks[i].title,
+												url: tracks[i].permalink_url,
+												duration: moment(tracks[i].duration)
+											});
+									}
+									Session.set("loading_results", false);
 								}
-								if (SearchResults.findOne) Session.set("loading_results", false);
+						});
+					}
+					      
+					if (_.contains(Meteor.user().profile.searchproviders,"youtube"))
+					{
+						var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
+							return String(memo + "+" + token);
+						});
+					
+						Meteor.http.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json",function(error,result)
+						{								
+							if (result && result.data && result.data.feed && result.data.feed.entry) {
+								var entry = result.data.feed.entry;
+									for (var i = 0; i <= entry.length; i++) {
+										if(entry[i])
+											SearchResults.insert({
+												hoster: "youtube.com",
+												status: "on",
+												name: entry[i].title.$t,
+												url: entry[i].link[0].href,
+												duration: moment(entry[i].media$group.yt$duration.seconds*1000)
+											});
+									}
+									Session.set("loading_results", false);
 							}
-					});
+						});
+					}
+						
+					if (_.contains(Meteor.user().profile.searchproviders,"ex.fm"))
+					{
+						Meteor.http.get("http://ex.fm/api/v3/song/search/" + filter_term_external,function(error,result)
+						{							
+							if (result && result.data && result.data.status_code === 200) {
+								var songs = result.data.songs;
+									for (var i = 0; i <= songs.length; i++) {
+										if(songs[i])
+											SearchResults.insert({
+												hoster: "ex.fm",
+												status: "on",
+												name: unesacpe((songs[i].artist + " " + songs[i].title).replace("null").replace("undefined").trim()),
+												url: "http://ex.fm/api/v3/song/" + songs[i].id,
+												duration: moment(0)
+											});
+									}
+									Session.set("loading_results", false);
+							}
+						});
+					}
 				}
+			}
+			else {
+				Session.set("loading_results",false);
 			}	
-		},100);
+		},750);
 		return false;
 	}
 });
@@ -1079,33 +1171,46 @@ Template.link.events({
 					event.target.className = "icon-loader";
 					if (window.SCM)
 					{
-						SCM.play({title:this.name,url:this.url.replace("/download","")});
-						event.target.className="icon-list";
+						if (this.url.indexOf("/sets") !== -1)
+						{
+						
+							SC.get('/resolve', { url: this.url }, function(result) {
+								if (result.errors) {
+									event.target.clasName = "icon-remove";
+									return;
+								}
+								else {
+									if (result.tracks && result.tracks.length)
+									{
+										var tracks = result.tracks
+										
+										SCM.play({title:tracks[0].title, url: tracks[0].permalink_url});
+										
+										for (var i = 1; i <= tracks.length; i++) {
+											if(tracks[i])
+											{
+												SCM.queue({title:tracks[i].title, url: tracks[i].permalink_url});
+											}	
+										}
+										event.target.className="icon-list";
+										return;
+									}
+									else
+										event.target.clasName = "icon-remove";
+									return;
+								}
+							});
+							break;
+						}
+						else {
+							SCM.play({title:this.name,url:this.url.replace("/download","")});
+							event.target.className="icon-list";
+							return;
+						}
 					}
 					else
 						event.target.clasName = "icon-remove";
 					break;
-					/*
-					TODO: sets resolven
-					event.target.className = "icon-loader";
-					SC.get('/resolve', { url: this.url }, function(track) {
-						if (track.errors) {
-							event.target.clasName = "icon-remove";
-							return;
-						}
-						else {
-							if (window.SCM)
-							{
-								SCM.play({title:this.name,url:track.stream_url});
-								event.target.className="icon-list";
-							}
-							else
-								event.target.clasName = "icon-remove";
-							return;
-						}
-					});
-					break;
-					*/
 				 case "youtube.com":
 					event.target.className = "icon-loader";
 					if (window.SCM)
@@ -1314,7 +1419,7 @@ Template.searchresult.events({
 	'click .player' : function(event, template) {		
 		if (this.status != 'off') {
 			switch (this.hoster) {
-				case "soundcloud.com": case "youtube.com":
+				case "soundcloud.com": case "youtube.com": case "ex.fm":
 					event.target.className = "icon-loader";
 					if (window.SCM)
 					{
@@ -1342,18 +1447,23 @@ Template.searchresult.events({
 		else
 			event.target.className = "icon-remove";
 	},
+	//TODO Link auch downloaden, wenn er hinzugefügt wird?
 	'click .add_external_link': function (event, template) {
 		event.preventDefault();
+		event.stopPropagation();
 		event.target.disabled = true;
 		event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";
+		var sitefilter = Session.get("filter_sites");
+		sitefilter.push(Meteor.user().id);
+		Session.set("filter_sites",sitefilter);
 		Meteor.call('createLink', this.url, function (error, result) {
 			if (error) {
 				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
 				event.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";
 			}
 			if (result) {
-				Meteor.call('updateLinkContributionCount');
 				event.target.innerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";
+				Meteor.call('updateLinkContributionCount');
 			}
 		});
 		return false;
@@ -1676,6 +1786,25 @@ Template.accountSettingsDialog.events({
 		var ashowtooltips = template.find("#showtooltips").checked;
 		var ashowdownloadedlinks = template.find("#showdownloadedlinks").checked;
 		
+		var searchmuzon = template.find("#searchmuzon").checked;
+		var searchsoundcloud = template.find("#searchsoundcloud").checked;
+		var searchyoutube = template.find("#searchyoutube").checked;
+		var searchexfm = template.find("#searchexfm").checked;
+		
+		var searchproviders = [];
+		
+		if (searchmuzon)
+			searchproviders.push("muzon");
+		
+		if (searchsoundcloud)
+			searchproviders.push("soundcloud");
+			
+		if (searchyoutube)
+			searchproviders.push("youtube");
+			
+		if (searchexfm)
+			searchproviders.push("ex.fm");	
+		
 		Session.set("filter_show_already_downloaded",ashowdownloadedlinks);
 		
 		if (aupdateip === true) {
@@ -1692,7 +1821,8 @@ Template.accountSettingsDialog.events({
 							'profile.port': aport,
 							'profile.autoupdateip': aupdateip,
 							'profile.showtooltips': ashowtooltips,
-							'profile.showdownloadedlinks' : ashowdownloadedlinks
+							'profile.showdownloadedlinks' : ashowdownloadedlinks,
+							'profile.searchproviders' : searchproviders
 						}
 					});
 					// neue IP nutzen und checken, ob hier ein JD läuft...
@@ -1719,7 +1849,8 @@ Template.accountSettingsDialog.events({
 					'profile.ip': aip,
 					'profile.autoupdateip': aupdateip,
 					'profile.showtooltips': ashowtooltips,
-					'profile.showdownloadedlinks' : ashowdownloadedlinks
+					'profile.showdownloadedlinks' : ashowdownloadedlinks,
+					'profile.searchproviders' : searchproviders
 				}
 			});
 		}
