@@ -218,7 +218,7 @@
 			{{#if session "filter_show_already_downloaded"}}
 			{{else}}
 				{{#if isAnyLinkSelected}}
-					<th><i class="icon-trash hand" id="hide_selected_links"></i></th>
+					<th><i class="icon-remove hand" id="hide_selected_links"></i></th>
 				{{/if}}
 			{{/if}}
 		</thead>
@@ -280,8 +280,8 @@
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
 			<td style="width:150px;min-width:150px;max-width:150px;text-align:right;">{{dateFormatPretty date_published}}</td>
-			{{#if currentUser.profile.admin}}	
-				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand delete_link"></i></td>
+			{{#if currentUser.admin}}	
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{else}}
@@ -320,8 +320,8 @@
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;color: gray;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;color:gray">{{getSizeinMB}}</td>
 			<td style="width:150px;min-width:150px;max-width:150px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
-			{{#if currentUser.profile.admin}}	
-				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand delete_link"></i></td>
+			{{#if currentUser.admin}}	
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{/if}}
@@ -362,10 +362,11 @@
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
 			<td style="width:150px;min-width:150px;max-width:150px;text-align:right;">{{dateFormatPretty date_published}}</td>
-			{{#if currentUser.profile.admin}}	
-				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand delete_link"></i></td>
+			{{#if currentUser.admin}}	
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{else}}
-				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand hide_link"></i></td>
+				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
 			{{/if}}
 		</tr>
 	{{/if}}
@@ -400,7 +401,7 @@
     <td style="min-width:400px;max-width: 400px;"><a href="{{url}}" target="_blank">{{name}}</a></td>
 	<td style="width:71px;min-width:71px;max-width:71px">{{millisecondsFormatPretty duration}}</td>	
 	<td style="width:239px;min-width:239px;max-width:239px">
-		<button class="btn btn-small add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</button>
+		<button class="btn btn-small add_external_link"><i class="icon-plus" id="{{_id}}"></i> Link zur Datenbank hinzufügen</button>
 	</td>
   </tr>
 </template>
@@ -563,11 +564,11 @@
 			<th>zuletzt durchsucht</th>
 			<th>Typ</th>
 			<th>aktiv</th>
-			{{#if currentUser.profile.admin}}
+			{{#if currentUser.admin}}
 				<th>zuletzt aktualisiert</th>
 			{{/if}}
 			<th>
-				{{#if currentUser.profile.admin}}
+				{{#if currentUser.admin}}
 					<i class="icon-search hand" id="crawl_all_sites"></i>
 				{{/if}}
 			</th>
@@ -596,11 +597,11 @@
 							<i class="icon-ok-sign"></i>
 						{{/if}}
 					</td>
-					{{#if currentUser.profile.admin}}
+					{{#if currentUser.admin}}
 						<td>{{dateFormatPretty last_post}}</td>
 					{{/if}}
 					<td>
-						{{#if currentUser.profile.admin}}
+						{{#if currentUser.admin}}
 							{{#if next_crawl}}
 								<i class="icon-time" id="{{_id}}_crawlstatus"></i>
 							{{else}}
@@ -614,7 +615,7 @@
 							{{/if}}
 						{{/if}}
 						{{#if isOwner}}
-							{{#if currentUser.profile.admin}}
+							{{#if currentUser.admin}}
 							{{else}}
 								{{#if next_crawl}}
 									<i class="icon-time" id="{{_id}}_crawlstatus"></i>

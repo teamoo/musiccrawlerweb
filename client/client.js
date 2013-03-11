@@ -535,10 +535,10 @@ Template.navigation.rendered = function () {
 			
 			for (var i = 0; i < searchterms.length; i++) {
 				var regex = new RegExp( '(' + searchterms[i] + ')', 'i' );
-				item = item.replace( regex, "<strong>$1</strong>" );
+				newitem = item.replace( regex, "<strong>$1</strong>" );
 			}
 
-            return item;
+            return newitem;
         },
 	});
 	
@@ -744,9 +744,11 @@ Template.navigation.events({
 	'click .linkfilter': function (event, template) {
 		$("html, body").animate({ scrollTop: 0 }, "fast");
 		var sitefilter = Session.get("filter_sites");
+		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		Session.set("filter_sites",_.without(sitefilter,Meteor.user().id));
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
+		Session.set("filter_term",".*");
 		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-event.target.id)));
 		Session.set("selected_navitem", parseInt(event.target.id));
 		$('li.linkfilter').removeClass("active");
@@ -827,15 +829,15 @@ Template.navigation.events({
                     {
                     	Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
                     		if (result) {
-                                   var pattern1 = /<span.*id.*(aid|oid|autor|title|time).*>.*(?=<\/span>)/gi
-                                   var pattern2 = /http.*(?=<img src="\/JJS\/download.png)/gi
+                                   var pattern1 = /<span.*id.*(aid|oid|autor|title|time).*>.*(?=<\/span>)/gi;
+                                   var pattern2 = /http.*(?=<img src="\/JJS\/download.png)/gi;
                                    
-                                   var tempaid;
-                                   var tempoid;
-                                   var tempautor;
-                                   var temptitle;
-                                   var temptime;
-                                   var tempurl;
+                                   var tempaid = undefined;
+                                   var tempoid = undefined;
+                                   var tempautor = undefined;
+                                   var temptitle = undefined;
+                                   var temptime = undefined;
+                                   var tempurl = undefined;
                                    
                                    var matches;
                                    
@@ -871,7 +873,7 @@ Template.navigation.events({
                                                		var tempname = temptitle;
                                                		
                                                		if (temptitle.indexOf(tempautor) === -1)
-                                               			tempname = tempautor + " - " + temptitle
+                                               			tempname = tempautor + " - " + temptitle;
                                                
                                                    tempurl = temp;
                                                    SearchResults.insert({
@@ -1179,37 +1181,32 @@ Template.link.events({
 									event.target.clasName = "icon-remove";
 									return;
 								}
-								else {
-									if (result.tracks && result.tracks.length)
-									{
-										var tracks = result.tracks
-										
-										SCM.play({title:tracks[0].title, url: tracks[0].permalink_url});
-										
-										for (var i = 1; i <= tracks.length; i++) {
-											if(tracks[i])
-											{
-												SCM.queue({title:tracks[i].title, url: tracks[i].permalink_url});
-											}	
-										}
-										event.target.className="icon-list";
-										return;
+								if (result.tracks && result.tracks.length)
+								{
+									var tracks = result.tracks;
+									
+									SCM.play({title:tracks[0].title, url: tracks[0].permalink_url});
+									
+									for (var i = 1; i <= tracks.length; i++) {
+										if(tracks[i])
+										{
+											SCM.queue({title:tracks[i].title, url: tracks[i].permalink_url});
+										}	
 									}
-									else
-										event.target.clasName = "icon-remove";
+									event.target.className="icon-list";
 									return;
 								}
+								event.target.clasName = "icon-remove";
+								return;
 							});
 							break;
 						}
-						else {
-							SCM.play({title:this.name,url:this.url.replace("/download","")});
-							event.target.className="icon-list";
-							return;
-						}
+						SCM.play({title:this.name,url:this.url.replace("/download","")});
+						event.target.className="icon-list";
+						return;
+
 					}
-					else
-						event.target.clasName = "icon-remove";
+					event.target.clasName = "icon-remove";
 					break;
 				 case "youtube.com":
 					event.target.className = "icon-loader";
@@ -1223,11 +1220,11 @@ Template.link.events({
 					break;
 				//TODO: Player für Vimeo und Zippyshare
 				case "vimeo.com":
-					var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
-					var callback = function (video) {
-						return unescape(video.html);
-					};
-					var aurl = vimeoEndpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
+					//var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
+					//var callback = function (video) {
+					//	return unescape(video.html);
+					//};
+					//var aurl = vimeoEndpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
 					event.target.className = "icon-remove";
 					break;
 				case "zippyshare.com":
@@ -1421,6 +1418,8 @@ Template.addLinkDialog.events({
 		return false;
 	}
 });
+
+Template.searchresult.preserve([".add_external_link"]);
 
 Template.searchresult.events({
 	'click .player' : function(event, template) {		
