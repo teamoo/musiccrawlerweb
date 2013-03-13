@@ -284,16 +284,16 @@ Template.link.isPlayable = function () {
 				return true;
 			case "youtube.com":
 				return true;
-			case "vimeo.com":
-				return false;
 			case "zippyshare.com":
-				return false;
+				return true;
 			case "muzon.ws":
 				if (this.stream_url)
 					return true;
 				return false;
 			case "ex.fm":
 				return true;
+			case "vimeo.com":
+				return false;
 			default:
 				return false;
 		}
@@ -308,16 +308,14 @@ Template.searchresult.isPlayable = function () {
 				return true;
 			case "youtube.com":
 				return true;
-			case "vimeo.com":
-				return false;
-			case "zippyshare.com":
-				return false;
 			case "muzon.ws":
 				if (this.stream_url)
 					return true;
 				return false;
 			case "ex.fm":
 				return true;
+			case "vimeo.com":
+				return false;
 			default:
 				return false;
 		}
@@ -1218,20 +1216,28 @@ Template.link.events({
 					else
 						event.target.clasName = "icon-remove";
 					break;
-				//TODO: Player für Vimeo und Zippyshare
-				case "vimeo.com":
-					//var vimeoEndpoint = 'http://www.vimeo.com/api/oembed.json';
-					//var callback = function (video) {
-					//	return unescape(video.html);
-					//};
-					//var aurl = vimeoEndpoint + '?url=' + encodeURIComponent(this.url) + '&callback=' + callback + '&width=30';
-					event.target.className = "icon-remove";
-					break;
 				case "zippyshare.com":
-					//return "<object width='30' height='30' name='zs_player23137972' id='zs_player23137972' classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' style='width: 60px; height: 80px;'><param value='http://api.zippyshare.com/api/player.swf' name='movie'><param value='false' name='allowfullscreen'><param value='always' name='allowscriptaccess'><param name='wmode' value='transparent'><param value='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' name='flashvars'><embed width='30' height='30' flashvars='baseurl=http://api.zippyshare.com/api/&amp;file=23137972&amp;server=16&amp;autostart=false&amp;flashid=zs_player23137972&amp;availablequality=both&amp;bordercolor=#ffffff&amp;forecolor=#000000&amp;backcolor=#ffffff&amp;darkcolor=#ffffff&amp;lightcolor=#000000' allowfullscreen='false' allowscriptaccess='always' type='application/x-shockwave-flash' src='http://api.zippyshare.com/api/player.swf' name='zs_player23137972' wmode='transparent' id='zs_player23137972'></object>"
-					//return "<script type='text/javascript'>var zippywww='" + this.url.split("http://www")[1].split(".zippyshare")[0] +"';var zippyfile='" + this.url.split("/v/")[1].split("/file.html")[0] + "';var zippytext='#000000';var zippyback='#ffffff';var zippyplay='#000000';var zippywidth=60;var zippyauto=false;var zippyvol=80;var zippywave = '#ffffff';var zippyborder = '#ffffff';</script><script type='text/javascript' src='http://api.zippyshare.com/api/embed_new.js'></script>";
-					event.target.className = "icon-remove";
-					break;
+					event.target.className = "icon-loader";
+				    if (window.SCM)
+				    {
+						var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i
+						var pattern2 = /\d{3,8}(?=\/file\.html)/i
+						var match1 = pattern1.exec(this.url);
+						var match2 = pattern2.exec(this.url);
+						
+						if (match1 && match2)
+						{
+							var stream_url = match1 + "/downloadMusic?key=" + match2;
+							SCM.play({title:this.name,url:stream_url});
+							event.target.className="icon-list";
+						}
+						else
+							event.target.clasName = "icon-remove";
+						return;
+				    }
+				    else
+				        event.target.clasName = "icon-remove";
+				    break;					
 				case "muzon.ws":
 				    event.target.className = "icon-loader";
 				    if (window.SCM && this.stream_url)
@@ -1242,6 +1248,10 @@ Template.link.events({
 				    else
 				        event.target.clasName = "icon-remove";
 				    break;
+				//TODO: Player für Vimeo
+				case "vimeo.com":
+					event.target.className = "icon-remove";
+					break;
 				default:
 					event.target.className = "icon-remove";
 					break;
