@@ -20,7 +20,7 @@ Meteor.publish("allUserData", function () {
 
 // Publish filtered list to all clients
 Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites) {
-	
+//XXX wenn Meteor projections kann, downloaders nicht komplett zurückgeben, sondern mit uns drin oder komplett leer
 	var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
 	
 	var thedownloaders = "dummy";

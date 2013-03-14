@@ -602,7 +602,6 @@ Template.navigation.events({
 	'click #downloadbutton': function (event, template) {
 		var selected = Session.get("selected_links");
 		
-		//TODO nochmal die lokale Route testen, als Fallback? Gibt es Fehler beim Senden?
 		if (selected.length && Session.get("JDOnlineStatus") === true) {
 			Session.set("progressActive", true);
 			Session.set("progress", 5);
@@ -1025,7 +1024,7 @@ Template.navigation.events({
 			else {
 				Session.set("loading_results",false);
 			}	
-		},750);
+		},1000);
 		return false;
 	}
 });
@@ -1234,7 +1233,7 @@ Template.link.events({
 						
 							SC.get('/resolve', { url: this.url }, function(result) {
 								if (result.errors) {
-									event.target.clasName = "icon-remove";
+									event.target.className = "icon-remove";
 									return;
 								}
 								if (result.tracks && result.tracks.length)
@@ -1252,7 +1251,7 @@ Template.link.events({
 									event.target.className="icon-list";
 									return;
 								}
-								event.target.clasName = "icon-remove";
+								event.target.className = "icon-remove";
 								return;
 							});
 							break;
@@ -1260,9 +1259,8 @@ Template.link.events({
 						SCM.play({title:this.name,url:this.url.replace("/download","")});
 						event.target.className="icon-list";
 						return;
-
 					}
-					event.target.clasName = "icon-remove";
+					event.target.className = "icon-remove";
 					break;
 				 case "youtube.com":
 					event.target.className = "icon-loader";
@@ -1272,7 +1270,7 @@ Template.link.events({
 						event.target.className="icon-list";
 					}
 					else
-						event.target.clasName = "icon-remove";
+						event.target.className = "icon-remove";
 					break;
 				case "zippyshare.com":
 					event.target.className = "icon-loader";
@@ -1290,11 +1288,11 @@ Template.link.events({
 							event.target.className="icon-list";
 						}
 						else
-							event.target.clasName = "icon-remove";
+							event.target.className = "icon-remove";
 						return;
 				    }
 				    else
-				        event.target.clasName = "icon-remove";
+				        event.target.className = "icon-remove";
 				    break;					
 				case "muzon.ws":
 				    event.target.className = "icon-loader";
@@ -1304,9 +1302,8 @@ Template.link.events({
 				        event.target.className="icon-list";
 				    }
 				    else
-				        event.target.clasName = "icon-remove";
+				        event.target.className = "icon-remove";
 				    break;
-				//TODO: Player für Vimeo
 				case "vimeo.com":
 					event.target.className = "icon-remove";
 					break;
@@ -1501,7 +1498,7 @@ Template.searchresult.events({
 						event.target.className="icon-list";
 					}
 					else
-						event.target.clasName = "icon-remove";
+						event.target.className = "icon-remove";
 	 				break;
 				case "muzon.ws": case "zippyshare.com":
                     event.target.className = "icon-loader";
@@ -1511,7 +1508,7 @@ Template.searchresult.events({
                         event.target.className="icon-list";
                     }
                     else
-                        event.target.clasName = "icon-remove";
+                        event.target.className = "icon-remove";
                     break;
 				default:
 					event.target.className = "icon-remove";
@@ -1818,7 +1815,6 @@ Template.accountSettingsDialog.events({
 
 		var aport = Meteor.user().profile.port;
 		Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
-
 		function (error, result) {
 			if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
 			if (result && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
@@ -1991,7 +1987,7 @@ function refreshJDOnlineStatus() {
 			ip: Meteor.user().profile.ip,
 			port: Meteor.user().profile.port
 		}, function (error, isOnline) {
-			if (error) console.log("Fehler beim Prüfen des Online-Status");
+			if (error) console.log("Fehler beim Ermitteln des Online-Status");
 			Session.set("JDOnlineStatus", isOnline);
 		});
 	}

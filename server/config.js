@@ -3,7 +3,16 @@
 Accounts.config({
     forbidClientAccountCreation : false
 });
-
+/*
+Meteor.AppCache.config({
+  chrome: true,
+  firefox: true,
+  ie: true,
+  android: true,
+  mobilesafari: true,
+  safari: true
+});
+*/
 // Facebook-Konfiguration entfernen
 //Accounts.loginServiceConfiguration.remove({
 //    service : "facebook"
