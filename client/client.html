@@ -451,6 +451,16 @@
 		</label>
 		<br/>
 		<label><strong>externe Suchanbieter</strong></label>
+		
+		<label class="checkbox">
+		{{#if searchProviderEnabled "zippysharemusic"}}
+			<input id="searchzippysharemusic" type="checkbox" checked="checked">
+		{{else}}
+			<input id="searchzippysharemusic" type="checkbox">
+		{{/if}}
+		<a href='http://www.zippysharemusic.com'><img alt='zippysharemusic' src='zippysharemusic.png'></a>
+		</label>
+		
 		<label class="checkbox">
 		{{#if searchProviderEnabled "muzon"}}
 			<input id="searchmuzon" type="checkbox" checked="checked">
@@ -486,9 +496,6 @@
 		{{/if}}
 		<a href="http://www.ex.fm"><img alt='ex.fm' src='exfm.png'></a>
 		</label>
-		
-		
-		
 	</form>
   </div>
   <div class="modal-footer">
