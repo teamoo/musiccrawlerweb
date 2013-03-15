@@ -1811,7 +1811,7 @@ Template.accountSettingsDialog.events({
 	//IP-Adresse aktualisieren Button - IP checken und anzeigen
 	'click #refreship': function (event, template) {
 		Session.set("status",
-			'<p class="pull-left"><i class="icon-refreshing"></i></p>');
+			'<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i></p>');
 
 		var aport = Meteor.user().profile.port;
 		Meteor.http.call("GET", "http://api.hostip.info/get_json.php",

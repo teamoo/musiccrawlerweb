@@ -54,6 +54,11 @@ body {
 .icon-loader {
 	background:transparent url("/ajax-loader2.gif");
     background-position: center center;
+	width: 16px;
+	height: 16px;
+	margin-right: 3px;
+	margin-bottom: 0px;
+	padding:0px;
 }
 
 .icon-rss {
@@ -87,7 +92,8 @@ body {
 .status  {
 	padding-top: 0 px;
 	padding-bottom: 0px;
-	min-height: 32px;
+	min-height: 25px;
+	margin: 0px;
 }
 
 .statustext {
