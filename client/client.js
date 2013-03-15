@@ -1,3 +1,5 @@
+//TODO: Suche startet manchmal nicht
+
 //Session Variablen initialisieren
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
@@ -71,7 +73,10 @@ Meteor.startup(function () {
 	{
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		if(Meteor.user().profile.filteredsites !== undefined)
+		{
+			Session.set("filter_sites", Meteor.user().profile.filteredsites);
 			Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
+		}
 	}
 	refreshJDOnlineStatus();
 	Meteor.call('updateFacebookTokensForUser');
@@ -202,7 +207,7 @@ Template.navigation.getSiteCount = function () {
 
 // Links-Outlet: alle Links, die gerade in der Subscription sind
 Template.linklist.links = function () {
-	return Links.find({});
+	return Links.find({},{sort: {date_published: -1}});
 };
 
 Template.searchresultlist.searchresults = function () {
@@ -341,12 +346,12 @@ Template.filterSitesDialog.sites = function () {
 };
 
 Template.filterSitesDialog.isSiteFiltered = function () {
-	return _.contains(Session.get("filter_sites"), this.feedurl);
+	return _.contains(Session.get("temp_filter_sites"), this.feedurl);
 };
 
 Template.filterSitesDialog.noSitefiltered = function () {
-	if (Session.get("filter_sites"))
-		return !Session.get("filter_sites").length;
+	if (Session.get("temp_filter_sites"))
+		return !Session.get("temp_filter_sites").length;
 	return true;
 };
 
@@ -661,23 +666,12 @@ Template.navigation.events({
 						Session.set("progressState", "progress-warning");
 					}
 					if (result) {
-						query = {
-							url: {
-								'$in': sel_links
-							}
-						};
-						update = {
-							'$addToSet': {
-								'downloaders': Meteor.userId()
-							}
-						};
-						options = {
-							multi: true
-						};
-
-						var ret = Links.update(query, update, options);
-						if (ret)
-							console.log("Error updating Links after Download.");
+						Meteor.call("markLinksAsDownloadedByURL", sel_links, function (error, result) {
+							if (result)
+								console.log("Error updating Links after Download.");
+							if (error)
+								console.log("Error updating Links after Download.");
+						});
 					}
 
 					var oldprogress = Session.get("progress");
@@ -691,6 +685,7 @@ Template.navigation.events({
 							Session.set("progress", undefined);
 							Session.set("progressState", undefined);
 						}, 3500);
+						Session.set("selected_links",[]);
 					}
 				});
 			}
@@ -712,25 +707,14 @@ Template.navigation.events({
 				}
 			}).fetch(), 'url');
 			
-			query = {
-				_id: {
-					'$in': selected
-				}
-			};
-			update = {
-				'$addToSet': {
-					'downloaders': Meteor.userId()
-				}
-			};
-			options = {
-				multi: true
-			};
-
-			var ret = Links.update(query, update, options);
+			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
+				if (result)
+					console.log("Error updating Links while copying to clipboard.");
+				if (error)
+					console.log("Error updating Links while copying to clipboard.");
+			});
 			
-			if (ret)
-				console.log("Error updating Links while copying to clipboard.");
-			
+			Session.set("selected_links",[]);
 			writeConsole(_.reduce(selectedurls, function (memo, aUrl) {
 				return memo + "<br/>" + aUrl;
 			}));
@@ -760,6 +744,7 @@ Template.navigation.events({
 		SearchResults.remove({});
 	},	
 	'submit #searchform': function (event, template) {
+		
 		event.preventDefault();
 		event.stopPropagation();
 		var term = template.find('#searchfield').value.trim();
@@ -786,7 +771,10 @@ Template.navigation.events({
 			Session.set("filter_term", ".*");
                            
             if (Meteor.user().profile.filteredsites)
-                Session.set("filter_sites", Meteor.user().profile.filteredsites);
+            {
+				Session.set("filter_sites", Meteor.user().profile.filteredsites);
+				Session.set("temp:filter_sites", Meteor.user().profile.filteredsites);
+			}
 			
 			if (Session.get("prev_filter_date")) {
 				Session.set("filter_date", Session.get("prev_filter_date"));
@@ -1051,6 +1039,7 @@ Template.linklist.events = ({
 			tmp_status = new Array("on", "unknown");
 		}
 		Session.set("filter_status", _.uniq(tmp_status));
+		//TODO: optischer Hinweis (blau leuchtendes Icon mit CSS Shadow)
 	},
 	//alle Links anhaken, die gerade zu sehen sind
 	'click #select_all': function (event, template) {
@@ -1067,20 +1056,12 @@ Template.linklist.events = ({
 		var selected = Session.get("selected_links");
 
 		if (selected.length) {			
-			query = {
-				_id: {
-					'$in': selected
-				}
-			};
-			update = {
-				'$addToSet': {
-					'downloaders': Meteor.userId()
-				}
-			};
-			options = {
-				multi: true
-			};
-			Links.update(query, update, options);
+			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
+				if (result)
+					console.log("Error updating Links while marking as read.");
+				if (error)
+					console.log("Error updating Links while marking as read.");
+			});
 			Session.set("selected_links",[]);
 		}
 	}	
@@ -1577,17 +1558,8 @@ Template.addSiteDialog.events({
 							if (error2) {
 								if (error2.type == "OAuthException") {
 									alert("Du hast den Zugriff verweigert oder widerrufen.");
-									Sites.update({
-										creator : Meteor.user().id,
-										type : "facebook-group"
-									}, {
-										$set: {
-											active: false,
-											accesstoken: null
-										}
-									}, {
-										multi: true
-										});
+									
+									Meteor.call("removeFacebookTokensForUser");
 								}
 							}
 							else {
@@ -1817,26 +1789,35 @@ Template.accountSettingsDialog.events({
 		Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
 		function (error, result) {
 			if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-			if (result && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
-				_id: Meteor.userId()
-			}, {
-				$set: {
-					'profile.ip': result.data.ip,
-				}
-			});
-			template.find("#ip").value = result.data.ip;
-			// neue IP nutzen und checken, ob hier ein JD läuft...
-			//
-			Meteor.call("checkJDOnlineStatus", {
-				ip: result.data.ip,
-				port: aport
-			}, function (error2, isOnline) {
-				if (error2) {
-					console.log("Fehler beim ermitteln des Online-Status");
-				}
-				Session.set("JDOnlineStatus", isOnline);
+			if (result && result.statusCode === 200 && result.data && result.data.ip) 
+			{			
+				Meteor.users.update({
+					_id: Meteor.userId()
+				}, {
+					$set: {
+						'profile.ip': result.data.ip,
+					}
+				});
+				template.find("#ip").value = result.data.ip;
+				
+				// neue IP nutzen und checken, ob hier ein JD läuft...			
+				Meteor.call("checkJDOnlineStatus", {
+					ip: result.data.ip,
+					port: aport
+				}, function (error2, isOnline) {
+					if (error2) {
+						console.log("Fehler beim ermitteln des Online-Status");
+					}
+					Session.set("JDOnlineStatus", isOnline);
+					Session.set("status", undefined);
+				});
+			}
+			else
+			{
+				console.log("Fehler beim ermitteln des Online-Status: ungültige Anwort vom Server");
+				Session.set("JDOnlineStatus", false);
 				Session.set("status", undefined);
-			});
+			}
 		});
 	},
 	//IP-Feld für Eingbae aktivieren/deaktivieren, je nachdem ob autoupdate eingeschaltet ist
@@ -1892,11 +1873,6 @@ Template.accountSettingsDialog.events({
 					}, {
 						$set: {
 							'profile.ip': result.data.ip,
-							'profile.port': aport,
-							'profile.autoupdateip': aupdateip,
-							'profile.showtooltips': ashowtooltips,
-							'profile.showdownloadedlinks' : ashowdownloadedlinks,
-							'profile.searchproviders' : searchproviders
 						}
 					});
 					// neue IP nutzen und checken, ob hier ein JD läuft...
@@ -1919,15 +1895,23 @@ Template.accountSettingsDialog.events({
 				_id: Meteor.userId()
 			}, {
 				$set: {
-					'profile.port': aport,
 					'profile.ip': aip,
-					'profile.autoupdateip': aupdateip,
-					'profile.showtooltips': ashowtooltips,
-					'profile.showdownloadedlinks' : ashowdownloadedlinks,
-					'profile.searchproviders' : searchproviders
 				}
 			});
 		}
+		
+		Meteor.users.update({
+			_id: Meteor.userId()
+		}, {
+			$set: {
+				'profile.port': aport,
+				'profile.autoupdateip': aupdateip,
+				'profile.showtooltips': ashowtooltips,
+				'profile.showdownloadedlinks' : ashowdownloadedlinks,
+				'profile.searchproviders' : searchproviders
+			}
+		});		
+
 		// es wurde gespeichert, Dialog schließen
 		Session.set("showAccountSettingsDialog", false);
 	},
@@ -1958,14 +1942,15 @@ Template.filterSitesDialog.events({
 		Session.set("temp_filter_sites", _.uniq(selected));
 		if (!selected.length) $('#filter_all').prop("checked", false);
 	},
-	'click .cancel': function () {
+	'click .save': function () {
 		Meteor.users.update({
 			_id: Meteor.userId()
-		}, {
+			}, {
 				$set: {
 					'profile.filteredsites': Session.get("temp_filter_sites")
 				}
-			});
+		});
+		Session.set("filter_sites", Session.get("temp_filter_sites"));
 		// User hat abgebrochen, Dialog schließen
 		Session.set("showFilterSitesDialog", false);
 	}

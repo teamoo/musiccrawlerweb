@@ -153,6 +153,16 @@ textarea#new_comment, #postcomment {
     background-image: url("/packages/bootstrap/img/glyphicons-halflings.png");
 }
 
+.navbar-search .icon-searching {
+	background-image:transparent url("/ajax-loader2.gif");
+    background-position: center center;
+	width: 16px;
+	height: 16px;
+    position: absolute;
+    top: 7px;
+    left: 11px;
+}
+
 #settingsform {
 	margin: 0px;
 }
