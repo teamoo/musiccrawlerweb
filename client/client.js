@@ -1034,9 +1034,15 @@ Template.linklist.events = ({
 		
 		var tmp_status = Session.get("filter_status");
 
-		if (_.indexOf(tmp_status, "unknown") != -1) tmp_status = _.without(tmp_status, "off", "unknown");
+		if (_.indexOf(tmp_status, "unknown") != -1) 
+		{
+			tmp_status = _.without(tmp_status, "off", "unknown");
+			event.target.className = "icon-filter hand";
+		
+		}
 		else {
 			tmp_status = new Array("on", "unknown");
+			event.target.className = "icon-filter hand icon-white";
 		}
 		Session.set("filter_status", _.uniq(tmp_status));
 		//TODO: optischer Hinweis (blau leuchtendes Icon mit CSS Shadow)
