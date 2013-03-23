@@ -8,6 +8,7 @@ Meteor.startup(function(){
         Sites._ensureIndex({last_crawled: 1});
 		Sites._ensureIndex({creator: 1});
         Sites._ensureIndex({feedurl: 1}, {unique: 1});
+		Sites._ensureIndex({url: 1}, {unique: 1});
         Meteor.users._ensureIndex({id: 1}, {unique: 1});
 });
 

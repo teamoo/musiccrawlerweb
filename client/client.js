@@ -1,6 +1,8 @@
-//TODO: Suche startet manchmal nicht
+//TODO: Search does not always start
+//TODO: animate searching and searching finished
+//TODO: Link count text wrong when using term filter
 
-//Session Variablen initialisieren
+//Initialize Session Variables
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
 Session.setDefault("sites_completed", false);
@@ -34,21 +36,23 @@ Session.setDefault("selected_links", []);
 	});
 });
 
-//lokale Collection für Suchergebnisse, damit wir auch diese mit reactivity anzeigen können.
+//local Collection for external search results
 SearchResults = new Meteor.Collection(null);
-// Automatische subscription für alle wichtigen Collections: Links, Sites, und Counts
+//Subscriptions
 Meteor.autorun(function () {
+	//Admin-Flag
 	Meteor.subscribe('userData');
+	//User-Names and Facebook-IDs for display purposes
 	Meteor.subscribe('allUserData', function onReady() {
 		Session.set('users_completed', true);
 	});	
-		
+	//music source sites	
 	Meteor.subscribe('sites', function onReady() {
 		// set a session key to true to indicate that the subscription is
 		// completed.
 		Session.set('sites_completed', true);
 	});
-	
+	//music links
 	Meteor.subscribe('links', Session.get("filter_date"), Session.get("filter_status"), Session.get('filter_term'), Session.get('filter_limit'), Session.get('filter_skip'), Session.get('filter_show_already_downloaded'), Session.get("filter_sites"), function onReady() {
 		// set a session key to true to indicate that the
 		// subscription is completed.
@@ -56,19 +60,12 @@ Meteor.autorun(function () {
 	});
 });
 //
-// Startup-Funktion
-//
-// Startup-Eventhandler: wird aufgerufen, wenn der Client bzw. Server
-// vollständig gestartet ist
-// leider funktioniert das noch nicht ganz, das Meteor.user() Objekt steht dann
-// noch nicht immer
-// zur Verfügung. Workaround: Timer auf 3 Sekunden, dann ist das Objekt im
-// Regelfall verfügbar.
+// Startup function
 Meteor.startup(function () {
 	activateInput($('#searchfield'));
 	
-	// bei jedem Start schauen: wenn der User autoupdate wünscht, dann IP updaten
-	// auch
+	// if user profile is already available, set session varibles for filtering links just for specific sites
+	// and showing already downloaded items. They are not reactive because we need to change them when searching
 	if (Meteor.user() && Meteor.user().profile)
 	{
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
@@ -78,10 +75,15 @@ Meteor.startup(function () {
 			Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
 		}
 	}
+	// update user IP and check if JD Remote is responding
 	refreshJDOnlineStatus();
+	//TODO: maybe just update on login?
+	// Add user facebook token to groups of the user that should be crawled, so the crawl will work
 	Meteor.call('updateFacebookTokensForUser');
+	// Update the number of links and sites the user contributed to the app and save it in his profile
 	Meteor.call('updateLinkContributionCount');
 	
+	//initialize soundcloud API for external search with app key
 	SC.initialize({
 	  client_id: Meteor.settings.public.soundcloud.client_id
 	});
@@ -1045,7 +1047,6 @@ Template.linklist.events = ({
 			event.target.className = "icon-filter hand icon-white";
 		}
 		Session.set("filter_status", _.uniq(tmp_status));
-		//TODO: optischer Hinweis (blau leuchtendes Icon mit CSS Shadow)
 	},
 	//alle Links anhaken, die gerade zu sehen sind
 	'click #select_all': function (event, template) {
@@ -1456,11 +1457,11 @@ Template.addLinkDialog.events({
 					break;
 				default:
 					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>' + " " + error.details + "</small></p>");
+						'<p class="pull-left statustext"><i class="icon-remove"></i><small>' + " " + error.details + "</small></p>");
 			}
 			if (result) {
 				Meteor.call('updateLinkContributionCount');
-				Session.set("status", '<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + "Link hinzugefügt!</small></p>");
+				Session.set("status", '<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + "Link hinzugefügt!</small></p>");
 				Meteor.setTimeout(function () {
 					Session.set("showAddLinkDialog", false);
 					Session.set("status", undefined);
@@ -1472,6 +1473,7 @@ Template.addLinkDialog.events({
 });
 
 Template.searchresult.preserve([".add_external_link"]);
+Template.searchresult.preserve([".download_external_link"]);
 
 Template.searchresult.events({
 	'click .player' : function(event, template) {		
@@ -1505,7 +1507,35 @@ Template.searchresult.events({
 		else
 			event.target.className = "icon-remove";
 	},
-	//TODO Link auch downloaden, wenn er hinzugefügt wird?
+	'click .download_external_link' : function (event, template) {
+		event.preventDefault();
+		event.stopPropagation();
+		event.target.disabled = true;
+		event.target.innerHTML = "<i class='icon-loader'></i>";
+
+		if (Session.get("JDOnlineStatus") === true)
+		{
+			var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + this.url;
+
+			requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
+
+			Meteor.call("sendLinks", requeststring, function (error, result) {
+				if (error) {
+					event.target.innerHTML = "<i class='icon-remove'></i>";
+					console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
+				}
+				if (result) {
+					event.target.innerHTML = "<i class='icon-ok'></i>";
+				}
+			});		
+		}
+		else
+		{
+			writeConsole(this.url);
+			event.target.innerHTML = "<i class='icon-ok'></i>";
+		}		
+		return false;
+	},
 	'click .add_external_link': function (event, template) {
 		event.preventDefault();
 		event.stopPropagation();
@@ -1555,7 +1585,7 @@ Template.addSiteDialog.events({
 			if (error) switch (error.error) {
 				case 401:
 					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + error.details + "</small></p>");
+						'<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + error.details + "</small></p>");
 										
 					Meteor.setTimeout(function () {
 						Meteor.loginWithFacebook({
@@ -1591,7 +1621,7 @@ Template.addSiteDialog.events({
 					break;
 				case 415:
 					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + error.details + "</small></p>");
+						'<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + error.details + "</small></p>");
 					Meteor.setTimeout(function () {
 						Session.set("showAddSiteDialog", false);
 						Session.set("status", undefined);
@@ -1599,7 +1629,7 @@ Template.addSiteDialog.events({
 					break;
 				default:
 					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-remove-red"></i><small>' + " " + error.details + "</small></p>");
+						'<p class="pull-left statustext"><i class="icon-remove"></i><small>' + " " + error.details + "</small></p>");
 					break;
 			}
 			if (result && result._str) {
@@ -1611,7 +1641,7 @@ Template.addSiteDialog.events({
 					Meteor.call("updateFacebookGroupName", newsite.groupid);
 			
 				Session.set("status",
-					'<p class="pull-left statustext"><i class="icon-ok-green"></i><small>' + " " + "Seite hinzugefügt! Die Seite wird automatisch beim nächsten Suchlauf durchsucht.</small></p>");
+					'<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + "Seite hinzugefügt! Die Seite wird automatisch beim nächsten Suchlauf durchsucht.</small></p>");
 
 				Meteor.setTimeout(function () {
 					Session.set("showAddSiteDialog", false);
