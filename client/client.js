@@ -1,6 +1,5 @@
 //TODO: Search does not always start
 //TODO: animate searching and searching finished
-//TODO: Link count text wrong when using term filter
 
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
@@ -172,15 +171,15 @@ Template.navigation.isAnyLinkSelected = function () {
 };
 
 Template.linklist.getNextLinksText = function () {
-	return parseInt(Session.get("filter_skip"))+251 + "-" + (parseInt(Session.get("filter_skip"))+300);
+	return (parseInt(Session.get("filter_skip"))+251) + "-" + (parseInt(Session.get("filter_skip"))+300);
 };
 
 Template.linklist.getCurrentLinksText = function () {
 	if (Links.find().count() === 1)
 		return undefined;
 	if (Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize))
-		return parseInt(Session.get("filter_skip"))+1 + "-" + (parseInt(Session.get("filter_skip"))+250);
-	return parseInt(Session.get("filter_skip"))+1 + "-" + Links.find().count();
+		return (parseInt(Session.get("filter_skip"))+1) + "-" + (parseInt(Session.get("filter_skip"))+250);
+	return (parseInt(Session.get("filter_skip"))+1) + "-" + (parseInt(Session.get("filter_skip"))+Links.find().count());
 };
 
 Template.linklist.hasMoreLinks = function () {
