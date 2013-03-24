@@ -76,7 +76,7 @@ Meteor.startup(function () {
 	}
 	// update user IP and check if JD Remote is responding
 	refreshJDOnlineStatus();
-	//TODO: maybe just update on login?
+	//XXX when Meteor can provide the resume login event, do this only there
 	// Add user facebook token to groups of the user that should be crawled, so the crawl will work
 	Meteor.call('updateFacebookTokensForUser');
 	// Update the number of links and sites the user contributed to the app and save it in his profile
