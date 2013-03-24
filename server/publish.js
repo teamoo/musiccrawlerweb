@@ -75,7 +75,8 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
             creator: 1
         },
         sort: {
-            date_published: -1
+            date_published: -1,
+            name: 1
         }
     }
 

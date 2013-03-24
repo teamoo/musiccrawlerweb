@@ -1391,10 +1391,7 @@ Template.link.events({
 	'click .like': function (context) {
 		// This query succeeds only if the voters array doesn't contain the user
 		query = {
-			_id: this._id,
-			likers: {
-				'$ne': Meteor.userId()
-			}
+			_id: this._id
 		};
 		// Update to add the user to the array and increment the number of
 		// votes.
