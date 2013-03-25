@@ -640,9 +640,10 @@ Template.navigation.events({
 					return String(memo + " " + aUrl);
 				});
 
-				var grabberoption = undefined;
+				var grabberoption;
 
-				if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
+				if (links_chained.match(/youtube|vimeo/i))
+					grabberoption = "grabber1";
 				else grabberoption = "grabber0";
 
 				var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
@@ -1511,6 +1512,12 @@ Template.searchresult.events({
 
 		if (Session.get("JDOnlineStatus") === true)
 		{
+			var grabberoption;
+			
+			if (this.url.match(/youtube|vimeo/i))
+				grabberoption = "grabber1";
+			else grabberoption = "grabber0";
+		
 			var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + this.url;
 
 			requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
