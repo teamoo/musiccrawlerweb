@@ -640,7 +640,7 @@ Template.navigation.events({
 					return String(memo + " " + aUrl);
 				});
 
-				var grabberoption;
+				var grabberoption = undefined;
 
 				if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 				else grabberoption = "grabber0";
