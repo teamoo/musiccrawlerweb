@@ -210,7 +210,11 @@
 			<th></th>
 			<th></th>
 			<th>
-				<i class="icon-filter hand" id="filter_links"></i>
+				{{#if currentUser.profile.showunknownlinks}}
+					<i class="icon-filter icon-white hand" id="filter_links"></i>
+				{{else}}
+					<i class="icon-filter hand" id="filter_links"></i>
+				{{/if}}	
 			</th>
 			<th>Quelle</th>
 			<th>Größe</th>

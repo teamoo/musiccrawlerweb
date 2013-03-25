@@ -1,5 +1,6 @@
 //TODO: Search does not always start
 //TODO: animate searching and searching finished
+//TODO: save filter_status
 
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
@@ -74,37 +75,48 @@ Deps.autorun(function () {
 		var handle = query.observeChanges({
 		  added: function (id, count) {
 		    [1, 14, 30, 90, 365].forEach(function (timespan) {
-		    	Session.set("links_count_" + timespan, Counts.findOne({_id: timespan}).count);
+		    	var item = Counts.findOne({_id: timespan})
+		    	if (item && item.count)
+		    		Session.set("links_count_" + timespan, item.count);
 		    });
 		  },
 		  changed: function () {
 		    [1, 14, 30, 90, 365].forEach(function (timespan) {
-		    	Session.set("links_count_" + timespan, Counts.findOne({_id: timespan}).count);
+		    	var item = Counts.findOne({_id: timespan})
+		    	if (item && item.count)
+		    		Session.set("links_count_" + timespan, item.count);
 		    }); 
 		  }
 		});
 	}
 });
 
-
 //
 // Startup function
 Meteor.startup(function () {
+
 	activateInput($('#searchfield'));
-	
-	// if user profile is already available, set session varibles for filtering links just for specific sites
-	// and showing already downloaded items. They are not reactive because we need to change them when searching
-	if (Meteor.user() && Meteor.user().profile)
-	{
-		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
-		if(Meteor.user().profile.filteredsites !== undefined)
-		{
-			Session.set("filter_sites", Meteor.user().profile.filteredsites);
-			Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
-		}
-	}
-	
+		
 	Meteor.setTimeout(function () {
+		// if user profile is already available, set session varibles for filtering links just for specific sites
+		// and showing already downloaded items. They are not reactive because we need to change them when searching
+		if (Meteor.user() && Meteor.user().profile)
+		{
+			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+			
+			if (Meteor.user().profile.showunknownlinks === true)
+				Session.set("filter_status", ["on","unknown"])
+			else {
+				Session.set("filter_status", ["on"])
+			}
+			
+			if(Meteor.user().profile.filteredsites !== undefined)
+			{
+				Session.set("filter_sites", Meteor.user().profile.filteredsites);
+				Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
+			}
+		}
+	
 		// update user IP and check if JD Remote is responding
 		refreshJDOnlineStatus();
 		//XXX when Meteor can provide the resume login event, do this only there
@@ -807,13 +819,13 @@ Template.navigation.events({
             if (Meteor.user().profile.filteredsites)
             {
 				Session.set("filter_sites", Meteor.user().profile.filteredsites);
-				Session.set("temp:filter_sites", Meteor.user().profile.filteredsites);
+				Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
 			}
 			
 			if (Session.get("prev_filter_date")) {
 				Session.set("filter_date", Session.get("prev_filter_date"));
 				Session.set("filter_skip", Session.get("prev_filter_skip"));
-				Session.set("selected_navitem", parseInt((new Date().getTime()-Session.get("prev_filter_date").getTime())/(24*3600*1000)));
+				Session.set("selected_navitem", Math.round((new Date().getTime()-Session.get("prev_filter_date").getTime())/(24*3600*1000)));
 				$('li.linkfilter').removeClass("active");
 				var activenumber = parseInt(Session.get("selected_navitem"));
 				$('li.linkfilter #' + activenumber).parent().addClass("active");
@@ -825,10 +837,17 @@ Template.navigation.events({
 				var activenumber = Session.get("selected_navitem");
 				$('li.linkfilter #' + activenumber).parent().addClass("active");
 			}
-			Session.set("filter_status", ["on"]);
+
+			if (Meteor.user().profile.showunknownlinks === true)
+				Session.set("filter_status", ["on","unknown"])
+			else {
+				Session.set("filter_status", ["on"])
+			}
+			
+			//Session.set("filter_status", ["on"]);
 		}
 		
-		if (Meteor.user().profile.searchproviders.length)
+		if (Meteor.user().profile.searchproviders.length && term && term != undefined && term != "")
 			Session.set("loading_results", true);
 		
 		Meteor.setTimeout(function () {
@@ -1072,12 +1091,26 @@ Template.linklist.events = ({
 		{
 			tmp_status = _.without(tmp_status, "off", "unknown");
 			event.target.className = "icon-filter hand";
-		
+			Meteor.users.update({
+				_id: Meteor.userId()
+			}, {
+				$set: {
+					'profile.showunknownlinks': false,
+				}
+			});		
 		}
 		else {
 			tmp_status = new Array("on", "unknown");
 			event.target.className = "icon-filter hand icon-white";
+			Meteor.users.update({
+				_id: Meteor.userId()
+			}, {
+				$set: {
+					'profile.showunknownlinks': true,
+				}
+			});
 		}
+
 		Session.set("filter_status", _.uniq(tmp_status));
 	},
 	//alle Links anhaken, die gerade zu sehen sind
