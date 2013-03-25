@@ -1,6 +1,5 @@
 //TODO: Search does not always start
 //TODO: animate searching and searching finished
-//TODO: save filter_status
 
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
@@ -775,6 +774,8 @@ Template.navigation.events({
 		return false;
 	},
 	'click .linkfilter': function (event, template) {
+		event.preventDefault();
+		
 		$("html, body").animate({ scrollTop: 0 }, "fast");
 		var sitefilter = Session.get("filter_sites");
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
@@ -782,6 +783,7 @@ Template.navigation.events({
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
 		Session.set("filter_term",".*");
+		Session.set("filter_term_external", undefined);
 		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-event.target.id)));
 		Session.set("selected_navitem", parseInt(event.target.id));
 		$('li.linkfilter').removeClass("active");

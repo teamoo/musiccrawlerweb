@@ -49,7 +49,12 @@
 						{{# if linksFound}}
 							{{> linklist}}
 						{{else}}
-							<p class="lead">Für den ausgewählten Zeitraum oder Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
+							{{#if session "filter_term_external"}}
+								<p class="lead">Für den ausgewählten Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
+							{{else}}
+								<p class="lead">Für den ausgewählten Zeitraum wurden keine Links in der Datenbank gefunden.</p>
+							{{/if}}
+
 							{{#if session "loading_results"}}
 								<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
 							{{else}}
