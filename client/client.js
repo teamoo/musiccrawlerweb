@@ -26,6 +26,7 @@ Session.setDefault("filter_sites", []);
 Session.setDefault("temp_filter_sites", []);
 Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("selected_links", []);
+Session.setDefault("JDOnlineStatus", false);
 
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, 0);
@@ -74,13 +75,16 @@ Meteor.startup(function () {
 			Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
 		}
 	}
-	// update user IP and check if JD Remote is responding
-	refreshJDOnlineStatus();
-	//XXX when Meteor can provide the resume login event, do this only there
-	// Add user facebook token to groups of the user that should be crawled, so the crawl will work
-	Meteor.call('updateFacebookTokensForUser');
-	// Update the number of links and sites the user contributed to the app and save it in his profile
-	Meteor.call('updateLinkContributionCount');
+	
+	Meteor.setTimeout(function () {
+		// update user IP and check if JD Remote is responding
+		refreshJDOnlineStatus();
+		//XXX when Meteor can provide the resume login event, do this only there
+		// Add user facebook token to groups of the user that should be crawled, so the crawl will work
+		Meteor.call('updateFacebookTokensForUser');
+		// Update the number of links and sites the user contributed to the app and save it in his profile
+		Meteor.call('updateLinkContributionCount');
+	}, 2500);
 	
 	//initialize soundcloud API for external search with app key
 	SC.initialize({
@@ -806,7 +810,7 @@ Template.navigation.events({
 		Meteor.setTimeout(function(){
 			if (Session.get("links_completed") === true && !Links.findOne()) {
 				
-				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "");
+				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");;
 				
 				if (filter_term_external != "")
 				{
