@@ -1,4 +1,4 @@
-﻿//Publishing - Meteor Collections, die Clients subscriben können
+//Publishing - Meteor Collections, die Clients subscriben können
 Meteor.publish("userData", function () {
     if (this.userId) return Meteor.users.find({
         _id: this.userId
@@ -128,14 +128,14 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
   });
 });
 
-
-
-
-
 // Publish filtered list to all clients
-Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites) {
+Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites, filter_id) {
 //XXX wenn Meteor projections kann, downloaders nicht komplett zurückgeben, sondern mit uns drin oder komplett leer
-	var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
+               
+    if (filter_id)
+        return Links.find({_id: new Meteor.Collection.ObjectID(filter_id)});
+               
+    var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
 	
 	var thedownloaders = "dummy";
 	

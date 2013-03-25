@@ -13,6 +13,7 @@ Session.setDefault("showAddLinkDialog", false);
 Session.setDefault("showAddSiteDialog", false);
 Session.setDefault("showSitesDialog", false);
 Session.setDefault("showFilterSitesDialog", false);
+Session.setDefault("showShareLinkDialog", false);
 Session.setDefault("progressActive", false);
 Session.setDefault("progress", undefined);
 Session.setDefault("progressState", undefined);
@@ -27,6 +28,8 @@ Session.setDefault("temp_filter_sites", []);
 Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("selected_links", []);
 Session.setDefault("JDOnlineStatus", false);
+Session.setDefault("filter_id", undefined);
+Session.setDefault("temp_link_id",undefined);
 
 
 [1, 14, 30, 90, 365].forEach(function (timespan) {
@@ -37,6 +40,14 @@ Session.setDefault("JDOnlineStatus", false);
 	});*/
 });
 
+
+Meteor.Router.add({
+    '/link/:id': function(id) {
+        Session.set('filter_id', id);
+    },
+    '/': 'page',
+    '*': 'page'
+});
 
 //local Collection for external search results
 SearchResults = new Meteor.Collection(null);
@@ -56,7 +67,7 @@ Deps.autorun(function () {
 		Session.set('sites_completed', true);
 	});
 	//music links
-	Meteor.subscribe('links', Session.get("filter_date"), Session.get("filter_status"), Session.get('filter_term'), Session.get('filter_limit'), Session.get('filter_skip'), Session.get('filter_show_already_downloaded'), Session.get("filter_sites"), function onReady() {
+	Meteor.subscribe('links', Session.get("filter_date"), Session.get("filter_status"), Session.get("filter_term"), Session.get("filter_limit"), Session.get("filter_skip"), Session.get("filter_show_already_downloaded"), Session.get("filter_sites"), Session.get("filter_id"), function onReady() {
 		// set a session key to true to indicate that the
 		// subscription is completed.
 		Session.set('links_completed', true);
@@ -422,6 +433,10 @@ Template.sitesDialog.canCrawlAgain = function () {
 	return false;
 };
 
+Template.shareLinkDialog.getUsereMail = function () {
+    return Meteor.user().emails[0].address;
+};
+
 // Funktion, um ein Eingabeelement auszuwählen und den Focus drauf zu setzen
 var activateInput = function (input) {
 	input.focus();
@@ -451,6 +466,14 @@ var openSitesDialog = function () {
 var openFilterSitesDialog = function () {
 	if (Meteor.status().connected)
 		Session.set("showFilterSitesDialog", true);
+};
+
+var openShareLinkDialog = function () {
+	if (Meteor.status().connected)
+    {
+        Session.set("temp_link_id",this._id);
+        Session.set("showShareLinkDialog", true);
+    }
 };
 
 //
@@ -570,6 +593,7 @@ Template.navigation.rendered = function () {
 			var prev_filter_date = Session.get("filter_date");
 			var prev_filter_skip = Session.get("filter_skip");
 			Session.set("links_completed", false);
+            Session.set("filter_id",undefined);
 			Session.set("prev_filter_skip", prev_filter_skip);
 			Session.set("prev_filter_date", prev_filter_date);
 			Session.set("filter_show_already_downloaded", true);
@@ -577,7 +601,8 @@ Template.navigation.rendered = function () {
 			Session.set("filter_status", ["on", "off", "unknown"]);
 			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
 			Session.set("filter_skip", 0);
-			Session.set("filter_sites", []);			
+			Session.set("filter_sites", []);
+            Meteor.Router.to("/");
 			return name;
         },
 		matcher: function(item) {
@@ -777,7 +802,8 @@ Template.navigation.events({
 		event.preventDefault();
 		
 		$("html, body").animate({ scrollTop: 0 }, "fast");
-		Session.set("links_completed", false);
+		Session.set("links_completed", false);        
+        Session.set("filter_id",undefined);
 		var sitefilter = Session.get("filter_sites");
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		Session.set("filter_sites",_.without(sitefilter,Meteor.user().id));
@@ -791,14 +817,16 @@ Template.navigation.events({
 		var activenumber = parseInt(Session.get("selected_navitem"));
 		$('li.linkfilter #' + activenumber).parent().addClass("active");
 		SearchResults.remove({});
+        Meteor.Router.to("/");
 	},	
 	'submit #searchform': function (event, template) {
 		
 		event.preventDefault();
 		event.stopPropagation();
 		Session.set("links_completed", false);
+        Session.set("filter_id",undefined);
 		
-		var term = template.find('#searchfield').value.trim();
+        var term = template.find('#searchfield').value.trim();
 		
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
@@ -848,8 +876,6 @@ Template.navigation.events({
 			else {
 				Session.set("filter_status", ["on"])
 			}
-			
-			//Session.set("filter_status", ["on"]);
 		}
 		
 		if (Meteor.user().profile.searchproviders.length && term && term != undefined && term != "")
@@ -1071,7 +1097,8 @@ Template.navigation.events({
 				Session.set("loading_results",false);
 			}	
 		},1000);
-		return false;
+		Meteor.Router.to("/");
+        return false;
 	}
 });
 
@@ -1440,6 +1467,12 @@ Template.link.events({
 		});
 
 	},
+    //Link teilen
+	'click .sharelink': function (event, template) {
+        event.preventDefault();
+        openShareLinkDialog();
+        return false;
+	},
 	//X-Editable Formular - Namensänderung übernehmen
 	'submit .form-inline': function (event, template) {
 		event.preventDefault();
@@ -1767,6 +1800,48 @@ Template.sitesDialog.rendered = function () {
 		});
 	}
 };
+
+Template.shareLinkDialog.events({
+    'input #sharelinkaddress': function (event, template) {
+		if (!event.target.validity.valid) {
+			template.find('#sharelink').disabled = true;
+		} else {
+			template.find('#sharelink').disabled = false;
+		}
+	},
+    'click .cancel': function () {
+        Session.set("showShareLinkDialog", false);
+        Session.set("status",undefined);
+        Session.set("temp_link_id",undefined);
+    },
+    'submit #sharelinkform': function (event, template) {
+        event.preventDefault();
+        Session.set("status",
+			'<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i>Link wird gesendet</p>');
+                                
+                                
+        //Session.set("status",
+		//	'<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird gesendet</small></p>');
+		
+        var targetemail = template.find("#sharelinkaddress").value;
+
+		Meteor.call('shareLink', targetemail, Session.get("temp_link_id"), function (error, result) {
+			if (error) {
+                Session.set("status",
+                    '<p class="pull-left statustext"><i class="icon-remove"></i>' + " " + error.details + "</p>");
+			}
+			if (result) {
+				Session.set("status", '<p class="pull-left statustext"><i class="icon-ok"></i>' + " " + "Link versendet!</p>");
+				Meteor.setTimeout(function () {
+					Session.set("showShareLinkDialog", false);
+					Session.set("status", undefined);
+                    Session.set("temp_link_id",undefined);
+				}, 3000);
+            }
+        });
+    }
+});
+                           
 //Events des Seiten anzeigen Dialogs
 Template.sitesDialog.events({
 	// User hat abgebrochen, Dialog schließen

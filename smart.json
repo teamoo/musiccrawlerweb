@@ -5,6 +5,7 @@
   "packages": {
     "moment": "1.7.0",
     "handlebar-helpers": "0.0.5",
-    "x-editable-bootstrap": "0.1.2"
+    "x-editable-bootstrap": "0.1.2",
+    "router": {}
   }
 }

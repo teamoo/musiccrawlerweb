@@ -7,6 +7,10 @@ body {
 	padding-right: 0px;
 }
 
+.link_checkbox, #select_all {
+    vertical-align:top
+}
+
 .btn-group {
 	padding-right: 10px;
 }

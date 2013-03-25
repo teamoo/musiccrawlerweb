@@ -11,7 +11,11 @@
 </body>
 
 <template name="page">
-				{{#if session "showAccountSettingsDialog"}}
+                {{#if session "showShareLinkDialog"}}
+				  {{> shareLinkDialog}}
+				{{/if}}
+    
+                {{#if session "showAccountSettingsDialog"}}
 				  {{> accountSettingsDialog}}
 				{{/if}}
 				
@@ -208,7 +212,9 @@
 			<th>
 				<input type="checkbox" id="select_all">
 			</th>
-			{{#constant}}<th></th>
+			{{#constant}}
+            <th></th>
+            <th></th>
 			<th><i class="icon-volume-up"></i></th>
 			<th>Name</th>
 			<th>URL</th>
@@ -256,13 +262,16 @@
 <template name="link">
 	{{#if isNotAlreadyDownloaded}}
 		<tr>
-			<td>
+			<td style="width:12px;min-width:12px;max-width:12px">
 				{{#if isLinkSelected}}
 					<input type="checkbox" class="link_checkbox" checked="checked">
 				{{else}}
 					<input type="checkbox" class="link_checkbox">
 				{{/if}}
 			</td>
+            <td style="width:14px;min-width:14px;max-width:14px">
+                <i class="icon-share hand sharelink"><i>
+            </td>
 			<td style="width:14px;min-width:14px;max-width:14px">
 				{{#constant}}
 				<i class="icon-refresh hand refreshlink"></i>
@@ -288,7 +297,7 @@
 				<i class="icon-thumbs-up hand like"></i>
 				{{#if likes}}{{likes}}{{else}}0{{/if}}
 			</td>
-			<td style="width:14px;min-width:14px;max-width:14px;text-align:center;">
+			<td style="width:14px;min-width:14px;max-width:14px;text-align:center">
 				<i class="{{getStatusIcon}}"></i>
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
@@ -310,7 +319,7 @@
 		</tr>
 	{{else}}
 		<tr>
-			<td>
+			<td style="width:12px;min-width:12px;max-width:12px;vertical-align:top">
 				{{#if isLinkSelected}}
 					<input type="checkbox" class="link_checkbox" checked="checked">
 				{{else}}
@@ -446,7 +455,7 @@
 		{{else}}
 			<input id="searchzippysharemusic" type="checkbox">
 		{{/if}}
-		<a href='http://www.zippysharemusic.com'><img alt='zippysharemusic' src='zippysharemusic.png'></a>
+		<a href="http://www.zippysharemusic.com"><img alt="zippysharemusic" src="zippysharemusic.png"></a>
 		</label>
 		
 		<label class="checkbox">
@@ -455,7 +464,7 @@
 		{{else}}
 			<input id="searchmuzon" type="checkbox">
 		{{/if}}
-		<a href='http://www.muzon.ws'><img alt='muzon' src='muzon.png'></a>
+		<a href="http://www.muzon.ws"><img alt='muzon' src='muzon.png'></a>
 		</label>
 		
 		<label class="checkbox">
@@ -671,5 +680,27 @@
 		</tbody>
 		</table>
   </div>
+</div>
+</template>
+
+<template name="shareLinkDialog">
+<div class="mask"> </div>
+<div id="showShareLinkModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close cancel">&times;</button>
+    <h3 align="center">Link teilen</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" id="sharelinkform">
+		<p class="lead">Bitte gib eine eMail-Adresse ein, an die der Link gesendet werden soll.</p>
+        <div class="input-append">
+			<input id="sharelinkaddress" class="input-xlarge siteurl" type="email" placeholder="{{getUsereMail}}" required>
+			<button class="btn btn-primary" id="sharelink" disabled>Link teilen</button>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer status">
+    {{{session "status"}}}
+  </div>        
 </div>
 </template>
