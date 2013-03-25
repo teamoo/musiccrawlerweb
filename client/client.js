@@ -1675,11 +1675,11 @@ Template.addSiteDialog.events({
 								Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
 								
 								Meteor.call("scheduleCrawl", newsiteurl, function (error3, result3) {
-									if (result3 && result3.status == "ok") Sites.update({
+									if (result3 && result3.data && result3.data.status == "ok") Sites.update({
 										groupid: newsiteurl.split("groups/")[1].split("/")[0]
 									}, {
 										$set: {
-											next_crawl: result.jobid
+											next_crawl: result3.data.jobid
 										}
 									});
 								});
@@ -1724,11 +1724,11 @@ Template.addSiteDialog.events({
 				if (newsite)
 					Meteor.call("scheduleCrawl", newsite.feedurl, function (error2, result2) {
 						if (error2) console.log("Error scheduling Crawl for Site " + newsite.url + " (" + error.details + ")");
- 						if (result2 && result2.status == "ok") Sites.update({
+ 						if (result2 && result2.data && result2.data.status == "ok") Sites.update({
 							_id: aid
 						}, {
 							$set: {
-								next_crawl: result.jobid
+								next_crawl: result2.data.jobid
 							}
 						});
 					});
@@ -1792,7 +1792,7 @@ Template.sitesDialog.events({
 								_id: site._id
 							}, {
 								$set: {
-									next_crawl: result.jobid
+									next_crawl: result.data.jobid
 								}
 							});
 							event.target.className = "icon-time";
@@ -1822,11 +1822,12 @@ Template.sitesDialog.events({
 						console.log("Error scheduling crawl for site " + this.name + " (" + error.reason + ")");
 					}
 					if (result && result.data && result.data.status == "ok") {
+						console.log(result);
 						Sites.update({
 							_id: this._id
 						}, {
 							$set: {
-								next_crawl: result.jobid
+								next_crawl: result.data.jobid
 							}
 						});
 						event.target.className = "icon-time";
