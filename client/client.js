@@ -570,6 +570,7 @@ Template.navigation.rendered = function () {
 			var term = name.trim();
 			var prev_filter_date = Session.get("filter_date");
 			var prev_filter_skip = Session.get("filter_skip");
+			Session.set("links_completed", false);
 			Session.set("prev_filter_skip", prev_filter_skip);
 			Session.set("prev_filter_date", prev_filter_date);
 			Session.set("filter_show_already_downloaded", true);
@@ -777,6 +778,7 @@ Template.navigation.events({
 		event.preventDefault();
 		
 		$("html, body").animate({ scrollTop: 0 }, "fast");
+		Session.set("links_completed", false);
 		var sitefilter = Session.get("filter_sites");
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		Session.set("filter_sites",_.without(sitefilter,Meteor.user().id));
@@ -795,6 +797,8 @@ Template.navigation.events({
 		
 		event.preventDefault();
 		event.stopPropagation();
+		Session.set("links_completed", false);
+		
 		var term = template.find('#searchfield').value.trim();
 		
 		Session.set("filter_limit", 1);
