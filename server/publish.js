@@ -33,23 +33,33 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
   	}
   }).observeChanges({
     added: function (id) {
-      if (!initializing)
-      	[1, 14, 30, 90, 365].forEach(function (timespan) {
-      		var count = Links.find({
-      			date_published: {
-      				$gte: new Date(new Date().setDate(new Date().getDate()-timespan))
-      			},
-      			status: {
-      				$in: filter_status
-      			},
-      			downloaders: {
-      				'$ne': thedownloaders
-      			}
-      		}).count(false);
-      		self.changed("counts", timespan, {count: count});
-      	});
+    	var thedownloaders = "dummy";
+    
+    	if (this.userId)
+    		thedownloaders = this.userId;
+    
+      	if (!initializing)
+	      	[1, 14, 30, 90, 365].forEach(function (timespan) {
+	      		var count = Links.find({
+	      			date_published: {
+	      				$gte: new Date(new Date().setDate(new Date().getDate()-timespan))
+	      			},
+	      			status: {
+	      				$in: filter_status
+	      			},
+	      			downloaders: {
+	      				'$ne': thedownloaders
+	      			}
+	      		}).count(false);
+	      		self.changed("counts", timespan, {count: count});
+	      	});
     },
     removed: function (id) {
+    	var thedownloaders = "dummy";
+    	
+    	if (this.userId)
+    		thedownloaders = this.userId;
+    
 		[1, 14, 30, 90, 365].forEach(function (timespan) {
 			var count = Links.find({
 				date_published: {
@@ -66,6 +76,11 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
 		});
     },
     changed: function (id) {
+    	var thedownloaders = "dummy";
+    	
+    	if (this.userId)
+    		thedownloaders = this.userId;
+    
     	[1, 14, 30, 90, 365].forEach(function (timespan) {
     		var count = Links.find({
     			date_published: {

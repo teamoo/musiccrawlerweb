@@ -45,10 +45,6 @@ Deps.autorun(function () {
 	//Admin-Flag
 	Meteor.subscribe('userData');
 	
-	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), function onReady() {
-		Session.set('counts_completed', true);
-	});
-	
 	//User-Names and Facebook-IDs for display purposes
 	Meteor.subscribe('allUserData', function onReady() {
 		Session.set('users_completed', true);
@@ -64,6 +60,10 @@ Deps.autorun(function () {
 		// set a session key to true to indicate that the
 		// subscription is completed.
 		Session.set('links_completed', true);
+	});
+	
+	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), function onReady() {
+		Session.set('counts_completed', true);
 	});
 	
 	

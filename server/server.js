@@ -3,6 +3,7 @@ Meteor.startup(function(){
         Links._ensureIndex({date_published: 1});
         Links._ensureIndex({url: 1}, {unique: 1});
 		Links._ensureIndex({source: 1});
+		Links._ensureIndex({status: 1});
 		Links._ensureIndex({downloaders: 1});
 		Links._ensureIndex({keywords: 1});
         Sites._ensureIndex({last_crawled: 1});
