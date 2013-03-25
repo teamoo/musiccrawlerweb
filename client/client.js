@@ -7,6 +7,7 @@ Session.setDefault("wait_for_items", false);
 Session.setDefault("sites_completed", false);
 Session.setDefault("links_completed", false);
 Session.setDefault("users_completed", false);
+Session.setDefault("counts_completed", false);
 Session.setDefault("status", undefined);
 Session.setDefault("showAccountSettingsDialog", false);
 Session.setDefault("showAddLinkDialog", false);
@@ -28,20 +29,27 @@ Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("selected_links", []);
 Session.setDefault("JDOnlineStatus", false);
 
+
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, 0);
-	Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
+	/*Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
 		if (count)
 			Session.set("links_count_" + timespan, count);
-	});
+	});*/
 });
+
 
 //local Collection for external search results
 SearchResults = new Meteor.Collection(null);
 //Subscriptions
-Meteor.autorun(function () {
+Deps.autorun(function () {
 	//Admin-Flag
 	Meteor.subscribe('userData');
+	
+	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), function onReady() {
+		Session.set('counts_completed', true);
+	});
+	
 	//User-Names and Facebook-IDs for display purposes
 	Meteor.subscribe('allUserData', function onReady() {
 		Session.set('users_completed', true);
@@ -58,7 +66,27 @@ Meteor.autorun(function () {
 		// subscription is completed.
 		Session.set('links_completed', true);
 	});
+	
+	
+	if (Session.get("counts_completed") === true)
+	{
+		var query = Counts.find({});
+		var handle = query.observeChanges({
+		  added: function (id, count) {
+		    [1, 14, 30, 90, 365].forEach(function (timespan) {
+		    	Session.set("links_count_" + timespan, Counts.findOne({_id: timespan}).count);
+		    });
+		  },
+		  changed: function () {
+		    [1, 14, 30, 90, 365].forEach(function (timespan) {
+		    	Session.set("links_count_" + timespan, Counts.findOne({_id: timespan}).count);
+		    }); 
+		  }
+		});
+	}
 });
+
+
 //
 // Startup function
 Meteor.startup(function () {
