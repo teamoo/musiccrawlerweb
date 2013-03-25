@@ -1,5 +1,4 @@
 //TODO: Search does not always start
-//TODO: animate searching and searching finished
 
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
