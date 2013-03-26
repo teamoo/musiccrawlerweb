@@ -1498,6 +1498,9 @@ Template.link.events({
 	'click .sharelink': function (event, template) {
         event.preventDefault();
         openShareLinkDialog();
+		Meteor.setTimeout(function () {
+			activateInput($("#sharelinkaddress"));
+		}, 250);
         return false;
 	},
 	//X-Editable Formular - Namensänderung übernehmen
@@ -1828,6 +1831,34 @@ Template.sitesDialog.rendered = function () {
 	}
 };
 
+Template.shareLinkDialog.rendered = function() {
+	$('#sharelinkaddress').typeahead({items: 6, minLength: 3,
+		source: function(query, process) {
+			Meteor.call("getSuggestionsForEmail", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function(error, result) {
+				process(_.map(result, function(asuggest){ return asuggest.name + " - " + asuggest.email; }));
+			});	
+		},
+		updater: function(name) {
+			var term = name.trim().split(" - ")[1];
+			$('#sharelink').prop("disabled", false);
+			return term;
+        },
+		matcher: function(item) {
+			return true;
+		},
+		highlighter: function (item) {
+			var searchterms = this.query.trim().split(" ");
+			
+			for (var i = 0; i < searchterms.length; i++) {
+				var regex = new RegExp( '(' + searchterms[i] + ')', 'i' );
+				newitem = item.replace( regex, "<strong>$1</strong>" );
+			}
+
+            return newitem;
+        },
+	});
+};
+
 Template.shareLinkDialog.events({
     'input #sharelinkaddress': function (event, template) {
 		if (!event.target.validity.valid) {
@@ -1846,12 +1877,11 @@ Template.shareLinkDialog.events({
         Session.set("status",
 			'<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i>Link wird gesendet</p>');
                                 
-                                
-        //Session.set("status",
-		//	'<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird gesendet</small></p>');
-		
         var targetemail = template.find("#sharelinkaddress").value;
-
+		
+		if (targetemail.indexOf(",") !== -1)
+			targetemail = targetemail.split(",");
+		
 		Meteor.call('shareLink', targetemail, Session.get("temp_link_id"), function (error, result) {
 			if (error) {
                 Session.set("status",

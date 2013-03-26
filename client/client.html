@@ -695,9 +695,9 @@
   </div>
   <div class="modal-body">
 	<form class="form-horizontal" id="sharelinkform">
-		<p class="lead">Bitte gib eine eMail-Adresse ein, an die der Link gesendet werden soll.</p>
+		<p>Bitte gib eine eMail-Adresse ein, an die der Link gesendet werden soll.</p>
         <div class="input-append">
-			<input id="sharelinkaddress" class="input-xlarge siteurl" type="email" placeholder="{{getUsereMail}}" required>
+			<input id="sharelinkaddress" class="input-xlarge siteurl" type="email" placeholder="{{getUsereMail}}" required autocomplete="off" data-provide="typeahead">
 			<button class="btn btn-primary" id="sharelink" disabled>Link teilen</button>
 		</div>
 	</form>
