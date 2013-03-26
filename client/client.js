@@ -1128,7 +1128,7 @@ Template.navigation.events({
 //Events für das Template der Linkliste
 Template.linklist.events = ({
 	 //Links teilen
-	'click .sharelinks': function (event, template) {
+	'click #share_links': function (event, template) {
         event.preventDefault();
         openShareLinkDialog();
 		Meteor.setTimeout(function () {
@@ -1263,8 +1263,16 @@ Template.linklist.rendered = function () {
 			title: "Linkinformationen (Größe, Titel, Online-Status) aktualisieren",
 			placement: "right"
 		});
-		$('.sharelink').tooltip({
-			title: "Link teilen",
+		$('#share_links').tooltip({
+			title: "Set (ausgewählte Links= teilen",
+			placement: "right"
+		});
+		$('.removelinkfromset').tooltip({
+			title: "Link aus dem aktuellen Set entfernen",
+			placement: "right"
+		});
+		$('.addlinktoset').tooltip({
+			title: "Link zum aktuellen Set hinzufügen",
 			placement: "right"
 		});
 		$('.like').tooltip({
