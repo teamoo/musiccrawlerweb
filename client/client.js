@@ -34,7 +34,7 @@ Session.setDefault("temp_link_id",undefined);
 
 
 [1, 14, 30, 90, 365].forEach(function (timespan) {
-	Session.setDefault("links_count_" + timespan, 0);
+	Session.setDefault("links_count_" + timespan, undefined);
 	/*Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
 		if (count)
 			Session.set("links_count_" + timespan, count);
@@ -86,14 +86,14 @@ Deps.autorun(function () {
 		  added: function (id, count) {
 		    [1, 14, 30, 90, 365].forEach(function (timespan) {
 		    	var item = Counts.findOne({_id: timespan})
-		    	if (item && item.count)
+		    	if (item)
 		    		Session.set("links_count_" + timespan, item.count);
 		    });
 		  },
 		  changed: function () {
 		    [1, 14, 30, 90, 365].forEach(function (timespan) {
 		    	var item = Counts.findOne({_id: timespan})
-		    	if (item && item.count)
+		    	if (item)
 		    		Session.set("links_count_" + timespan, item.count);
 		    }); 
 		  }
