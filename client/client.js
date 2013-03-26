@@ -30,8 +30,7 @@ Session.setDefault("selected_links", []);
 Session.setDefault("JDOnlineStatus", false);
 Session.setDefault("filter_id", undefined);
 Session.setDefault("filter_sort", "date_published");
-Session.setDefault("temp_link_id",undefined);
-
+Session.setDefault("temp_set",[]);
 
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
@@ -41,9 +40,11 @@ Session.setDefault("temp_link_id",undefined);
 	});*/
 });
 
-
 Meteor.Router.add({
     '/link/:id': function(id) {
+        Session.set('filter_id', id);
+    },
+	'/set/:id': function(id) {
         Session.set('filter_id', id);
     },
     '/': 'page',
@@ -224,6 +225,11 @@ Template.navigation.isAnyLinkSelected = function () {
 	return false;
 };
 
+Template.linklist.isAnyLinkSelectedSet = function () {
+	if (Session.get("temp_set").length) return true;
+	return false;
+};
+
 Template.linklist.getNextLinksText = function () {
 	return (parseInt(Session.get("filter_skip"))+251) + "-" + (parseInt(Session.get("filter_skip"))+300);
 };
@@ -310,6 +316,17 @@ Template.link.getStatusIcon = function () {
 // Funktion um zu bestimmen, ob ein Link ausgewählt ist
 Template.link.isLinkSelected = function () {
 	var selected = Session.get("selected_links");
+	
+	for (var i=0;i<selected.length;i++)
+	{ 
+		if (EJSON.equals(this._id,selected[i]))
+			return true;
+	}
+	return false;
+};
+
+Template.link.isLinkSelectedSet = function () {
+	var selected = Session.get("temp_set");
 	
 	for (var i=0;i<selected.length;i++)
 	{ 
@@ -479,10 +496,7 @@ var openFilterSitesDialog = function () {
 
 var openShareLinkDialog = function () {
 	if (Meteor.status().connected)
-    {
-        Session.set("temp_link_id",this._id);
         Session.set("showShareLinkDialog", true);
-    }
 };
 
 //
@@ -1113,6 +1127,15 @@ Template.navigation.events({
 
 //Events für das Template der Linkliste
 Template.linklist.events = ({
+	 //Links teilen
+	'click .sharelinks': function (event, template) {
+        event.preventDefault();
+        openShareLinkDialog();
+		Meteor.setTimeout(function () {
+			activateInput($("#sharelinkaddress"));
+		}, 250);
+        return false;
+	},
 	'click #sort_like' : function (event, template) {
 		Session.set("filter_sort", "likes");
 	},
@@ -1477,6 +1500,24 @@ Template.link.events({
 		}
 		if (!selected.length) $('#select_all').prop("checked", false);
 	},
+	'click .addlinktoset': function (event, template) {
+		var selected = Session.get("temp_set");
+		selected.push(this._id);
+		Session.set("temp_set", selected);
+	},
+	'click .removelinkfromset': function (event, template) {
+		var selected = Session.get("temp_set");
+
+		selectedloop: for (var i=0;i<selected.length;i++)
+		{ 
+			if (EJSON.equals(this._id,selected[i]))
+			{
+				selected.splice(i,1);
+				Session.set("temp_set", selected);
+				break selectedloop;
+			}
+		}
+	},	
 	//Link-Status aktualisieren
 	'click .icon-refresh': function (event, template) {
 		event.target.className = "icon-refreshing";
@@ -1493,15 +1534,6 @@ Template.link.events({
 			}
 		});
 
-	},
-    //Link teilen
-	'click .sharelink': function (event, template) {
-        event.preventDefault();
-        openShareLinkDialog();
-		Meteor.setTimeout(function () {
-			activateInput($("#sharelinkaddress"));
-		}, 250);
-        return false;
 	},
 	//X-Editable Formular - Namensänderung übernehmen
 	'submit .form-inline': function (event, template) {
@@ -1870,29 +1902,28 @@ Template.shareLinkDialog.events({
     'click .cancel': function () {
         Session.set("showShareLinkDialog", false);
         Session.set("status",undefined);
-        Session.set("temp_link_id",undefined);
     },
     'submit #sharelinkform': function (event, template) {
         event.preventDefault();
         Session.set("status",
-			'<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i>Link wird gesendet</p>');
+			'<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i>Links werden gesendet</p>');
                                 
         var targetemail = template.find("#sharelinkaddress").value;
 		
 		if (targetemail.indexOf(",") !== -1)
 			targetemail = targetemail.split(",");
 		
-		Meteor.call('shareLink', targetemail, Session.get("temp_link_id"), function (error, result) {
+		Meteor.call('shareLinks', targetemail, _.pluck(Session.get("temp_set"),"_str"), function (error, result) {
 			if (error) {
                 Session.set("status",
                     '<p class="pull-left statustext"><i class="icon-remove"></i>' + " " + error.details + "</p>");
 			}
 			if (result) {
-				Session.set("status", '<p class="pull-left statustext"><i class="icon-ok"></i>' + " " + "Link versendet!</p>");
+				Session.set("status", '<p class="pull-left statustext"><i class="icon-ok"></i>' + " " + "Links geteilt</p>");
 				Meteor.setTimeout(function () {
 					Session.set("showShareLinkDialog", false);
 					Session.set("status", undefined);
-                    Session.set("temp_link_id",undefined);
+                    Session.set("temp_set",[]);
 				}, 3000);
             }
         });
@@ -1954,7 +1985,6 @@ Template.sitesDialog.events({
 						console.log("Error scheduling crawl for site " + this.name + " (" + error.reason + ")");
 					}
 					if (result && result.data && result.data.status == "ok") {
-						console.log(result);
 						Sites.update({
 							_id: this._id
 						}, {

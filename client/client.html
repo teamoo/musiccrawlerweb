@@ -53,23 +53,27 @@
 						{{# if linksFound}}
 							{{> linklist}}
 						{{else}}
-							{{#if session "filter_term_external"}}
-								<p class="lead">Für den ausgewählten Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
+							{{#if session "filter_id"}}
+								<p class="lead">Die angegebene Link-Adresse ist ungültig.</p>
 							{{else}}
-								<p class="lead">Für den ausgewählten Zeitraum wurden keine Links in der Datenbank gefunden.</p>
-							{{/if}}
+								{{#if session "filter_term_external"}}
+									<p class="lead">Für den ausgewählten Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
+								{{else}}
+									<p class="lead">Für den ausgewählten Zeitraum wurden keine Links in der Datenbank gefunden.</p>
+								{{/if}}
 
-							{{#if session "loading_results"}}
-								<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
-							{{else}}
-                                {{#if isExternalSearch}}
-                                    {{#if searchresultsFound}}
-                                        <p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
-                                        {{> searchresultlist}}
-                                    {{else}}
-                                        <p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
-                                    {{/if}}
-                                {{/if}}
+								{{#if session "loading_results"}}
+									<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
+								{{else}}
+									{{#if isExternalSearch}}
+										{{#if searchresultsFound}}
+											<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
+											{{> searchresultlist}}
+										{{else}}
+											<p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
+										{{/if}}
+									{{/if}}
+								{{/if}}
 							{{/if}}
 						{{/if}}
 					{{else}}
@@ -212,9 +216,13 @@
 			<th>
 				<input type="checkbox" id="select_all">
 			</th>
+			<th>
+				{{#if isAnyLinkSelectedSet}}
+					<i class="icon-share hand sharelinks"><i>
+				{{/if}}
+			</th>
+			<th></th>
 			{{#constant}}
-            <th></th>
-            <th></th>
 			<th><i class="icon-volume-up"></i></th>
 			<th>Name</th>
 			<th>URL</th>
@@ -272,9 +280,13 @@
 					<input type="checkbox" class="link_checkbox">
 				{{/if}}
 			</td>
-            <td style="width:14px;min-width:14px;max-width:14px">
-                <i class="icon-share hand sharelink"><i>
-            </td>
+			<td style="width:14px;min-width:14px;max-width:14px">
+				{{#if isLinkSelectedSet}}
+					<i class="icon-minus hand removelinkfromset"><i>
+				{{else}}
+					<i class="icon-plus hand addlinktoset"><i>
+				{{/if}}
+			</td>
 			<td style="width:14px;min-width:14px;max-width:14px">
 				{{#constant}}
 				<i class="icon-refresh hand refreshlink"></i>
@@ -691,14 +703,14 @@
 <div id="showShareLinkModal" class="modal">
   <div class="modal-header">
 	<button type="button" class="close cancel">&times;</button>
-    <h3 align="center">Link teilen</h3>
+    <h3 align="center">Links teilen</h3>
   </div>
   <div class="modal-body">
 	<form class="form-horizontal" id="sharelinkform">
-		<p>Bitte gib eine eMail-Adresse ein, an die der Link gesendet werden soll.</p>
+		<p>Bitte gib eine eMail-Adresse ein, an die die Links gesendet werden sollen.</p>
         <div class="input-append">
 			<input id="sharelinkaddress" class="input-xlarge siteurl" type="email" placeholder="{{getUsereMail}}" required autocomplete="off" data-provide="typeahead">
-			<button class="btn btn-primary" id="sharelink" disabled>Link teilen</button>
+			<button class="btn btn-primary" id="sharelink" disabled>Links teilen</button>
 		</div>
 	</form>
   </div>

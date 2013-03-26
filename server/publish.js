@@ -142,8 +142,23 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 		publishedsort = -0;
 	}
 	
-    if (filter_id && filter_id != null && filter_id != "")
-        return Links.find({_id: new Meteor.Collection.ObjectID(filter_id)});
+    if (filter_id)
+	{	
+		var aid;
+		try {
+			aid = new Meteor.Collection.ObjectID(filter_id);
+		}
+		catch (error) {
+			aid = "00000000000000000000000";
+		}
+		
+		var set = Sets.findOne({_id: aid});
+		
+		if (set)
+			return Links.find({_id: {$in:  _.map(set.links, function(linkid){ return new Meteor.Collection.ObjectID(linkid);})}});
+		else
+			return Links.find({_id: aid});
+	}
                
     var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
 	
