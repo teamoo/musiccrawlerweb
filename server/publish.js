@@ -142,6 +142,11 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 		publishedsort = -0;
 	}
 	
+	else {
+		likesort = 0;
+		publishedsort = -1;
+	}
+	
     if (filter_id)
 	{	
 		var aid;
