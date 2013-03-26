@@ -18,7 +18,6 @@ Meteor.publish("allUserData", function () {
     });
 });
 
-
 Meteor.publish("counts-by-timespan", function (filter_status) {
   var self = this;
   var initializing = true;  
@@ -96,7 +95,6 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
     		self.changed("counts", timespan, {count: count});
     	});
     }
-    // don't care about moved or changed
   });
 
   // Observe only returns after the initial added callbacks have
@@ -129,10 +127,22 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
 });
 
 // Publish filtered list to all clients
-Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites, filter_id) {
+Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites, filter_sort, filter_id) {
 //XXX wenn Meteor projections kann, downloaders nicht komplett zurückgeben, sondern mit uns drin oder komplett leer
-               
-    if (filter_id)
+	
+	if ((filter_sort) == "date_published")
+	{
+		likesort = 0;
+		publishedsort = -1;
+	}
+	
+	else if ((filter_sort) == "likes")
+	{
+		likesort = -1;
+		publishedsort = -0;
+	}
+	
+    if (filter_id && filter_id != null && filter_id != "")
         return Links.find({_id: new Meteor.Collection.ObjectID(filter_id)});
                
     var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
@@ -189,8 +199,9 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
             creator: 1
         },
         sort: {
-            date_published: -1,
-            name: 1
+			likes: likesort,
+            date_published: publishedsort,
+            _id: -1
         }
     }
 

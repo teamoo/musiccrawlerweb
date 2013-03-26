@@ -29,6 +29,7 @@ Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("selected_links", []);
 Session.setDefault("JDOnlineStatus", false);
 Session.setDefault("filter_id", undefined);
+Session.setDefault("filter_sort", "date_published");
 Session.setDefault("temp_link_id",undefined);
 
 
@@ -67,7 +68,7 @@ Deps.autorun(function () {
 		Session.set('sites_completed', true);
 	});
 	//music links
-	Meteor.subscribe('links', Session.get("filter_date"), Session.get("filter_status"), Session.get("filter_term"), Session.get("filter_limit"), Session.get("filter_skip"), Session.get("filter_show_already_downloaded"), Session.get("filter_sites"), Session.get("filter_id"), function onReady() {
+	Meteor.subscribe('links', Session.get("filter_date"), Session.get("filter_status"), Session.get("filter_term"), Session.get("filter_limit"), Session.get("filter_skip"), Session.get("filter_show_already_downloaded"), Session.get("filter_sites"), Session.get("filter_sort"), Session.get("filter_id"), function onReady() {
 		// set a session key to true to indicate that the
 		// subscription is completed.
 		Session.set('links_completed', true);
@@ -225,6 +226,14 @@ Template.navigation.isAnyLinkSelected = function () {
 
 Template.linklist.getNextLinksText = function () {
 	return (parseInt(Session.get("filter_skip"))+251) + "-" + (parseInt(Session.get("filter_skip"))+300);
+};
+
+Template.linklist.sortLikes = function () {
+	return Session.equals("filter_sort","likes");
+};
+
+Template.linklist.sortPublished = function () {
+	return Session.equals("filter_sort","date_published");
 };
 
 Template.linklist.getCurrentLinksText = function () {
@@ -1104,6 +1113,12 @@ Template.navigation.events({
 
 //Events für das Template der Linkliste
 Template.linklist.events = ({
+	'click #sort_like' : function (event, template) {
+		Session.set("filter_sort", "likes");
+	},
+	'click #sort_date_published' : function (event, template) {
+		Session.set("filter_sort", "date_published");
+	},
 	'click #paginate': function (event, template) {
 		$("html, body").animate({ scrollTop: 0 }, "fast");
              

@@ -219,8 +219,9 @@
 			<th>Name</th>
 			<th>URL</th>
 			<th></th>
+			{{/constant}}
 			<th>
-				<i class="icon-thumbs-up hand" id="sort_like"></i>
+				<i class="icon-thumbs-up hand" id="sort_like"></i>{{#if sortLikes}} <i class="icon-chevron-down" id="filter_links"></i>{{/if}}
 			</th>
 			<th>
 				{{#if currentUser.profile.showunknownlinks}}
@@ -229,9 +230,11 @@
 					<i class="icon-filter hand" id="filter_links"></i>
 				{{/if}}	
 			</th>
+			{{#constant}}
 			<th>Quelle</th>
 			<th>Größe</th>
-			<th style="text-align:right">Veröffentlicht</th>{{/constant}}
+			{{/constant}}
+			<th class="hand" style="text-align:right" id="sort_date_published">Veröffentlicht{{#if sortPublished}} <i class="icon-chevron-down" id="filter_links"></i>{{else}}&nbsp;&nbsp;&nbsp;&nbsp;{{/if}}</th>
 			{{#if session "filter_show_already_downloaded"}}
 			{{else}}
 				{{#if isAnyLinkSelected}}
