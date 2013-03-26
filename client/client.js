@@ -1260,11 +1260,11 @@ Template.linklist.rendered = function () {
 			placement: "right"
 		});
 		$('.refreshlink').tooltip({
-			title: "Linkinformationen (Größe, Titel, Online-Status) aktualisieren",
+			title: "Linkinformationen aktualisieren",
 			placement: "right"
 		});
 		$('#share_links').tooltip({
-			title: "Set (ausgewählte Links= teilen",
+			title: "Set (ausgewählte Links) teilen",
 			placement: "right"
 		});
 		$('.removelinkfromset').tooltip({
