@@ -1240,6 +1240,10 @@ Template.linklist.rendered = function () {
 			title: "Linkinformationen (Größe, Titel, Online-Status) aktualisieren",
 			placement: "right"
 		});
+		$('.sharelink').tooltip({
+			title: "Link teilen",
+			placement: "right"
+		});
 		$('.like').tooltip({
 			title: "Gefällt mir",
 			placement: "left"
@@ -1266,6 +1270,14 @@ Template.linklist.rendered = function () {
 		});
 		$('.hide_link').tooltip({
 			title: "Link ausblenden",
+			placement: "left"
+		});
+		$('#sort_like').tooltip({
+			title: "nach 'Gefällt mir' Angaben sortieren",
+			placement: "left"
+		});
+		$('#sort_date_published').tooltip({
+			title: "nach Datum der Veröffentlichung sortieren",
 			placement: "left"
 		});
 	}
