@@ -188,6 +188,12 @@ Template.page.linksFound = function () {
 	if (Links.findOne()) return true;
 	return false;
 };
+
+Template.page.linksFoundLessThanThree = function () {
+	if (Links.find().count() < 3) return true;
+	return false;
+};
+
 Template.page.isExternalSearch = function () {
 	return (!(Session.equals("filter_term", ".*")) && Meteor.user().profile.searchproviders.length);
 };
@@ -777,11 +783,13 @@ Template.navigation.events({
 			}
 		}
 		if (Meteor.user().profile.searchproviders.length && term && term != undefined && term != "") Session.set("loading_results", true);
+			Meteor.setTimeout(function () {
+				Session.set("loading_results", false);
+			}, 8000);
+		
 		Meteor.setTimeout(function () {
-			Session.set("loading_results", false);
-		}, 8000);
-		Meteor.setTimeout(function () {
-			if (Session.equals("links_completed", true) && !Links.findOne()) {
+			
+			if (Session.equals("links_completed", true) && (!Links.findOne() || (Links.find().count() < 3))) {
 				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");
 				if (filter_term_external != "") {
 					if (!Meteor.user().profile.searchproviders.length) {

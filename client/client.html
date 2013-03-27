@@ -52,6 +52,20 @@
 					{{#if session "links_completed"}}
 						{{# if linksFound}}
 							{{> linklist}}
+							{{# if linksFoundLessThanThree}}
+								{{#if session "loading_results"}}
+									<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
+								{{else}}
+									{{#if isExternalSearch}}
+										{{#if searchresultsFound}}
+											<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
+											{{> searchresultlist}}
+										{{else}}
+											<p class="lead">Es wurden leider keine externen Links gefunden.</p>
+										{{/if}}
+									{{/if}}
+								{{/if}}
+							{{/if}}
 						{{else}}
 							{{#if session "filter_id"}}
 								<p class="lead">Die angegebene Link-Adresse ist ungültig.</p>
