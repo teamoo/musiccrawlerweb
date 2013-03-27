@@ -131,7 +131,7 @@
 	                      			<li class="linkfilter hand"><a tabindex="-1" id="30">Letzte 30 Tage <span class="badge" id="30">{{session "links_count_30"}}</span></a></li>
 	                      			<li class="linkfilter hand"><a tabindex="-1" id="90">Letzte 90 Tage <span class="badge" id="90">{{session "links_count_90"}}</span></a></li>
 	                      			<li class="divider"></li>
-	                      			<li class="linkfilter hand"><a tabindex="-1" id="365">Letztes Jahr <span class="badge" id="365">{{session "links_count_365"}}</span></a></li>
+	                      			<li class="linkfilter hand"><a tabindex="-1" id="365">Letzte 365 Tage <span class="badge" id="365">{{session "links_count_365"}}</span></a></li>
 	                      	</ul>
 	                </li>
 					<li class="dropdown hidden-phone">
@@ -716,9 +716,11 @@
 	<form class="form-horizontal" id="sharelinkform">
 		<p>Bitte gib eine eMail-Adresse ein, an die die Links gesendet werden sollen.</p>
         <div class="input-append">
-			<input id="sharelinkaddress" class="input-xlarge siteurl" type="email" placeholder="{{getUsereMail}}" required autocomplete="off" data-provide="typeahead">
+			<input id="sharelinkaddress" class="input-xlarge siteurl" multiple="multiple" type="email" placeholder="{{getUsereMail}}" required autocomplete="off" data-provide="typeahead">
 			<button class="btn btn-primary" id="sharelink" disabled>Links teilen</button>
 		</div>
+		<br/>
+		<br/>
 	</form>
   </div>
   <div class="modal-footer status">

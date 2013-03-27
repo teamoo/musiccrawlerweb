@@ -1871,26 +1871,38 @@ Template.sitesDialog.rendered = function () {
 Template.shareLinkDialog.rendered = function() {
 	$('#sharelinkaddress').typeahead({items: 6, minLength: 3,
 		source: function(query, process) {
-			Meteor.call("getSuggestionsForEmail", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function(error, result) {
-				process(_.map(result, function(asuggest){ return asuggest.name + " - " + asuggest.email; }));
-			});	
+			searchterm = query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").split(",");
+			
+			if (searchterm[searchterm.length-1].trim().length > 2)
+				Meteor.call("getSuggestionsForEmail", ".*" + searchterm[searchterm.length-1].trim().replace(" ",".*") + ".*", function(error, result) {
+					process(_.map(result, function(asuggest){ return asuggest.name + " - " + asuggest.email; }));
+				});	
 		},
 		updater: function(name) {
+			var previousterms = this.query.substring(0,this.query.lastIndexOf(",")+1);
+			
 			var term = name.trim().split(" - ")[1];
 			$('#sharelink').prop("disabled", false);
+			
+			if (previousterms != "")
+				return previousterms +  term;
+				
 			return term;
         },
 		matcher: function(item) {
 			return true;
 		},
 		highlighter: function (item) {
-			var searchterms = this.query.trim().split(" ");
+			var searchterms = this.query.trim().split(",");
+			searchterms = searchterms[searchterms.length-1].split(" ");
+			
+			var newitem = item;
 			
 			for (var i = 0; i < searchterms.length; i++) {
 				var regex = new RegExp( '(' + searchterms[i] + ')', 'i' );
-				newitem = item.replace( regex, "<strong>$1</strong>" );
+				newitem = newitem.replace( regex, "<strong>$1</strong>" );
 			}
-
+			
             return newitem;
         },
 	});
