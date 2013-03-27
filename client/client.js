@@ -80,7 +80,7 @@ Deps.autorun(function () {
 	});
 	
 	
-	if (Session.get("counts_completed") === true)
+	if (Session.equals("counts_completed",true))
 	{
 		var query = Counts.find({});
 		var handle = query.observeChanges({
@@ -153,7 +153,7 @@ Meteor.startup(function () {
 	threshold = 10 * itemHeight + bottomMargin;
 	$(window).scroll(function () {
 		if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
-			if (Session.get("filter_limit") <= 4 && Session.get("wait_for_items") === false && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
+			if (Session.get("filter_limit") <= 4 && Session.equals("wait_for_items", false) && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
 				Session.set("wait_for_items", true);
 				Session.set("filter_limit", Session.get("filter_limit") + 1);
 				Meteor.setTimeout(function () {
@@ -216,7 +216,7 @@ Template.page.linksFound = function () {
 };
 
 Template.page.isExternalSearch = function () {
-	return ((Session.get("filter_term") !== ".*") && Meteor.user().profile.searchproviders.length);
+	return (!(Session.equals("filter_term", ".*")) && Meteor.user().profile.searchproviders.length);
 };
 
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
@@ -255,7 +255,7 @@ Template.linklist.hasMoreLinks = function () {
 };
 
 Template.linklist.isLinksLimit = function () {
-	return (Session.get("filter_limit") == 5);
+	return (Session.equals("filter_limit", 5));
 };
 
 Template.linklist.isAnyLinkSelected = function () {
@@ -337,7 +337,7 @@ Template.link.isLinkSelectedSet = function () {
 };
 // Funktion, die anhand der Source-URL im Link Objekt den zugehörigen Namen raussucht
 Template.link.getSourceName = function () {
-	if (Session.get("sites_completed") === true) {
+	if (Session.equals("sites_completed", true)) {
 		if (this.source && this.source !== null) {
 			var aSite = Sites.findOne({
 				feedurl: this.source
@@ -349,7 +349,7 @@ Template.link.getSourceName = function () {
 			if (aSite) return aSite.name;
 		}
 
-		if (Session.get("users_completed") === true) {
+		if (Session.equals("users_completed", true)) {
 			if (this.creator && this.creator !== null) {
 				var aUser = Meteor.users.findOne({
 					id: this.creator
@@ -702,7 +702,7 @@ Template.navigation.events({
 	'click #downloadbutton': function (event, template) {
 		var selected = Session.get("selected_links");
 		
-		if (selected.length && Session.get("JDOnlineStatus") === true) {
+		if (selected.length && Session.equals("JDOnlineStatus", true)) {
 			Session.set("progressActive", true);
 			Session.set("progress", 5);
 
@@ -773,7 +773,7 @@ Template.navigation.events({
 					var oldprogress = Session.get("progress");
 					Session.set("progress", parseInt(oldprogress + progressstep));
 					if (Session.get("progress") >= 99) {
-						if (Session.get("progressState") === "progress-warning") Session.set("progressState", "progress-danger");
+						if (Session.equals("progressState", "progress-warning")) Session.set("progressState", "progress-danger");
 						else Session.set("progressState", "progress-success");
 						Session.set("progress", 100);
 						Session.set("progressActive", false);
@@ -912,7 +912,7 @@ Template.navigation.events({
 		}, 8000);
 		
 		Meteor.setTimeout(function(){
-			if (Session.get("links_completed") === true && !Links.findOne()) {
+			if (Session.equals("links_completed",true) && !Links.findOne()) {
 				
 				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");;
 				
@@ -1686,7 +1686,7 @@ Template.searchresult.events({
 		event.target.disabled = true;
 		event.target.innerHTML = "<i class='icon-loader'></i>";
 
-		if (Session.get("JDOnlineStatus") === true)
+		if (Session.equals("JDOnlineStatus",true))
 		{
 			var grabberoption;
 			
