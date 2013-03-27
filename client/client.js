@@ -68,6 +68,7 @@ Deps.autorun(function () {
 		// set a session key to true to indicate that the
 		// subscription is completed.
 		Session.set('links_completed', true);
+		Session.set("wait_for_items", false);
 	});
 	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), function onReady() {
 		Session.set('counts_completed', true);
@@ -128,20 +129,32 @@ Meteor.startup(function () {
 			return 'Name darf nicht leer sein.';
 		}
 	};
-	bottomMargin = 49;
-	itemHeight = 30;
-	threshold = 10 * itemHeight + bottomMargin;
+
+	didScroll = false;
+	
 	$(window).scroll(function () {
-		if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
-			if (Session.get("filter_limit") <= 4 && Session.equals("wait_for_items", false) && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
-				Session.set("wait_for_items", true);
-				Session.set("filter_limit", Session.get("filter_limit") + 1);
-				Meteor.setTimeout(function () {
-					Session.set("wait_for_items", false);
-				}, 2500);
+		didScroll = true;
+	});
+ 
+	Meteor.setInterval(function() {
+		if (didScroll) {
+			didScroll = false;
+			
+			bottomMargin = 49;
+			itemHeight = 30;
+			threshold = 10 * itemHeight + bottomMargin;
+				
+			if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
+					if (Session.get("filter_limit") <= 4 && Session.equals("wait_for_items", false) && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
+						Session.set("wait_for_items", true);
+						Session.set("filter_limit", Session.get("filter_limit") + 1);
+						//Meteor.setTimeout(function () {
+							//Session.set("wait_for_items", false);
+						//}, 2500);
+					}
 			}
 		}
-	});
+	}, 300);
 });
 // Template-Helper für handlebars
 // represent ISO Date as String from now (e.g. 3 minute before, in 1 hour)
