@@ -1517,20 +1517,23 @@ Template.searchresult.events({
 			else grabberoption = "grabber0";
 			var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + this.url;
 			requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
+			
+			var self = event;
+			
 			Meteor.call("sendLinks", requeststring, function (error, result) {
 				if (error) {
-					if (event.target.className.indexOf("icon") === -1)
-						event.target.innerHTML = "<i class='icon-remove'></i>";
+					if (self.target.className.indexOf("icon") === -1)
+						self.target.innerHTML = "<i class='icon-remove'></i>";
 					else {
-						event.srcElement.outerHTML = "<i class='icon-remove'></i>";
+						self.srcElement.outerHTML = "<i class='icon-remove'></i>";
 					}
 					console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
 				}
 				if (result) {
-					if (event.target.className.indexOf("icon") === -1)
-						event.target.innerHTML = "<i class='icon-ok'></i>";
+					if (self.target.className.indexOf("icon") === -1)
+						self.target.innerHTML = "<i class='icon-ok'></i>";
 					else {
-						event.srcElement.outerHTML = "<i class='icon-ok'></i>";					
+						self.srcElement.outerHTML = "<i class='icon-ok'></i>";					
 					}
 				}
 			});
@@ -1557,20 +1560,23 @@ Template.searchresult.events({
 		var sitefilter = Session.get("filter_sites");
 		sitefilter.push(Meteor.user().id);
 		Session.set("filter_sites", sitefilter);
+		
+		var self = event;
+		
 		Meteor.call('createLink', this.url, this.stream_url, function (error, result) {
 			if (error) {
 				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
-				if (event.target.className.indexOf("icon") === -1)
-					event.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";
+				if (self.target.className.indexOf("icon") === -1)
+					self.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";
 				else {
-					event.srcElement.outerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";				
+					self.srcElement.outerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";				
 				}
 			}
 			if (result) {
-				if (event.target.className.indexOf("icon") === -1)
-					event.target.innerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";
+				if (self.target.className.indexOf("icon") === -1)
+					self.target.innerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";
 				else {
-					event.srcElement.outerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";				
+					self.srcElement.outerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";				
 				}
 				Meteor.call('updateLinkContributionCount');
 			}
