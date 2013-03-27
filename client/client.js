@@ -505,8 +505,9 @@ var openShareLinkDialog = function () {
 // Eventhandler
 //
 Template.page.events({
-	'click' : function (event, template) {	
-		$('#accountbtn').popover('hide');
+	'click' : function (event, template) {
+		if (event.target.className.indexOf("icon-user") === -1)
+			$('#accountbtn').popover('hide');
 		if (!(event.target.form && event.target.form.className == "newcommentform"))
 		{
 			if (event.target.id.indexOf("comment") === -1)
