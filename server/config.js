@@ -9,6 +9,7 @@ Meteor.AppCache.config({
   firefox: true,
   ie: true,
   android: true,
+  mobileSafari: true,
   safari: true
 });
 
