@@ -460,7 +460,9 @@ Template.sitesDialog.canCrawlAgain = function () {
 };
 
 Template.shareLinkDialog.getUsereMail = function () {
-    return Meteor.user().emails[0].address;
+	if (Meteor.user())
+		return Meteor.user().emails[0].address;
+	return "housemusicpro@googlemail.com"
 };
 
 // Funktion, um ein Eingabeelement auszuwählen und den Focus drauf zu setzen
@@ -1762,29 +1764,27 @@ Template.addSiteDialog.events({
 				case 401:
 					Session.set("status",
 						'<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + error.details + "</small></p>");
-										
+					
+					var siteid = error.reason;
+					
 					Meteor.setTimeout(function () {
 						Meteor.loginWithFacebook({
 							requestPermissions: ['user_groups']
 						}, function (error2) {
 							if (error2) {
 								if (error2.type == "OAuthException") {
-									alert("Du hast den Zugriff verweigert oder widerrufen.");
-									
+									alert("Du hast den Zugriff auf deine Facebook-Gruppen verweigert oder widerrufen.\nDeine Gruppen können nicht mehr durchsucht werden.");
 									Meteor.call("removeFacebookTokensForUser");
 								}
 							}
 							else {
 								Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
 								
-								Meteor.call("scheduleCrawl", newsiteurl, function (error3, result3) {
-									if (result3 && result3.data && result3.data.status == "ok") Sites.update({
-										groupid: newsiteurl.split("groups/")[1].split("/")[0]
-									}, {
-										$set: {
-											next_crawl: result3.data.jobid
-										}
-									});
+								Meteor.call("scheduleCrawl", siteid, function (error3, result3) {
+									if (result3 && result3.data && result3.data.status == "ok") 
+										console.log("Successfully scheduled crawl for Site " + newsiteurl);
+									if (error3)
+										console.log("Error scheduling crawl for Site " + newsiteurl);
 								});
 							}
 						});
@@ -1825,16 +1825,12 @@ Template.addSiteDialog.events({
 				}, 3000);
 				
 				if (newsite)
-					Meteor.call("scheduleCrawl", newsite.feedurl, function (error2, result2) {
-						if (error2) console.log("Error scheduling Crawl for Site " + newsite.url + " (" + error.details + ")");
- 						if (result2 && result2.data && result2.data.status == "ok") Sites.update({
-							_id: aid
-						}, {
-							$set: {
-								next_crawl: result2.data.jobid
-							}
-						});
-					});
+					Meteor.call("scheduleCrawl", newsite._id, function (error2, result2) {
+						if (result2 && result2.data && result2.data.status == "ok") 
+							console.log("Successfully scheduled crawl for Site " + newsite.url);
+						if (error2)
+							console.log("Error scheduling crawl for Site " + newsite.url);
+					});				
 			}
 		});
 		return false;
@@ -1954,28 +1950,21 @@ Template.sitesDialog.events({
 						if (error) {
 							event.target.className = "icon-remove";
 							console.log("Error scheduling crawl for site " + site.name + " (" + error.reason + ")");
-							$('#'+site._id+'_crawlstatus').removeClass("icon-search");
-							$('#'+site._id+'_crawlstatus').removeClass("hand");
-							$('#'+site._id+'_crawlstatus').addClass("icon-remove");
+							$('#'+site._id._str+'_crawlstatus').removeClass("icon-search");
+							$('#'+site._id._str+'_crawlstatus').removeClass("hand");
+							$('#'+site._id._str+'_crawlstatus').addClass("icon-remove");
 						}
 						if (result && result.data && result.data.status == "ok") {
-							Sites.update({
-								_id: site._id
-							}, {
-								$set: {
-									next_crawl: result.data.jobid
-								}
-							});
 							event.target.className = "icon-time";
-							$('#'+site._id+'_crawlstatus').removeClass("icon-search");
-							$('#'+site._id+'_crawlstatus').removeClass("hand");
-							$('#'+site._id+'_crawlstatus').addClass("icon-time");
+							$('#'+site._id._str+'_crawlstatus').removeClass("icon-search");
+							$('#'+site._id._str+'_crawlstatus').removeClass("hand");
+							$('#'+site._id._str+'_crawlstatus').addClass("icon-time");
 						}
 						else {
 							event.target.className = "icon-remove";
-							$('#'+site._id+'_crawlstatus').removeClass("icon-search");
-							$('#'+site._id+'_crawlstatus').removeClass("hand");
-							$('#'+site._id+'_crawlstatus').addClass("icon-remove");
+							$('#'+site._id._str+'_crawlstatus').removeClass("icon-search");
+							$('#'+site._id._str+'_crawlstatus').removeClass("hand");
+							$('#'+site._id._str+'_crawlstatus').addClass("icon-remove");
 						}
 					});
 				}
@@ -1993,13 +1982,6 @@ Template.sitesDialog.events({
 						console.log("Error scheduling crawl for site " + this.name + " (" + error.reason + ")");
 					}
 					if (result && result.data && result.data.status == "ok") {
-						Sites.update({
-							_id: this._id
-						}, {
-							$set: {
-								next_crawl: result.data.jobid
-							}
-						});
 						event.target.className = "icon-time";
 					}
 					else event.target.className = "icon-remove";
@@ -2011,13 +1993,6 @@ Template.sitesDialog.events({
 						console.log("Error canceling crawl for site " + this.name + " (" + error.reason + ")");
 					}
 					if (result && result.data && result.data.status == "ok") {
-						Sites.update({
-							_id: this._id
-						}, {
-							$set: {
-								next_crawl: undefined
-							}
-						});
 						event.target.className = "icon-search";
 					}
 					else event.target.className = "icon-remove";

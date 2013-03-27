@@ -180,6 +180,10 @@ textarea#new_comment, #postcomment {
 	outline-color:white;
 }
 
-.typeahead  {
+#searchform > .typeahead  {
 	width: 320px;
+}
+
+#sharelinkform > div > .typeahead {
+	width: 385px;
 }
