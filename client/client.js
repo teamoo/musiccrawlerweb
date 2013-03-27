@@ -1,5 +1,4 @@
 //TODO: Search does not always start
-
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
@@ -10,7 +9,7 @@ Session.setDefault("counts_completed", false);
 Session.setDefault("status", undefined);
 Session.setDefault("selected_links", []);
 Session.setDefault("JDOnlineStatus", false);
-Session.setDefault("temp_set",[]);
+Session.setDefault("temp_set", []);
 Session.setDefault("showAccountSettingsDialog", false);
 Session.setDefault("showAddLinkDialog", false);
 Session.setDefault("showAddSiteDialog", false);
@@ -21,7 +20,7 @@ Session.setDefault("progressActive", false);
 Session.setDefault("progress", undefined);
 Session.setDefault("progressState", undefined);
 Session.setDefault("selected_navitem", 14);
-Session.setDefault("filter_date", new Date(new Date().setDate(new Date().getDate()-14)));
+Session.setDefault("filter_date", new Date(new Date().setDate(new Date().getDate() - 14)));
 Session.setDefault("filter_status", ["on"]);
 Session.setDefault("filter_term", ".*");
 Session.setDefault("filter_limit", 1);
@@ -31,7 +30,6 @@ Session.setDefault("temp_filter_sites", []);
 Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("filter_id", undefined);
 Session.setDefault("filter_sort", "date_published");
-
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
 	/*Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
@@ -39,29 +37,26 @@ Session.setDefault("filter_sort", "date_published");
 			Session.set("links_count_" + timespan, count);
 	});*/
 });
-
 Meteor.Router.add({
-    '/link/:id': function(id) {
-        Session.set('filter_id', id);
-    },
-	'/set/:id': function(id) {
-        Session.set('filter_id', id);
-    },
-    '/': 'page',
-    '*': 'page'
+	'/link/:id': function (id) {
+		Session.set('filter_id', id);
+	},
+	'/set/:id': function (id) {
+		Session.set('filter_id', id);
+	},
+	'/': 'page',
+	'*': 'page'
 });
-
 //local Collection for external search results
 SearchResults = new Meteor.Collection(null);
 //Subscriptions
 Deps.autorun(function () {
 	//Admin-Flag
 	Meteor.subscribe('userData');
-	
 	//User-Names and Facebook-IDs for display purposes
 	Meteor.subscribe('allUserData', function onReady() {
 		Session.set('users_completed', true);
-	});	
+	});
 	//music source sites	
 	Meteor.subscribe('sites', function onReady() {
 		// set a session key to true to indicate that the subscription is
@@ -74,80 +69,65 @@ Deps.autorun(function () {
 		// subscription is completed.
 		Session.set('links_completed', true);
 	});
-	
 	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), function onReady() {
 		Session.set('counts_completed', true);
 	});
-	
-	
-	if (Session.equals("counts_completed",true))
-	{
+	if (Session.equals("counts_completed", true)) {
 		var query = Counts.find({});
-		var handle = query.observeChanges({
-		  added: function (id, count) {
-		    [1, 14, 30, 90, 365].forEach(function (timespan) {
-		    	var item = Counts.findOne({_id: timespan})
-		    	if (item)
-		    		Session.set("links_count_" + timespan, item.count);
-		    });
-		  },
-		  changed: function () {
-		    [1, 14, 30, 90, 365].forEach(function (timespan) {
-		    	var item = Counts.findOne({_id: timespan})
-		    	if (item)
-		    		Session.set("links_count_" + timespan, item.count);
-		    }); 
-		  }
+		query.observeChanges({
+			added: function (id, count) {
+				[1, 14, 30, 90, 365].forEach(function (timespan) {
+					var item = Counts.findOne({
+						_id: timespan
+					});
+					if (item) Session.set("links_count_" + timespan, item.count);
+				});
+			},
+			changed: function () {
+				[1, 14, 30, 90, 365].forEach(function (timespan) {
+					var item = Counts.findOne({
+						_id: timespan
+					});
+					if (item) Session.set("links_count_" + timespan, item.count);
+				});
+			}
 		});
 	}
 });
-
 //
 // Startup function
 Meteor.startup(function () {
-
 	activateInput($('#searchfield'));
-		
 	Meteor.setTimeout(function () {
 		// if user profile is already available, set session varibles for filtering links just for specific sites
 		// and showing already downloaded items. They are not reactive because we need to change them when searching
-		if (Meteor.user() && Meteor.user().profile)
-		{
+		if (Meteor.user() && Meteor.user().profile) {
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
-			
-			if (Meteor.user().profile.showunknownlinks === true)
-				Session.set("filter_status", ["on","unknown"])
+			if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
 			else {
-				Session.set("filter_status", ["on"])
+				Session.set("filter_status", ["on"]);
 			}
-			
-			if(Meteor.user().profile.filteredsites !== undefined)
-			{
+			if (Meteor.user().profile.filteredsites !== undefined) {
 				Session.set("filter_sites", Meteor.user().profile.filteredsites);
 				Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
 			}
 		}
-	
 		// update user IP and check if JD Remote is responding
 		refreshJDOnlineStatus();
-		//XXX when Meteor can provide the resume login event, do this only there
 		// Add user facebook token to groups of the user that should be crawled, so the crawl will work
 		Meteor.call('updateFacebookTokensForUser');
 		// Update the number of links and sites the user contributed to the app and save it in his profile
 		Meteor.call('updateLinkContributionCount');
 	}, 2500);
-	
 	//initialize soundcloud API for external search with app key
 	SC.initialize({
-	  client_id: Meteor.settings.public.soundcloud.client_id
+		client_id: Meteor.settings.public.soundcloud.client_id
 	});
-	
-	$.fn.editable.defaults.validate = function(value) {
-		if($.trim(value) == '') {
-		     return 'Name darf nicht leer sein.';
-		 }
+	$.fn.editable.defaults.validate = function (value) {
+		if ($.trim(value) == '') {
+			return 'Name darf nicht leer sein.';
+		}
 	};
-	
 	bottomMargin = 49;
 	itemHeight = 30;
 	threshold = 10 * itemHeight + bottomMargin;
@@ -163,7 +143,6 @@ Meteor.startup(function () {
 		}
 	});
 });
-
 // Template-Helper für handlebars
 // represent ISO Date as String from now (e.g. 3 minute before, in 1 hour)
 // usage: {{dateFormatPretty creation_date}}
@@ -176,27 +155,24 @@ Handlebars.registerHelper('dateFormatPretty', function (context) {
 	return context; // moment plugin not available. return data as is.;
 });
 Handlebars.registerHelper('millisecondsFormatPretty', function (context) {
-    if (window.moment) {
-        moment().lang('de');
-        if (context && moment(context).isValid()) return moment(context).format('mm:ss') + " min.";
-        return "unbekannt";
-    }
-    return context; // moment plugin not available. return data as is.;
+	if (window.moment) {
+		moment().lang('de');
+		if (context && moment(context).isValid()) return moment(context).format('mm:ss') + " min.";
+		return "unbekannt";
+	}
+	return context; // moment plugin not available. return data as is.;
 });
 Handlebars.registerHelper('searchProviderEnabled', function (context) {
-	if (Meteor.user() && Meteor.user().profile)
-	{
+	if (Meteor.user() && Meteor.user().profile) {
 		return _.contains(Meteor.user().profile.searchproviders, context);
 	}
 	return true;
 });
-
 // Template-Helper für handlebars
 // Session Objekt in Handlebars direkt nutzen
 Handlebars.registerHelper('session', function (input) {
 	return Session.get(input);
 });
-
 //
 // Handlebars-Funktionen
 //
@@ -204,99 +180,82 @@ Handlebars.registerHelper('session', function (input) {
 Template.page.notConnected = function () {
 	return !Meteor.status().connected;
 };
-
 Template.page.searchresultsFound = function () {
 	if (SearchResults.findOne()) return true;
 	return false;
 };
-
 Template.page.linksFound = function () {
 	if (Links.findOne()) return true;
 	return false;
 };
-
 Template.page.isExternalSearch = function () {
 	return (!(Session.equals("filter_term", ".*")) && Meteor.user().profile.searchproviders.length);
 };
-
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
 Template.navigation.isAnyLinkSelected = function () {
 	if (Session.get("selected_links").length) return true;
 	return false;
 };
-
 Template.linklist.isAnyLinkSelectedSet = function () {
 	if (Session.get("temp_set").length) return true;
 	return false;
 };
-
 Template.linklist.getNextLinksText = function () {
-	return (parseInt(Session.get("filter_skip"))+251) + "-" + (parseInt(Session.get("filter_skip"))+300);
+	return (parseInt(Session.get("filter_skip")) + 251) + "-" + (parseInt(Session.get("filter_skip")) + 300);
 };
-
 Template.linklist.sortLikes = function () {
-	return Session.equals("filter_sort","likes");
+	return Session.equals("filter_sort", "likes");
 };
-
 Template.linklist.sortPublished = function () {
-	return Session.equals("filter_sort","date_published");
+	return Session.equals("filter_sort", "date_published");
 };
-
 Template.linklist.getCurrentLinksText = function () {
-	if (Links.find().count() === 1)
-		return undefined;
-	if (Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize))
-		return (parseInt(Session.get("filter_skip"))+1) + "-" + (parseInt(Session.get("filter_skip"))+250);
-	return (parseInt(Session.get("filter_skip"))+1) + "-" + (parseInt(Session.get("filter_skip"))+Links.find().count());
+	if (Links.find().count() === 1) return undefined;
+	if (Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) return (parseInt(Session.get("filter_skip")) + 1) + "-" + (parseInt(Session.get("filter_skip")) + 250);
+	return (parseInt(Session.get("filter_skip")) + 1) + "-" + (parseInt(Session.get("filter_skip")) + Links.find().count());
 };
-
 Template.linklist.hasMoreLinks = function () {
 	return (Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize));
 };
-
 Template.linklist.isLinksLimit = function () {
 	return (Session.equals("filter_limit", 5));
 };
-
 Template.linklist.isAnyLinkSelected = function () {
 	if (Session.get("selected_links").length) return true;
 	return false;
 };
-
 // Funktion um den letzten Suchbegriff wieder ins Input Feld einzutragen
 Template.navigation.getLastSearchTerm = function () {
 	var lastterm = Session.get("filter_term");
-	if (lastterm != "" && lastterm != ".*") return lastterm.replace(/\.\*/g, "").replace(/\\/g,"");
+	if (lastterm != "" && lastterm != ".*") return lastterm.replace(/\.\*/g, "").replace(/\\/g, "");
 	return undefined;
 };
 // Funktion um die Anzahl der Seiten als badge anzuzeigen
 Template.navigation.getSiteCount = function () {
 	return Sites.find({}).count();
 };
-
 // Links-Outlet: alle Links, die gerade in der Subscription sind
 Template.linklist.links = function () {
-	return Links.find({},{sort: {date_published: -1}});
+	return Links.find({}, {
+		sort: {
+			date_published: -1
+		}
+	});
 };
-
 Template.searchresultlist.searchresults = function () {
 	return SearchResults.find({});
 };
-
 Template.link.isNotAlreadyDownloaded = function () {
-	if (this.downloaders && this.downloaders.length)
-		return !_.contains(this.downloaders, Meteor.userId());
+	if (this.downloaders && this.downloaders.length) return !_.contains(this.downloaders, Meteor.userId());
 	return true;
 };
-
 // Link-Größe von Kilobyte in MB umwandeln
 Template.link.getSizeinMB = function () {
-	if (this.size && this.size > 0)
-	{
+	if (this.size && this.size > 0) {
 		var sizeinMB = Math.round(this.size / 1048576);
-		if (Math.ceil(Math.log(sizeinMB +1) / Math.LN10) > 3) {
+		if (Math.ceil(Math.log(sizeinMB + 1) / Math.LN10) > 3) {
 			var sizeinGB = sizeinMB / 1024;
-			return sizeinGB.toFixed(1).toString().replace(".",",") + " GB";
+			return sizeinGB.toFixed(1).toString().replace(".", ",") + " GB";
 		}
 		return sizeinMB + " MB";
 	}
@@ -316,22 +275,15 @@ Template.link.getStatusIcon = function () {
 // Funktion um zu bestimmen, ob ein Link ausgewählt ist
 Template.link.isLinkSelected = function () {
 	var selected = Session.get("selected_links");
-	
-	for (var i=0;i<selected.length;i++)
-	{ 
-		if (EJSON.equals(this._id,selected[i]))
-			return true;
+	for (var i = 0; i < selected.length; i++) {
+		if (EJSON.equals(this._id, selected[i])) return true;
 	}
 	return false;
 };
-
 Template.link.isLinkSelectedSet = function () {
 	var selected = Session.get("temp_set");
-	
-	for (var i=0;i<selected.length;i++)
-	{ 
-		if (EJSON.equals(this._id,selected[i]))
-			return true;
+	for (var i = 0; i < selected.length; i++) {
+		if (EJSON.equals(this._id, selected[i])) return true;
 	}
 	return false;
 };
@@ -348,21 +300,18 @@ Template.link.getSourceName = function () {
 			});
 			if (aSite) return aSite.name;
 		}
-
 		if (Session.equals("users_completed", true)) {
 			if (this.creator && this.creator !== null) {
 				var aUser = Meteor.users.findOne({
 					id: this.creator
 				});
-				if (aUser && aUser.profile)
-					return aUser.profile['first_name'];
+				if (aUser && aUser.profile) return aUser.profile['first_name'];
 			}
 		}
 	}
 	return undefined;
 };
-
-Template.link.isPlayable = function () {	
+Template.link.isPlayable = function () {
 	if (this.status != 'off') {
 		switch (this.hoster) {
 			case "soundcloud.com":
@@ -372,8 +321,7 @@ Template.link.isPlayable = function () {
 			case "zippyshare.com":
 				return true;
 			case "muzon.ws":
-				if (this.stream_url)
-					return true;
+				if (this.stream_url) return true;
 				return false;
 			case "ex.fm":
 				return true;
@@ -385,17 +333,16 @@ Template.link.isPlayable = function () {
 	}
 	return false;
 };
-
-Template.searchresult.isPlayable = function () {	
+Template.searchresult.isPlayable = function () {
 	if (this.status != 'off') {
 		switch (this.hoster) {
 			case "soundcloud.com":
 				return true;
 			case "youtube.com":
 				return true;
-			case "muzon.ws": case "zippyshare.com":
-				if (this.stream_url)
-					return true;
+			case "muzon.ws":
+			case "zippyshare.com":
+				if (this.stream_url) return true;
 				return false;
 			case "ex.fm":
 				return true;
@@ -407,8 +354,7 @@ Template.searchresult.isPlayable = function () {
 	}
 	return false;
 };
-
-Template.searchresult.getExternalSourceIcon = function() {
+Template.searchresult.getExternalSourceIcon = function () {
 	if (this.hoster == "zippyshare.com") return "<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='zippyshare.png'></a>";
 	if (this.hoster == "soundcloud.com") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>";
 	if (this.hoster == "muzon.ws") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>";
@@ -420,21 +366,16 @@ Template.searchresult.getExternalSourceIcon = function() {
 Template.sitesDialog.sites = function () {
 	return Sites.find({});
 };
-
 Template.filterSitesDialog.sites = function () {
 	return Sites.find({});
 };
-
 Template.filterSitesDialog.isSiteFiltered = function () {
 	return _.contains(Session.get("temp_filter_sites"), this.feedurl);
 };
-
 Template.filterSitesDialog.noSitefiltered = function () {
-	if (Session.get("temp_filter_sites"))
-		return !Session.get("temp_filter_sites").length;
+	if (Session.get("temp_filter_sites")) return !Session.get("temp_filter_sites").length;
 	return true;
 };
-
 // Funktion, um den Feed-Typ per Icon zu symbolisieren
 Template.sitesDialog.getFeedTypeIcon = function (data) {
 	switch (this.type) {
@@ -458,13 +399,10 @@ Template.sitesDialog.canCrawlAgain = function () {
 	if ((new Date() - this.last_crawled) > (1000 * 60 * 60 * 24)) return true;
 	return false;
 };
-
 Template.shareLinkDialog.getUsereMail = function () {
-	if (Meteor.user())
-		return Meteor.user().emails[0].address;
-	return "housemusicpro@googlemail.com"
+	if (Meteor.user()) return Meteor.user().emails[0].address;
+	return "housemusicpro@googlemail.com";
 };
-
 // Funktion, um ein Eingabeelement auszuwählen und den Focus drauf zu setzen
 var activateInput = function (input) {
 	input.focus();
@@ -472,49 +410,31 @@ var activateInput = function (input) {
 };
 // Session Variablen, um Dialoge anzuzeigen
 var openAccountSettingsDialog = function () {
-	if (Meteor.status().connected)
-		Session.set("showAccountSettingsDialog", true);
+	if (Meteor.status().connected) Session.set("showAccountSettingsDialog", true);
 };
-
 var openAddLinkDialog = function () {
-	if (Meteor.status().connected)
-		Session.set("showAddLinkDialog", true);
+	if (Meteor.status().connected) Session.set("showAddLinkDialog", true);
 };
-
 var openAddSiteDialog = function () {
-	if (Meteor.status().connected)
-		Session.set("showAddSiteDialog", true);
+	if (Meteor.status().connected) Session.set("showAddSiteDialog", true);
 };
-
 var openSitesDialog = function () {
-	if (Meteor.status().connected)
-		Session.set("showSitesDialog", true);
+	if (Meteor.status().connected) Session.set("showSitesDialog", true);
 };
-
 var openFilterSitesDialog = function () {
-	if (Meteor.status().connected)
-		Session.set("showFilterSitesDialog", true);
+	if (Meteor.status().connected) Session.set("showFilterSitesDialog", true);
 };
-
 var openShareLinkDialog = function () {
-	if (Meteor.status().connected)
-        Session.set("showShareLinkDialog", true);
+	if (Meteor.status().connected) Session.set("showShareLinkDialog", true);
 };
-
 //
 // Eventhandler
 //
 Template.page.events({
-	'click' : function (event, template) {
-		if (event.target.className.indexOf("icon-user") === -1)
-			$('#accountbtn').popover('hide');
-		if (!(event.target.form && event.target.form.className == "newcommentform"))
-		{
-			if (event.target.id.indexOf("comment") === -1)
-				if (event.target.className.indexOf("popover") === -1)
-					if (event.target.className.indexOf("comment") === -1)
-						if (event.target.outerHTML.indexOf("comment") === -1)
-						{
+	'click': function (event, template) {
+		if (event.target.className.indexOf("icon-user") === -1) $('#accountbtn').popover('hide');
+		if (!(event.target.form && event.target.form.className == "newcommentform")) {
+			if (event.target.id.indexOf("comment") === -1) if (event.target.className.indexOf("popover") === -1) if (event.target.className.indexOf("comment") === -1) if (event.target.outerHTML.indexOf("comment") === -1) {
 							$('.icon-comment').popover('hide');
 						}
 		}
@@ -533,13 +453,11 @@ Template.connectionLostWarning.events({
 		event.preventDefault();
 		event.target.disabled = true;
 		event.target.innerHTML = "<i class='icon-loader'></i> Warten";
-		
 		Meteor.setTimeout(function () {
 			event.target.innerHTML = "<i class='icon-warning-sign'></i> Verbindung verloren";
 		}, 10000);
 	}
 });
-
 // Klick auf Login-Button
 Template.user_loggedout.events({
 	'click #login': function () {
@@ -554,27 +472,23 @@ Template.user_loggedout.events({
 			} else {
 				Meteor.call('updateFacebookTokensForUser');
 			}
-
 			// wenn die User-IP geupdate werden soll...
 			if (Meteor.user() && Meteor.user().profile.autoupdateip === true) {
 				// dann rufen wir die neue IP ab und speichern sie im Profil
-				Meteor.http.call("GET",
-					"http://api.hostip.info/get_json.php", function (
-				error2, result) {
+				Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error2, result) {
 					if (error2) console.log("Fehler beim ermitteln der Benutzer-IP");
 					if (result && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
-						_id: Meteor.userId()
-					}, {
-						$set: {
-							'profile.ip': result.data.ip
-						}
-					});
+							_id: Meteor.userId()
+						}, {
+							$set: {
+								'profile.ip': result.data.ip
+							}
+						});
 				});
 			}
 		});
 	}
 });
-
 // Logout-Eventhandler
 Template.user_loggedin.events({
 	'click #logout': function () {
@@ -582,7 +496,6 @@ Template.user_loggedin.events({
 			if (error) {
 				alert("Fehler beim Ausloggen", "Beim Ausloggen ist ein unerwarteter Fehler aufgetreten.");
 			}
-
 		});
 	},
 	//Accounteinstellungen anzeigen
@@ -603,58 +516,52 @@ Template.user_loggedin.events({
 		return false;
 	}
 });
-
 Template.navigation.rendered = function () {
-	$('#searchfield').typeahead({items: 6, minLength: 3,
-		source: function(query, process) {
-			Meteor.call("getSuggestionsForSearchTerm", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function(error, result) {
-				if (result.length)
-					result.unshift(query.trim());
+	$('#searchfield').typeahead({
+		items: 6,
+		minLength: 3,
+		source: function (query, process) {
+			Meteor.call("getSuggestionsForSearchTerm", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
+				if (result.length) result.unshift(query.trim());
 				process(result);
-			});	
+			});
 		},
-		updater: function(name) {
+		updater: function (name) {
 			SearchResults.remove({});
 			var term = name.trim();
 			var prev_filter_date = Session.get("filter_date");
 			var prev_filter_skip = Session.get("filter_skip");
 			Session.set("links_completed", false);
-            Session.set("filter_id",undefined);
+			Session.set("filter_id", undefined);
 			Session.set("prev_filter_skip", prev_filter_skip);
 			Session.set("prev_filter_date", prev_filter_date);
 			Session.set("filter_show_already_downloaded", true);
-			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-365)));
+			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
 			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
 			Session.set("filter_skip", 0);
 			Session.set("filter_sites", []);
-            Meteor.Router.to("/");
+			Meteor.Router.to("/");
 			return name;
-        },
-		matcher: function(item) {
+		},
+		matcher: function (item) {
 			return true;
 		},
 		highlighter: function (item) {
 			var searchterms = this.query.trim().split(" ");
-			
 			for (var i = 0; i < searchterms.length; i++) {
-				var regex = new RegExp( '(' + searchterms[i] + ')', 'i' );
-				newitem = item.replace( regex, "<strong>$1</strong>" );
+				var regex = new RegExp('(' + searchterms[i] + ')', 'i');
+				newitem = item.replace(regex, "<strong>$1</strong>");
 			}
-
-            return newitem;
-        },
+			return newitem;
+		},
 	});
-	
 	$('li.linkfilter').removeClass("active");
 	var activenumber = parseInt(Session.get("selected_navitem"));
 	$('li.linkfilter #' + activenumber).parent().addClass("active");
-
 	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>";
 	strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
-	
-	if (Meteor.userId())
-		$('#brand').popover({
+	if (Meteor.userId()) $('#brand').popover({
 			animation: true,
 			placement: "bottom",
 			trigger: "hover",
@@ -666,12 +573,11 @@ Template.navigation.rendered = function () {
 				hide: 3000
 			}
 		});
-	
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
 		if ($('#downloadbutton').attr("disabled") == "disabled") $('#downloadbutton').tooltip({
-			title: "Dein JDownloader ist nicht erreichbar oder du hast keinen Link ausgewählt. Bitte wähle einen Link aus und überprüfe ggf. dein Profil.",
-			placement: "bottom"
-		});
+				title: "Dein JDownloader ist nicht erreichbar oder du hast keinen Link ausgewählt. Bitte wähle einen Link aus und überprüfe ggf. dein Profil.",
+				placement: "bottom"
+			});
 		else {
 			$('#downloadbutton').tooltip({
 				title: "Alle ausgewählten Links an JDownloader zum Download übergeben",
@@ -680,7 +586,6 @@ Template.navigation.rendered = function () {
 		}
 	}
 };
-
 //Eventhandler für die Navigationsleiste
 Template.navigation.events({
 	//Seite hinzufügen Dialog öffnen
@@ -701,11 +606,9 @@ Template.navigation.events({
 	//Links downloaden Aktion ausführen
 	'click #downloadbutton': function (event, template) {
 		var selected = Session.get("selected_links");
-		
 		if (selected.length && Session.equals("JDOnlineStatus", true)) {
 			Session.set("progressActive", true);
 			Session.set("progress", 5);
-
 			var selectedurls = _.pluck(Links.find({
 				_id: {
 					$in: selected
@@ -716,38 +619,26 @@ Template.navigation.events({
 					url: 1
 				}
 			}).fetch(), 'url');
-
 			var urls_per_request = 20;
 			var times = parseInt(Math.ceil(selectedurls.length / urls_per_request));
 			var progressstep = 95 / (times * 2);
-
 			var errorcount = 0;
-
 			for (var i = 1; i <= times; i++) {
 				Session.set("progressState", "progress-info");
 				var oldprogress = Session.get("progress");
 				Session.set("progress", parseInt(oldprogress + progressstep));
-
 				var sel_links = selectedurls.splice(0, urls_per_request);
-
 				var links_chained = _.reduce(sel_links, function (memo, aUrl) {
 					return String(memo + " " + aUrl);
 				});
-
 				var grabberoption;
-
-				if (links_chained.match(/youtube|vimeo/i))
-					grabberoption = "grabber1";
+				if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 				else grabberoption = "grabber0";
-
 				var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
-
 				requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
-
 				Meteor.call("sendLinks", requeststring, function (error, result) {
 					if (error) {
 						errorcount++;
-
 						if (errorcount > 2) {
 							Session.set("progressState", "progress-danger");
 							Session.set("progress", 100);
@@ -762,14 +653,11 @@ Template.navigation.events({
 						Session.set("progressState", "progress-warning");
 					}
 					if (result) {
-						Meteor.call("markLinksAsDownloadedByURL", sel_links, function (error, result) {
-							if (result)
-								console.log("Error updating Links after Download.");
-							if (error)
-								console.log("Error updating Links after Download.");
+						Meteor.call("markLinksAsDownloadedByURL", sel_links, function (error2, result2) {
+							if (result2) console.log("Error updating Links after Download.");
+							if (error2) console.log("Error updating Links after Download.");
 						});
 					}
-
 					var oldprogress = Session.get("progress");
 					Session.set("progress", parseInt(oldprogress + progressstep));
 					if (Session.get("progress") >= 99) {
@@ -781,7 +669,7 @@ Template.navigation.events({
 							Session.set("progress", undefined);
 							Session.set("progressState", undefined);
 						}, 3500);
-						Session.set("selected_links",[]);
+						Session.set("selected_links", []);
 					}
 				});
 			}
@@ -790,7 +678,6 @@ Template.navigation.events({
 	//Link-URLs kopieren Aktion ausführen
 	'click #copybutton': function (event, template) {
 		var selected = Session.get("selected_links");
-
 		if (selected.length) {
 			var selectedurls = _.pluck(Links.find({
 				_id: {
@@ -802,15 +689,11 @@ Template.navigation.events({
 					url: 1
 				}
 			}).fetch(), 'url');
-			
 			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
-				if (result)
-					console.log("Error updating Links while copying to clipboard.");
-				if (error)
-					console.log("Error updating Links while copying to clipboard.");
+				if (result) console.log("Error updating Links while copying to clipboard.");
+				if (error) console.log("Error updating Links while copying to clipboard.");
 			});
-			
-			Session.set("selected_links",[]);
+			Session.set("selected_links", []);
 			writeConsole(_.reduce(selectedurls, function (memo, aUrl) {
 				return memo + "<br/>" + aUrl;
 			}));
@@ -826,130 +709,103 @@ Template.navigation.events({
 	},
 	'click .linkfilter': function (event, template) {
 		event.preventDefault();
-		
-		$("html, body").animate({ scrollTop: 0 }, "fast");
-		Session.set("links_completed", false);        
-        Session.set("filter_id",undefined);
+		$("html, body").animate({
+			scrollTop: 0
+		}, "fast");
+		Session.set("links_completed", false);
+		Session.set("filter_id", undefined);
 		var sitefilter = Session.get("filter_sites");
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
-		Session.set("filter_sites",_.without(sitefilter,Meteor.user().id));
+		Session.set("filter_sites", _.without(sitefilter, Meteor.user().id));
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
-		Session.set("filter_term",".*");
+		Session.set("filter_term", ".*");
 		Session.set("filter_term_external", undefined);
-		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-event.target.id)));
+		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - event.target.id)));
 		Session.set("selected_navitem", parseInt(event.target.id));
 		$('li.linkfilter').removeClass("active");
 		var activenumber = parseInt(Session.get("selected_navitem"));
 		$('li.linkfilter #' + activenumber).parent().addClass("active");
 		SearchResults.remove({});
-        Meteor.Router.to("/");
-	},	
+		Meteor.Router.to("/");
+	},
 	'submit #searchform': function (event, template) {
-		
 		event.preventDefault();
 		event.stopPropagation();
 		Session.set("links_completed", false);
-        Session.set("filter_id",undefined);
-		
-        var term = template.find('#searchfield').value.trim();
-		
+		Session.set("filter_id", undefined);
+		var term = template.find('#searchfield').value.trim();
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
-		
 		var sitefilter = Session.get("filter_sites");
-		Session.set("filter_sites",_.without(sitefilter,Meteor.user().id));
-		
+		Session.set("filter_sites", _.without(sitefilter, Meteor.user().id));
 		if (term && term != undefined && term != "") {
 			SearchResults.remove({});
 			var prev_filter_date = Session.get("filter_date");
 			var prev_filter_skip = Session.get("filter_skip");
 			Session.set("prev_filter_skip", prev_filter_skip);
 			Session.set("prev_filter_date", prev_filter_date);
-			Session.set("filter_sites",[]);
+			Session.set("filter_sites", []);
 			Session.set("filter_show_already_downloaded", true);
-			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-365)));
+			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
 			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
 		} else {
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 			Session.set("filter_term", ".*");
-                           
-            if (Meteor.user().profile.filteredsites)
-            {
+			if (Meteor.user().profile.filteredsites) {
 				Session.set("filter_sites", Meteor.user().profile.filteredsites);
 				Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
 			}
-			
 			if (Session.get("prev_filter_date")) {
 				Session.set("filter_date", Session.get("prev_filter_date"));
 				Session.set("filter_skip", Session.get("prev_filter_skip"));
-				Session.set("selected_navitem", Math.round((new Date().getTime()-Session.get("prev_filter_date").getTime())/(24*3600*1000)));
+				Session.set("selected_navitem", Math.round((new Date().getTime() - Session.get("prev_filter_date").getTime()) / (24 * 3600 * 1000)));
 				$('li.linkfilter').removeClass("active");
 				var activenumber = parseInt(Session.get("selected_navitem"));
 				$('li.linkfilter #' + activenumber).parent().addClass("active");
-			}
-			else {
-				Session.set("filter_date", new Date(new Date().setDate(new Date().getDate()-14)));
+			} else {
+				Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 14)));
 				Session.set("selected_navitem", 14);
 				$('li.linkfilter').removeClass("active");
 				var activenumber = Session.get("selected_navitem");
 				$('li.linkfilter #' + activenumber).parent().addClass("active");
 			}
-
-			if (Meteor.user().profile.showunknownlinks === true)
-				Session.set("filter_status", ["on","unknown"])
+			if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
 			else {
-				Session.set("filter_status", ["on"])
+				Session.set("filter_status", ["on"]);
 			}
 		}
-		
-		if (Meteor.user().profile.searchproviders.length && term && term != undefined && term != "")
-			Session.set("loading_results", true);
-		
+		if (Meteor.user().profile.searchproviders.length && term && term != undefined && term != "") Session.set("loading_results", true);
 		Meteor.setTimeout(function () {
 			Session.set("loading_results", false);
 		}, 8000);
-		
-		Meteor.setTimeout(function(){
-			if (Session.equals("links_completed",true) && !Links.findOne()) {
-				
-				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");;
-				
-				if (filter_term_external != "")
-				{
-					if (!Meteor.user().profile.searchproviders.length)
-					{
+		Meteor.setTimeout(function () {
+			if (Session.equals("links_completed", true) && !Links.findOne()) {
+				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");
+				if (filter_term_external != "") {
+					if (!Meteor.user().profile.searchproviders.length) {
 						Session.set("loading_results", false);
 						return;
-					}	                    
-
-                    Session.set("filter_term_external", filter_term_external);
-                    
-					if (_.contains(Meteor.user().profile.searchproviders,"zippysharemusic"))
-                    {
-						Meteor.http.get("https://www.googleapis.com/customsearch/v1?key=" + Meteor.settings.public.google.search_api_key + "&cx=partner-pub-9019877854699644%3At1iell5gp8b&alt=json&fields=items(pagemap)&q=" + encodeURIComponent(filter_term_external), function(error, result) {
+					}
+					Session.set("filter_term_external", filter_term_external);
+					if (_.contains(Meteor.user().profile.searchproviders, "zippysharemusic")) {
+						Meteor.http.get("https://www.googleapis.com/customsearch/v1?key=" + Meteor.settings.public.google.search_api_key + "&cx=partner-pub-9019877854699644%3At1iell5gp8b&alt=json&fields=items(pagemap)&q=" + encodeURIComponent(filter_term_external), function (error, result) {
 							if (result && result.data && result.data.items) {
 								var items = result.data.items;
-								
-								var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i
-								var pattern2 = /\d{3,8}(?=\/file\.html)/i
-
+								var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i;
+								var pattern2 = /\d{3,8}(?=\/file\.html)/i;
 								if (items && items.length) {
 									for (var i = 0; i <= items.length; i++) {
-										if(items[i])
-										{										
+										if (items[i]) {
 											var theurl = items[i].pagemap.metatags[0]["og:url"].replace("\\");
 											var stream_url = undefined;
-											
 											var match1 = pattern1.exec(theurl);
 											var match2 = pattern2.exec(theurl);
-							
-											if (match1 && match2)
-												stream_url = match1 + "/downloadMusic?key=" + match2;
-											
-											if (!SearchResults.findOne({url: theurl}))											
-												SearchResults.insert({
+											if (match1 && match2) stream_url = match1 + "/downloadMusic?key=" + match2;
+											if (!SearchResults.findOne({
+												url: theurl
+											})) SearchResults.insert({
 													hoster: "zippyshare.com",
 													status: "unknown",
 													name: unescape(items[i].pagemap.metatags[0]["og:title"].replace("null").replace("undefined").trim()),
@@ -964,192 +820,169 @@ Template.navigation.events({
 							}
 						});
 					}
-					
-                    if (_.contains(Meteor.user().profile.searchproviders,"muzon"))
-                    {
-                    	Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function(error, result) {
-                    		if (result) {
-                                   var pattern1 = /<span.*id.*(aid|oid|autor|title|time).*>.*(?=<\/span>)/gi;
-                                   var pattern2 = /http.*(?=<img src="\/JJS\/download.png)/gi;
-                                   
-                                   var tempaid = undefined;
-                                   var tempoid = undefined;
-                                   var tempautor = undefined;
-                                   var temptitle = undefined;
-                                   var temptime = undefined;
-                                   var tempurl = undefined;
-                                   
-                                   var matches;
-                                   
-                                   while (matches = pattern1.exec(result)) {
-                                       if (matches[0].indexOf("aid\">") !== -1)
-                                       {
-                                           tempaid = (matches[0].split("aid\">")[1]);
-                                       }
-                                       if (matches[0].indexOf("oid\">") !== -1)
-                                       {
-                                           tempoid = (matches[0].split("oid\">")[1]);
-                                       }
-                                       if (matches[0].indexOf("autor\">") !== -1)
-                                       {
-                                           tempautor = (matches[0].split("autor\">")[1]);
-                                       }
-                                       if (matches[0].indexOf("title\">") !== -1)
-                                       {
-                                           temptitle = (matches[0].split("title\">")[1]);
-                                       }
-                                       if (matches[0].indexOf("time\">") !== -1)
-                                       {
-                                           temptime = (matches[0].split("time\">")[1]);
-                                       }
-                    
-                                       if (tempaid && tempoid && tempautor && temptitle && temptime)
-                                       {
-                                           var matches2;
-                                           while (matches2 = pattern2.exec(result)) {
-                                               var temp = matches2[0].split(" ")[0];
-                                               if (temp.indexOf(tempoid) !== -1 && temp.indexOf(tempaid) !== -1)
-                                               {
-                                               		var tempname = temptitle;
-                                               		
-                                               		if (temptitle.indexOf(tempautor) === -1)
-                                               			tempname = tempautor + " - " + temptitle;
-                                               
-                                                   tempurl = temp;
-												   
-												   if (!SearchResults.findOne({url: tempurl}))	
-													   SearchResults.insert({
-														   hoster: "muzon.ws",
-														   status: "on",
-														   name: unescape(tempname.replace("null").replace("undefined").trim()),
-														   url: tempurl,
-														   duration: moment(temptime*1000),
-														   stream_url: "http://s2.muzon.ws/audio/" + tempaid + "/" + tempoid + "/play.mp3"
-													   });
-                                                   
-                                                   tempaid = undefined;
-                                                   tempoid = undefined;
-                                                   tempautor = undefined;
-                                                   temptitle = undefined;
-                                                   temptile = undefined;
-                                                   tempurl = undefined;
-                                               }
-                                           }
-                                           Session.set("loading_results", false);
-                                       }
-                                   }
-                    		}
-                    	});
-                    }
-                          
-					if (_.contains(Meteor.user().profile.searchproviders,"soundcloud"))
-					{
-						SC.get('/tracks', {filter:'public',limit: 10, q: filter_term_external}, function(tracks) {
-								if (tracks && tracks.length) {
-									for (var i = 0; i <= tracks.length; i++) {
-										if(tracks[i])
-										{
-											if (!SearchResults.findOne({url: tracks[i].permalink_url}))	
-												SearchResults.insert({
-													hoster: "soundcloud.com",
-													status: "on",
-													name: tracks[i].title,
-													url: tracks[i].permalink_url,
-													duration: moment(tracks[i].duration)
-												});
-										}
+					if (_.contains(Meteor.user().profile.searchproviders, "muzon")) {
+						Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function (error, result) {
+							if (result) {
+								var pattern1 = /<span.*id.*(aid|oid|autor|title|time).*>.*(?=<\/span>)/gi;
+								var pattern2 = /http.*(?=<img src="\/JJS\/download.png)/gi;
+								var tempaid = undefined;
+								var tempoid = undefined;
+								var tempautor = undefined;
+								var temptitle = undefined;
+								var temptime = undefined;
+								var tempurl = undefined;
+								var matches;
+								while (matches = pattern1.exec(result)) {
+									if (matches[0].indexOf("aid\">") !== -1) {
+										tempaid = (matches[0].split("aid\">")[1]);
 									}
-									Session.set("loading_results", false);
+									if (matches[0].indexOf("oid\">") !== -1) {
+										tempoid = (matches[0].split("oid\">")[1]);
+									}
+									if (matches[0].indexOf("autor\">") !== -1) {
+										tempautor = (matches[0].split("autor\">")[1]);
+									}
+									if (matches[0].indexOf("title\">") !== -1) {
+										temptitle = (matches[0].split("title\">")[1]);
+									}
+									if (matches[0].indexOf("time\">") !== -1) {
+										temptime = (matches[0].split("time\">")[1]);
+									}
+									if (tempaid && tempoid && tempautor && temptitle && temptime) {
+										var matches2;
+										while (matches2 = pattern2.exec(result)) {
+											var temp = matches2[0].split(" ")[0];
+											if (temp.indexOf(tempoid) !== -1 && temp.indexOf(tempaid) !== -1) {
+												var tempname = temptitle;
+												if (temptitle.indexOf(tempautor) === -1) tempname = tempautor + " - " + temptitle;
+												tempurl = temp;
+												if (!SearchResults.findOne({
+													url: tempurl
+												})) SearchResults.insert({
+														hoster: "muzon.ws",
+														status: "on",
+														name: unescape(tempname.replace("null").replace("undefined").trim()),
+														url: tempurl,
+														duration: moment(temptime * 1000),
+														stream_url: "http://s2.muzon.ws/audio/" + tempaid + "/" + tempoid + "/play.mp3"
+													});
+												tempaid = undefined;
+												tempoid = undefined;
+												tempautor = undefined;
+												temptitle = undefined;
+												temptile = undefined;
+												tempurl = undefined;
+											}
+										}
+										Session.set("loading_results", false);
+									}
 								}
-						});
-					}
-					      
-					if (_.contains(Meteor.user().profile.searchproviders,"youtube"))
-					{
-						var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
-							return String(memo + "+" + token);
-						});
-					
-						Meteor.http.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json",function(error,result)
-						{								
-							if (result && result.data && result.data.feed && result.data.feed.entry) {
-								var entry = result.data.feed.entry;
-									for (var i = 0; i <= entry.length; i++) {
-										if(entry[i])
-										{
-											if (!SearchResults.findOne({url: entry[i].link[0].href}))
-												SearchResults.insert({
-													hoster: "youtube.com",
-													status: "on",
-													name: entry[i].title.$t,
-													url: entry[i].link[0].href,
-													duration: moment(entry[i].media$group.yt$duration.seconds*1000)
-												});
-										}
-									}
-									Session.set("loading_results", false);
 							}
 						});
 					}
-						
-					if (_.contains(Meteor.user().profile.searchproviders,"ex.fm"))
-					{
-						Meteor.http.get("http://ex.fm/api/v3/song/search/" + filter_term_external,function(error,result)
-						{							
+					if (_.contains(Meteor.user().profile.searchproviders, "soundcloud")) {
+						SC.get('/tracks', {
+							filter: 'public',
+							limit: 10,
+							q: filter_term_external
+						}, function (tracks) {
+							if (tracks && tracks.length) {
+								for (var i = 0; i <= tracks.length; i++) {
+									if (tracks[i]) {
+										if (!SearchResults.findOne({
+											url: tracks[i].permalink_url
+										})) SearchResults.insert({
+												hoster: "soundcloud.com",
+												status: "on",
+												name: tracks[i].title,
+												url: tracks[i].permalink_url,
+												duration: moment(tracks[i].duration)
+											});
+									}
+								}
+								Session.set("loading_results", false);
+							}
+						});
+					}
+					if (_.contains(Meteor.user().profile.searchproviders, "youtube")) {
+						var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
+							return String(memo + "+" + token);
+						});
+						Meteor.http.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json", function (error, result) {
+							if (result && result.data && result.data.feed && result.data.feed.entry) {
+								var entry = result.data.feed.entry;
+								for (var i = 0; i <= entry.length; i++) {
+									if (entry[i]) {
+										if (!SearchResults.findOne({
+											url: entry[i].link[0].href
+										})) SearchResults.insert({
+												hoster: "youtube.com",
+												status: "on",
+												name: entry[i].title.$t,
+												url: entry[i].link[0].href,
+												duration: moment(entry[i].media$group.yt$duration.seconds * 1000)
+											});
+									}
+								}
+								Session.set("loading_results", false);
+							}
+						});
+					}
+					if (_.contains(Meteor.user().profile.searchproviders, "ex.fm")) {
+						Meteor.http.get("http://ex.fm/api/v3/song/search/" + filter_term_external, function (error, result) {
 							if (result && result.data && result.data.status_code === 200) {
 								var songs = result.data.songs;
-									for (var i = 0; i <= songs.length; i++) {
-										if(songs[i])
-										{
-											console.log("http://ex.fm/api/v3/song/" + songs[i].id);
-											console.log(songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim());
-											if (!SearchResults.findOne({url: "http://ex.fm/api/v3/song/" + songs[i].id}))
-												SearchResults.insert({
-													hoster: "ex.fm",
-													status: "on",
-													name: unescape((songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim())),
-													url: "http://ex.fm/api/v3/song/" + songs[i].id,
-													duration: moment(0)
-												});
-										}
+								for (var i = 0; i <= songs.length; i++) {
+									if (songs[i]) {
+										console.log("http://ex.fm/api/v3/song/" + songs[i].id);
+										console.log(songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim());
+										if (!SearchResults.findOne({
+											url: "http://ex.fm/api/v3/song/" + songs[i].id
+										})) SearchResults.insert({
+												hoster: "ex.fm",
+												status: "on",
+												name: unescape((songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim())),
+												url: "http://ex.fm/api/v3/song/" + songs[i].id,
+												duration: moment(0)
+											});
 									}
-									Session.set("loading_results", false);
+								}
+								Session.set("loading_results", false);
 							}
 						});
 					}
 				}
+			} else {
+				Session.set("loading_results", false);
 			}
-			else {
-				Session.set("loading_results",false);
-			}	
-		},1000);
+		}, 1000);
 		Meteor.Router.to("/");
-        return false;
+		return false;
 	}
 });
-
 //Events für das Template der Linkliste
 Template.linklist.events = ({
-	 //Links teilen
+	//Links teilen
 	'click #share_links': function (event, template) {
-        event.preventDefault();
-        openShareLinkDialog();
+		event.preventDefault();
+		openShareLinkDialog();
 		Meteor.setTimeout(function () {
 			activateInput($("#sharelinkaddress"));
 		}, 250);
-        return false;
+		return false;
 	},
-	'click #sort_like' : function (event, template) {
+	'click #sort_like': function (event, template) {
 		Session.set("filter_sort", "likes");
 	},
-	'click #sort_date_published' : function (event, template) {
+	'click #sort_date_published': function (event, template) {
 		Session.set("filter_sort", "date_published");
 	},
 	'click #paginate': function (event, template) {
-		$("html, body").animate({ scrollTop: 0 }, "fast");
-             
-		Session.set("filter_limit" ,1);
-		Session.set("filter_skip", Session.get("filter_skip")+250);
+		$("html, body").animate({
+			scrollTop: 0
+		}, "fast");
+		Session.set("filter_limit", 1);
+		Session.set("filter_skip", Session.get("filter_skip") + 250);
 		Session.set("selected_links", []);
 	},
 	//Links filtern (alle / auch unbekannte)
@@ -1157,11 +990,8 @@ Template.linklist.events = ({
 		event.preventDefault();
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
-		
 		var tmp_status = Session.get("filter_status");
-
-		if (_.indexOf(tmp_status, "unknown") != -1) 
-		{
+		if (_.indexOf(tmp_status, "unknown") != -1) {
 			tmp_status = _.without(tmp_status, "off", "unknown");
 			event.target.className = "icon-filter hand";
 			Meteor.users.update({
@@ -1170,9 +1000,8 @@ Template.linklist.events = ({
 				$set: {
 					'profile.showunknownlinks': false,
 				}
-			});		
-		}
-		else {
+			});
+		} else {
 			tmp_status = new Array("on", "unknown");
 			event.target.className = "icon-filter hand icon-white";
 			Meteor.users.update({
@@ -1183,7 +1012,6 @@ Template.linklist.events = ({
 				}
 			});
 		}
-
 		Session.set("filter_status", _.uniq(tmp_status));
 	},
 	//alle Links anhaken, die gerade zu sehen sind
@@ -1197,58 +1025,47 @@ Template.linklist.events = ({
 			Session.set("selected_links", selected);
 		} else Session.set("selected_links", []);
 	},
-	'click #hide_selected_links' : function (event, template) {
+	'click #hide_selected_links': function (event, template) {
 		var selected = Session.get("selected_links");
-
-		if (selected.length) {			
+		if (selected.length) {
 			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
-				if (result)
-					console.log("Error updating Links while marking as read.");
-				if (error)
-					console.log("Error updating Links while marking as read.");
+				if (result) console.log("Error updating Links while marking as read.");
+				if (error) console.log("Error updating Links while marking as read.");
 			});
-			Session.set("selected_links",[]);
+			Session.set("selected_links", []);
 		}
-	}	
+	}
 });
-
 Template.link.rendered = function () {
-		link = this.data;
-		
-		htmlstr = "<form class='newcommentform' id=" + link._id._str + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='5' style='width:248px' type='text' required></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
-		var commentsstr = "";
-
-		if (link.comments && link.comments !== null && link.comments.length) {
-			for (var i = 0; i <= link.comments.length; i++) {
-				if (link.comments[i]) {
-					var creatorname = Meteor.users.findOne({
-						id: link.comments[i].creator
-					}).profile['first_name'];
-
-					var strdate = moment(link.comments[i].date_created).fromNow();
-
-					commentsstr = commentsstr + "<p id='comment_text' style='margin-bottom:5px;width:248px'><small id='comment_creator' style='font-size:10px'>" + creatorname + " " + "</small><i id='comment_date' style='color:grey;font-size:10px'>" + strdate + "</i><br/><small id='comment_message'>" + link.comments[i].message + "</small></p>";
-				}
+	link = this.data;
+	htmlstr = "<form class='newcommentform' id=" + link._id._str + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='5' style='width:248px' type='text' required></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
+	var commentsstr = "";
+	if (link.comments && link.comments !== null && link.comments.length) {
+		for (var i = 0; i <= link.comments.length; i++) {
+			if (link.comments[i]) {
+				var creatorname = Meteor.users.findOne({
+					id: link.comments[i].creator
+				}).profile['first_name'];
+				var strdate = moment(link.comments[i].date_created).fromNow();
+				commentsstr = commentsstr + "<p id='comment_text' style='margin-bottom:5px;width:248px'><small id='comment_creator' style='font-size:10px'>" + creatorname + " " + "</small><i id='comment_date' style='color:grey;font-size:10px'>" + strdate + "</i><br/><small id='comment_message'>" + link.comments[i].message + "</small></p>";
 			}
-		} else commentsstr = "<small id='no_comments_label'>noch keine Kommentare vorhanden</small>";
-
-		$("#" + link._id._str + '_comments').popover({
-			animation: true,
-			placement: "bottom",
-			trigger: "click",
-			title: "Kommentare",
-			html: true,
-			content: commentsstr + htmlstr,
-			delay: {
-				show: 300,
-				hide: 100
-			}
-		});
+		}
+	} else commentsstr = "<small id='no_comments_label'>noch keine Kommentare vorhanden</small>";
+	$("#" + link._id._str + '_comments').popover({
+		animation: true,
+		placement: "bottom",
+		trigger: "click",
+		title: "Kommentare",
+		html: true,
+		content: commentsstr + htmlstr,
+		delay: {
+			show: 300,
+			hide: 100
+		}
+	});
 };
-
 Template.linklist.rendered = function () {
 	$('.linkname').editable();
-
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
 		$('#filter_links').tooltip({
 			title: "nur Links mit Status (online) oder alle Links anzeigen",
@@ -1316,7 +1133,6 @@ Template.linklist.rendered = function () {
 		});
 	}
 };
-
 Template.accountSettingsDialog.rendered = function () {
 	//XXX seit Bootstrap 2.3 sind die Tooltips abgeschnitten...
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
@@ -1346,10 +1162,11 @@ Template.accountSettingsDialog.rendered = function () {
 		});
 	}
 };
-
 Template.user_loggedin.rendered = function () {
-	if (Meteor.userId() && Meteor.user() && Meteor.user().profile) {		
-		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small><b>   " + Meteor.user().username + "</b></li><li><br/></li><li><b>Dein JDownloader</b></li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li><b>Dein Beitrag</b></li><li>Seiten: " + Sites.find({creator: Meteor.user().id}).count() + "</li><li>Links: " + Meteor.user().profile.linkcontributioncount + "</li></small>";
+	if (Meteor.userId() && Meteor.user() && Meteor.user().profile) {
+		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small><b>   " + Meteor.user().username + "</b></li><li><br/></li><li><b>Dein JDownloader</b></li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li><b>Dein Beitrag</b></li><li>Seiten: " + Sites.find({
+			creator: Meteor.user().id
+		}).count() + "</li><li>Links: " + Meteor.user().profile.linkcontributioncount + "</li></small>";
 		$('#accountbtn').popover({
 			animation: true,
 			placement: "bottom",
@@ -1364,37 +1181,37 @@ Template.user_loggedin.rendered = function () {
 		});
 	}
 };
-
 //Events für die einzelnen Link-Objekte
 Template.link.events({
-	'click .player' : function(event, template) {		
+	'click .player': function (event, template) {
 		if (this.status != 'off') {
 			switch (this.hoster) {
 				case "soundcloud.com":
 					event.target.className = "icon-loader";
-					if (window.SCM)
-					{
-						if (this.url.indexOf("/sets") !== -1)
-						{
-						
-							SC.get('/resolve', { url: this.url }, function(result) {
+					if (window.SCM) {
+						if (this.url.indexOf("/sets") !== -1) {
+							SC.get('/resolve', {
+								url: this.url
+							}, function (result) {
 								if (result.errors) {
 									event.target.className = "icon-remove";
 									return;
 								}
-								if (result.tracks && result.tracks.length)
-								{
+								if (result.tracks && result.tracks.length) {
 									var tracks = result.tracks;
-									
-									SCM.play({title:tracks[0].title, url: tracks[0].permalink_url});
-									
+									SCM.play({
+										title: tracks[0].title,
+										url: tracks[0].permalink_url
+									});
 									for (var i = 1; i <= tracks.length; i++) {
-										if(tracks[i])
-										{
-											SCM.queue({title:tracks[i].title, url: tracks[i].permalink_url});
-										}	
+										if (tracks[i]) {
+											SCM.queue({
+												title: tracks[i].title,
+												url: tracks[i].permalink_url
+											});
+										}
 									}
-									event.target.className="icon-list";
+									event.target.className = "icon-list";
 									return;
 								}
 								event.target.className = "icon-remove";
@@ -1402,54 +1219,54 @@ Template.link.events({
 							});
 							break;
 						}
-						SCM.play({title:this.name,url:this.url.replace("/download","")});
-						event.target.className="icon-list";
+						SCM.play({
+							title: this.name,
+							url: this.url.replace("/download", "")
+						});
+						event.target.className = "icon-list";
 						return;
 					}
 					event.target.className = "icon-remove";
 					break;
-				 case "youtube.com":
+				case "youtube.com":
 					event.target.className = "icon-loader";
-					if (window.SCM)
-					{
-						SCM.play({title:this.name,url:this.url});
-						event.target.className="icon-list";
-					}
-					else
-						event.target.className = "icon-remove";
+					if (window.SCM) {
+						SCM.play({
+							title: this.name,
+							url: this.url
+						});
+						event.target.className = "icon-list";
+					} else event.target.className = "icon-remove";
 					break;
 				case "zippyshare.com":
 					event.target.className = "icon-loader";
-				    if (window.SCM)
-				    {
-						var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i
-						var pattern2 = /\d{3,8}(?=\/file\.html)/i
+					if (window.SCM) {
+						var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i;
+						var pattern2 = /\d{3,8}(?=\/file\.html)/i;
 						var match1 = pattern1.exec(this.url);
 						var match2 = pattern2.exec(this.url);
-						
-						if (match1 && match2)
-						{
+						if (match1 && match2) {
 							var stream_url = match1 + "/downloadMusic?key=" + match2;
-							SCM.play({title:this.name,url:stream_url});
-							event.target.className="icon-list";
-						}
-						else
-							event.target.className = "icon-remove";
+							SCM.play({
+								title: this.name,
+								url: stream_url
+							});
+							event.target.className = "icon-list";
+						} else event.target.className = "icon-remove";
 						return;
-				    }
-				    else
-				        event.target.className = "icon-remove";
-				    break;					
+					}
+					event.target.className = "icon-remove";
+					break;
 				case "muzon.ws":
-				    event.target.className = "icon-loader";
-				    if (window.SCM && this.stream_url)
-				    {
-				        SCM.play({title:this.name,url:this.stream_url});
-				        event.target.className="icon-list";
-				    }
-				    else
-				        event.target.className = "icon-remove";
-				    break;
+					event.target.className = "icon-loader";
+					if (window.SCM && this.stream_url) {
+						SCM.play({
+							title: this.name,
+							url: this.stream_url
+						});
+						event.target.className = "icon-list";
+					} else event.target.className = "icon-remove";
+					break;
 				case "vimeo.com":
 					event.target.className = "icon-remove";
 					break;
@@ -1457,9 +1274,7 @@ Template.link.events({
 					event.target.className = "icon-remove";
 					break;
 			}
-		}
-		else
-			event.target.className = "icon-remove";
+		} else event.target.className = "icon-remove";
 	},
 	'input #new_comment': function (event, template) {
 		if (!event.target.validity.valid) {
@@ -1470,13 +1285,14 @@ Template.link.events({
 	},
 	'click #postcomment': function (event, template) {
 		linkid = this._id;
-		
 		event.preventDefault();
 		event.stopPropagation();
 		var newmessage = template.find('#new_comment').value;
 		Meteor.call('createComment', linkid, newmessage, function (error, result) {
 			if (error) console.log("Kommentar konnte nicht erstellt werden. (" + error.details + ")");
-			Meteor.setTimeout(function(){$('#' + linkid + '_comments').popover('show');},10);
+			Meteor.setTimeout(function () {
+				$('#' + linkid + '_comments').popover('show');
+			}, 10);
 		});
 		return false;
 	},
@@ -1485,25 +1301,20 @@ Template.link.events({
 		var selected = Session.get("selected_links");
 		if (event.target.checked) {
 			var contains = false;
-			selectedloop: for (var i=0;i<selected.length;i++)
-			{ 
-				if (EJSON.equals(this._id,selected[i]))
-				{
+			selectedloop: for (var i = 0; i < selected.length; i++) {
+				if (EJSON.equals(this._id, selected[i])) {
 					contains = true;
 					break selectedloop;
 				}
 			}
-			if (contains === false)
-			{
+			if (contains === false) {
 				selected.push(this._id);
 				Session.set("selected_links", selected);
 			}
 		} else {
-			selectedloop: for (var i=0;i<selected.length;i++)
-			{ 
-				if (EJSON.equals(this._id,selected[i]))
-				{
-					selected.splice(i,1);
+			selectedloop: for (var i = 0; i < selected.length; i++) {
+				if (EJSON.equals(this._id, selected[i])) {
+					selected.splice(i, 1);
 					Session.set("selected_links", selected);
 					break selectedloop;
 				}
@@ -1518,23 +1329,18 @@ Template.link.events({
 	},
 	'click .removelinkfromset': function (event, template) {
 		var selected = Session.get("temp_set");
-
-		selectedloop: for (var i=0;i<selected.length;i++)
-		{ 
-			if (EJSON.equals(this._id,selected[i]))
-			{
-				selected.splice(i,1);
+		selectedloop: for (var i = 0; i < selected.length; i++) {
+			if (EJSON.equals(this._id, selected[i])) {
+				selected.splice(i, 1);
 				Session.set("temp_set", selected);
 				break selectedloop;
 			}
 		}
-	},	
+	},
 	//Link-Status aktualisieren
 	'click .icon-refresh': function (event, template) {
 		event.target.className = "icon-refreshing";
-		
 		var linkurl = this.url;
-		
 		Meteor.call("refreshLink", this._id, function (error, result) {
 			if (error) {
 				console.log("Fehler beim Aktualisieren des Links " + linkurl + ": " + error.reason);
@@ -1544,24 +1350,22 @@ Template.link.events({
 				event.target.className = "icon-refresh";
 			}
 		});
-
 	},
 	//X-Editable Formular - Namensänderung übernehmen
 	'submit .form-inline': function (event, template) {
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
-		
 		if (newName != "") Links.update({
-			_id: this._id
-		}, {
-			$set: {
-				name: newName
-			}
-		});
+				_id: this._id
+			}, {
+				$set: {
+					name: newName
+				}
+			});
 	},
 	'click .icon-comment': function (event) {
-		event.stopPropagation();	
-		$('.icon-comment:not(#'+event.target.id+')').popover('hide');
+		event.stopPropagation();
+		$('.icon-comment:not(#' + event.target.id + ')').popover('hide');
 		return false;
 	},
 	//Link liken
@@ -1618,19 +1422,15 @@ Template.addLinkDialog.events({
 	//Link in die Datenbank aufnehmen, bzw. vorher prüfen
 	'click .addlink': function (event, template) {
 		event.preventDefault();
-		Session.set("status",
-			'<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird überprüft</small></p>');
+		Session.set("status", '<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird überprüft</small></p>');
 		var newlinkurl = template.find("#newlinkurl").value;
-
 		Meteor.call('createLink', newlinkurl, undefined, function (error, result) {
 			if (error) switch (error.error) {
-				case 409:
-					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-warning-sign"></i><small>' + " " + error.details + "</small></p>");
-					break;
-				default:
-					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-remove"></i><small>' + " " + error.details + "</small></p>");
+					case 409:
+						Session.set("status", '<p class="pull-left statustext"><i class="icon-warning-sign"></i><small>' + " " + error.details + "</small></p>");
+						break;
+					default:
+						Session.set("status", '<p class="pull-left statustext"><i class="icon-remove"></i><small>' + " " + error.details + "</small></p>");
 			}
 			if (result) {
 				Meteor.call('updateLinkContributionCount');
@@ -1644,60 +1444,52 @@ Template.addLinkDialog.events({
 		return false;
 	}
 });
-
 Template.searchresult.preserve([".add_external_link"]);
 Template.searchresult.preserve([".download_external_link"]);
-
 Template.searchresult.events({
-	'click .player' : function(event, template) {		
+	'click .player': function (event, template) {
 		if (this.status != 'off') {
 			switch (this.hoster) {
-				case "soundcloud.com": case "youtube.com": case "ex.fm":
+				case "soundcloud.com":
+				case "youtube.com":
+				case "ex.fm":
 					event.target.className = "icon-loader";
-					if (window.SCM)
-					{
-						SCM.play({title:this.name,url:this.url});
-						event.target.className="icon-list";
-					}
-					else
-						event.target.className = "icon-remove";
-	 				break;
-				case "muzon.ws": case "zippyshare.com":
-                    event.target.className = "icon-loader";
-                    if (window.SCM && this.stream_url)
-                    {
-                        SCM.play({title:this.name,url:this.stream_url});
-                        event.target.className="icon-list";
-                    }
-                    else
-                        event.target.className = "icon-remove";
-                    break;
+					if (window.SCM) {
+						SCM.play({
+							title: this.name,
+							url: this.url
+						});
+						event.target.className = "icon-list";
+					} else event.target.className = "icon-remove";
+					break;
+				case "muzon.ws":
+				case "zippyshare.com":
+					event.target.className = "icon-loader";
+					if (window.SCM && this.stream_url) {
+						SCM.play({
+							title: this.name,
+							url: this.stream_url
+						});
+						event.target.className = "icon-list";
+					} else event.target.className = "icon-remove";
+					break;
 				default:
 					event.target.className = "icon-remove";
 					break;
 			}
-		}
-		else
-			event.target.className = "icon-remove";
+		} else event.target.className = "icon-remove";
 	},
-	'click .download_external_link' : function (event, template) {
+	'click .download_external_link': function (event, template) {
 		event.preventDefault();
 		event.stopPropagation();
 		event.target.disabled = true;
 		event.target.innerHTML = "<i class='icon-loader'></i>";
-
-		if (Session.equals("JDOnlineStatus",true))
-		{
+		if (Session.equals("JDOnlineStatus", true)) {
 			var grabberoption;
-			
-			if (this.url.match(/youtube|vimeo/i))
-				grabberoption = "grabber1";
+			if (this.url.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 			else grabberoption = "grabber0";
-		
 			var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + this.url;
-
 			requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
-
 			Meteor.call("sendLinks", requeststring, function (error, result) {
 				if (error) {
 					event.target.innerHTML = "<i class='icon-remove'></i>";
@@ -1706,13 +1498,11 @@ Template.searchresult.events({
 				if (result) {
 					event.target.innerHTML = "<i class='icon-ok'></i>";
 				}
-			});		
-		}
-		else
-		{
+			});
+		} else {
 			writeConsole(this.url);
 			event.target.innerHTML = "<i class='icon-ok'></i>";
-		}		
+		}
 		return false;
 	},
 	'click .add_external_link': function (event, template) {
@@ -1722,7 +1512,7 @@ Template.searchresult.events({
 		event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";
 		var sitefilter = Session.get("filter_sites");
 		sitefilter.push(Meteor.user().id);
-		Session.set("filter_sites",sitefilter);
+		Session.set("filter_sites", sitefilter);
 		Meteor.call('createLink', this.url, this.stream_url, function (error, result) {
 			if (error) {
 				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
@@ -1736,7 +1526,6 @@ Template.searchresult.events({
 		return false;
 	}
 });
-
 //Events für den "Seite hinzufügen"-Dialog
 Template.addSiteDialog.events({
 	// User hat abgebrochen, Dialog schließen
@@ -1755,83 +1544,62 @@ Template.addSiteDialog.events({
 	//Seite prüfen und hinzufügen
 	'submit #addsiteform': function (event, template) {
 		event.preventDefault();
-		Session.set(
-			"status",
-			'<p class="pull-left statustext"><i class="icon-loader"></i><small>' + " " + 'Seite wird überprüft</small></p>');
+		Session.set("status", '<p class="pull-left statustext"><i class="icon-loader"></i><small>' + " " + 'Seite wird überprüft</small></p>');
 		var newsiteurl = template.find('#newsiteurl').value;
 		Meteor.call('createSite', newsiteurl, function (error, result) {
 			Meteor.call('updateFacebookTokensForUser');
 			if (error) switch (error.error) {
-				case 401:
-					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + error.details + "</small></p>");
-					
-					var siteid = error.reason;
-					
-					Meteor.setTimeout(function () {
-						Meteor.loginWithFacebook({
-							requestPermissions: ['user_groups']
-						}, function (error2) {
-							if (error2) {
-								if (error2.type == "OAuthException") {
-									alert("Du hast den Zugriff auf deine Facebook-Gruppen verweigert oder widerrufen.\nDeine Gruppen können nicht mehr durchsucht werden.");
-									Meteor.call("removeFacebookTokensForUser");
+					case 401:
+						Session.set("status", '<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + error.details + "</small></p>");
+						var siteid = error.reason;
+						Meteor.setTimeout(function () {
+							Meteor.loginWithFacebook({
+								requestPermissions: ['user_groups']
+							}, function (error2) {
+								if (error2) {
+									if (error2.type == "OAuthException") {
+										alert("Du hast den Zugriff auf deine Facebook-Gruppen verweigert oder widerrufen.\nDeine Gruppen können nicht mehr durchsucht werden.");
+										Meteor.call("removeFacebookTokensForUser");
+									}
+								} else {
+									Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
+									Meteor.call("scheduleCrawl", siteid, function (error3, result3) {
+										if (result3 && result3.data && result3.data.status == "ok") console.log("Successfully scheduled crawl for Site " + newsiteurl);
+										if (error3) console.log("Error scheduling crawl for Site " + newsiteurl);
+									});
 								}
-							}
-							else {
-								Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
-								
-								Meteor.call("scheduleCrawl", siteid, function (error3, result3) {
-									if (result3 && result3.data && result3.data.status == "ok") 
-										console.log("Successfully scheduled crawl for Site " + newsiteurl);
-									if (error3)
-										console.log("Error scheduling crawl for Site " + newsiteurl);
-								});
-							}
-						});
-					}, 3000);
-
-					break;
-				case 409:
-					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-warning-sign"></i><small>' + " " + error.details + "</small></p>");
-					break;
-				case 415:
-					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + error.details + "</small></p>");
-					Meteor.setTimeout(function () {
-						Session.set("showAddSiteDialog", false);
-						Session.set("status", undefined);
-					}, 3000);
-					break;
-				default:
-					Session.set("status",
-						'<p class="pull-left statustext"><i class="icon-remove"></i><small>' + " " + error.details + "</small></p>");
-					break;
+							});
+						}, 3000);
+						break;
+					case 409:
+						Session.set("status", '<p class="pull-left statustext"><i class="icon-warning-sign"></i><small>' + " " + error.details + "</small></p>");
+						break;
+					case 415:
+						Session.set("status", '<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + error.details + "</small></p>");
+						Meteor.setTimeout(function () {
+							Session.set("showAddSiteDialog", false);
+							Session.set("status", undefined);
+						}, 3000);
+						break;
+					default:
+						Session.set("status", '<p class="pull-left statustext"><i class="icon-remove"></i><small>' + " " + error.details + "</small></p>");
+						break;
 			}
 			if (result && result._str) {
 				var aid = new Meteor.Collection.ObjectID(result._str);
-			
-				newsite = Sites.findOne({_id: aid});
-				
-				if (newsite && newsite.type == "facebook-group")
-					Meteor.call("updateFacebookGroupName", newsite.groupid);
-			
-				Session.set("status",
-					'<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + "Seite hinzugefügt! Die Seite wird automatisch beim nächsten Suchlauf durchsucht.</small></p>");
-
+				newsite = Sites.findOne({
+					_id: aid
+				});
+				if (newsite && newsite.type == "facebook-group") Meteor.call("updateFacebookGroupName", newsite.groupid);
+				Session.set("status", '<p class="pull-left statustext"><i class="icon-ok"></i><small>' + " " + "Seite hinzugefügt! Die Seite wird automatisch beim nächsten Suchlauf durchsucht.</small></p>");
 				Meteor.setTimeout(function () {
 					Session.set("showAddSiteDialog", false);
 					Session.set("status", undefined);
 				}, 3000);
-				
-				if (newsite)
-					Meteor.call("scheduleCrawl", newsite._id, function (error2, result2) {
-						if (result2 && result2.data && result2.data.status == "ok") 
-							console.log("Successfully scheduled crawl for Site " + newsite.url);
-						if (error2)
-							console.log("Error scheduling crawl for Site " + newsite.url);
-					});				
+				if (newsite) Meteor.call("scheduleCrawl", newsite._id, function (error2, result2) {
+						if (result2 && result2.data && result2.data.status == "ok") console.log("Successfully scheduled crawl for Site " + newsite.url);
+						if (error2) console.log("Error scheduling crawl for Site " + newsite.url);
+					});
 			}
 		});
 		return false;
@@ -1867,86 +1635,72 @@ Template.sitesDialog.rendered = function () {
 		});
 	}
 };
-
-Template.shareLinkDialog.rendered = function() {
-	$('#sharelinkaddress').typeahead({items: 6, minLength: 3,
-		source: function(query, process) {
-			searchterm = query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").split(",");
-			
-			if (searchterm[searchterm.length-1].trim().length > 2)
-				Meteor.call("getSuggestionsForEmail", ".*" + searchterm[searchterm.length-1].trim().replace(" ",".*") + ".*", function(error, result) {
-					process(_.map(result, function(asuggest){ return asuggest.name + " - " + asuggest.email; }));
-				});	
+Template.shareLinkDialog.rendered = function () {
+	$('#sharelinkaddress').typeahead({
+		items: 6,
+		minLength: 3,
+		source: function (aquery, process) {
+			searchterm = aquery.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").split(",");
+			if (searchterm[searchterm.length - 1].trim().length > 2) Meteor.call("getSuggestionsForEmail", ".*" + searchterm[searchterm.length - 1].trim().replace(" ", ".*") + ".*", function (error, result) {
+					process(_.map(result, function (asuggest) {
+						return asuggest.name + " - " + asuggest.email;
+					}));
+				});
 		},
-		updater: function(name) {
-			var previousterms = this.query.substring(0,this.query.lastIndexOf(",")+1);
-			
+		updater: function (name) {
+			var previousterms = this.query.substring(0, this.query.lastIndexOf(",") + 1);
 			var term = name.trim().split(" - ")[1];
 			$('#sharelink').prop("disabled", false);
-			
-			if (previousterms != "")
-				return previousterms +  term;
-				
+			if (previousterms != "") return previousterms + term;
 			return term;
-        },
-		matcher: function(item) {
+		},
+		matcher: function (item) {
 			return true;
 		},
 		highlighter: function (item) {
 			var searchterms = this.query.trim().split(",");
-			searchterms = searchterms[searchterms.length-1].split(" ");
-			
-			var newitem = item;
-			
+			searchterms = searchterms[searchterms.length - 1].split(" ");
+			var newitem1 = item;
 			for (var i = 0; i < searchterms.length; i++) {
-				var regex = new RegExp( '(' + searchterms[i] + ')', 'i' );
-				newitem = newitem.replace( regex, "<strong>$1</strong>" );
+				var regex = new RegExp('(' + searchterms[i] + ')', 'i');
+				newitem1 = newitem1.replace(regex, "<strong>$1</strong>");
 			}
-			
-            return newitem;
-        },
+			return newitem1;
+		},
 	});
 };
-
 Template.shareLinkDialog.events({
-    'input #sharelinkaddress': function (event, template) {
+	'input #sharelinkaddress': function (event, template) {
 		if (!event.target.validity.valid) {
 			template.find('#sharelink').disabled = true;
 		} else {
 			template.find('#sharelink').disabled = false;
 		}
 	},
-    'click .cancel': function () {
-        Session.set("showShareLinkDialog", false);
-        Session.set("status",undefined);
-    },
-    'submit #sharelinkform': function (event, template) {
-        event.preventDefault();
-        Session.set("status",
-			'<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i>Links werden gesendet</p>');
-                                
-        var targetemail = template.find("#sharelinkaddress").value;
-		
-		if (targetemail.indexOf(",") !== -1)
-			targetemail = targetemail.split(",");
-		
-		Meteor.call('shareLinks', targetemail, _.pluck(Session.get("temp_set"),"_str"), function (error, result) {
+	'click .cancel': function () {
+		Session.set("showShareLinkDialog", false);
+		Session.set("status", undefined);
+	},
+	'submit #sharelinkform': function (event, template) {
+		event.preventDefault();
+		Session.set("status", '<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i>Links werden gesendet</p>');
+		var targetemail = template.find("#sharelinkaddress").value;
+		if (targetemail.indexOf(",") !== -1) targetemail = targetemail.split(",");
+		Meteor.call('shareLinks', targetemail, _.pluck(Session.get("temp_set"), "_str"), function (error, result) {
 			if (error) {
-                Session.set("status",
-                    '<p class="pull-left statustext"><i class="icon-remove"></i>' + " " + error.details + "</p>");
+				Session.set("status", '<p class="pull-left statustext"><i class="icon-remove"></i>' + " " + error.details + "</p>");
 			}
 			if (result) {
 				Session.set("status", '<p class="pull-left statustext"><i class="icon-ok"></i>' + " " + "Links geteilt</p>");
 				Meteor.setTimeout(function () {
 					Session.set("showShareLinkDialog", false);
 					Session.set("status", undefined);
-                    Session.set("temp_set",[]);
+					Session.set("temp_set", []);
 				}, 3000);
-            }
-        });
-    }
+			}
+		});
+	}
 });
-                           
 //Events des Seiten anzeigen Dialogs
 Template.sitesDialog.events({
 	// User hat abgebrochen, Dialog schließen
@@ -1956,28 +1710,26 @@ Template.sitesDialog.events({
 	'click #crawl_all_sites': function (event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true) {
 			event.target.className = "icon-refreshing";
-
 			Sites.find().forEach(function (site) {
 				if ((!site.next_crawl || site.next_crawl == null) && site.active === true && (new Date() - site.last_crawled) > (1000 * 60 * 60 * 24)) {
 					Meteor.call("scheduleCrawl", site._id, function (error, result) {
 						if (error) {
 							event.target.className = "icon-remove";
 							console.log("Error scheduling crawl for site " + site.name + " (" + error.reason + ")");
-							$('#'+site._id._str+'_crawlstatus').removeClass("icon-search");
-							$('#'+site._id._str+'_crawlstatus').removeClass("hand");
-							$('#'+site._id._str+'_crawlstatus').addClass("icon-remove");
+							$('#' + site._id._str + '_crawlstatus').removeClass("icon-search");
+							$('#' + site._id._str + '_crawlstatus').removeClass("hand");
+							$('#' + site._id._str + '_crawlstatus').addClass("icon-remove");
 						}
 						if (result && result.data && result.data.status == "ok") {
 							event.target.className = "icon-time";
-							$('#'+site._id._str+'_crawlstatus').removeClass("icon-search");
-							$('#'+site._id._str+'_crawlstatus').removeClass("hand");
-							$('#'+site._id._str+'_crawlstatus').addClass("icon-time");
-						}
-						else {
+							$('#' + site._id._str + '_crawlstatus').removeClass("icon-search");
+							$('#' + site._id._str + '_crawlstatus').removeClass("hand");
+							$('#' + site._id._str + '_crawlstatus').addClass("icon-time");
+						} else {
 							event.target.className = "icon-remove";
-							$('#'+site._id._str+'_crawlstatus').removeClass("icon-search");
-							$('#'+site._id._str+'_crawlstatus').removeClass("hand");
-							$('#'+site._id._str+'_crawlstatus').addClass("icon-remove");
+							$('#' + site._id._str + '_crawlstatus').removeClass("icon-search");
+							$('#' + site._id._str + '_crawlstatus').removeClass("hand");
+							$('#' + site._id._str + '_crawlstatus').addClass("icon-remove");
 						}
 					});
 				}
@@ -1987,8 +1739,7 @@ Template.sitesDialog.events({
 	'click .crawl_single_site': function (event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true) {
 			event.target.className = "icon-refreshing";
-			
-			if ((!this.next_crawl || this.next_crawl == null)  && this.active === true) {
+			if ((!this.next_crawl || this.next_crawl == null) && this.active === true) {
 				Meteor.call("scheduleCrawl", this._id, function (error, result) {
 					if (error) {
 						event.target.className = "icon-remove";
@@ -1996,8 +1747,7 @@ Template.sitesDialog.events({
 					}
 					if (result && result.data && result.data.status == "ok") {
 						event.target.className = "icon-time";
-					}
-					else event.target.className = "icon-remove";
+					} else event.target.className = "icon-remove";
 				});
 			} else {
 				Meteor.call("cancelCrawl", this._id, function (error, result) {
@@ -2007,8 +1757,7 @@ Template.sitesDialog.events({
 					}
 					if (result && result.data && result.data.status == "ok") {
 						event.target.className = "icon-search";
-					}
-					else event.target.className = "icon-remove";
+					} else event.target.className = "icon-remove";
 				});
 			}
 		}
@@ -2017,14 +1766,13 @@ Template.sitesDialog.events({
 	'submit .form-inline': function (event, template) {
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
-
 		if (Meteor.userId() && newName != "") Sites.update({
-			_id: this._id
-		}, {
-			$set: {
-				name: newName
-			}
-		});
+				_id: this._id
+			}, {
+				$set: {
+					name: newName
+				}
+			});
 	},
 	'click .remove_site': function (event, template) {
 		Sites.remove({
@@ -2050,15 +1798,11 @@ Template.accountSettingsDialog.events({
 	},
 	//IP-Adresse aktualisieren Button - IP checken und anzeigen
 	'click #refreship': function (event, template) {
-		Session.set("status",
-			'<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i></p>');
-
+		Session.set("status", '<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i></p>');
 		var aport = Meteor.user().profile.port;
-		Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
-		function (error, result) {
+		Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 			if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-			if (result && result.statusCode === 200 && result.data && result.data.ip) 
-			{			
+			if (result && result.statusCode === 200 && result.data && result.data.ip) {
 				Meteor.users.update({
 					_id: Meteor.userId()
 				}, {
@@ -2067,7 +1811,6 @@ Template.accountSettingsDialog.events({
 					}
 				});
 				template.find("#ip").value = result.data.ip;
-				
 				// neue IP nutzen und checken, ob hier ein JD läuft...			
 				Meteor.call("checkJDOnlineStatus", {
 					ip: result.data.ip,
@@ -2079,9 +1822,7 @@ Template.accountSettingsDialog.events({
 					Session.set("JDOnlineStatus", isOnline);
 					Session.set("status", undefined);
 				});
-			}
-			else
-			{
+			} else {
 				console.log("Fehler beim ermitteln des Online-Status: ungültige Anwort vom Server");
 				Session.set("JDOnlineStatus", false);
 				Session.set("status", undefined);
@@ -2092,50 +1833,32 @@ Template.accountSettingsDialog.events({
 	'click #autoupdate': function (event, template) {
 		if (template.find("#autoupdate").checked) {
 			$('#ip').prop("disabled", true);
-			if (template.find('#port').validity.valid && template.find('#ip').validity.valid)
-				template.find('.save').disabled = false;
-		}
-		else $('#ip').prop("disabled", false);
+			if (template.find('#port').validity.valid && template.find('#ip').validity.valid) template.find('.save').disabled = false;
+		} else $('#ip').prop("disabled", false);
 	},
 	//eingaben speichern und IP nochmal updaten, falls der User was komisches eingegeben hat
-	'click .save': function (event, template) {	
+	'click .save': function (event, template) {
 		var aip = template.find("#ip").value;
 		var aport = template.find("#port").value;
 		var aupdateip = template.find("#autoupdate").checked;
 		var ashowtooltips = template.find("#showtooltips").checked;
 		var ashowdownloadedlinks = template.find("#showdownloadedlinks").checked;
-		
 		var searchzippysharemusic = template.find("#searchzippysharemusic").checked;
 		var searchmuzon = template.find("#searchmuzon").checked;
 		var searchsoundcloud = template.find("#searchsoundcloud").checked;
 		var searchyoutube = template.find("#searchyoutube").checked;
 		var searchexfm = template.find("#searchexfm").checked;
-		
 		var searchproviders = [];
-		
-		if (searchzippysharemusic)
-			searchproviders.push("zippysharemusic");
-		
-		if (searchmuzon)
-			searchproviders.push("muzon");
-		
-		if (searchsoundcloud)
-			searchproviders.push("soundcloud");
-			
-		if (searchyoutube)
-			searchproviders.push("youtube");
-			
-		if (searchexfm)
-			searchproviders.push("ex.fm");	
-		
-		Session.set("filter_show_already_downloaded",ashowdownloadedlinks);
-		
+		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
+		if (searchmuzon) searchproviders.push("muzon");
+		if (searchsoundcloud) searchproviders.push("soundcloud");
+		if (searchyoutube) searchproviders.push("youtube");
+		if (searchexfm) searchproviders.push("ex.fm");
+		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
 		if (aupdateip === true) {
-			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
-			function (error, result) {
+			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-				if (result && result.statusCode === 200 && result.data && result.data.ip)
-				{
+				if (result && result.statusCode === 200 && result.data && result.data.ip) {
 					Meteor.users.update({
 						_id: Meteor.userId()
 					}, {
@@ -2167,7 +1890,6 @@ Template.accountSettingsDialog.events({
 				}
 			});
 		}
-		
 		Meteor.users.update({
 			_id: Meteor.userId()
 		}, {
@@ -2175,23 +1897,20 @@ Template.accountSettingsDialog.events({
 				'profile.port': aport,
 				'profile.autoupdateip': aupdateip,
 				'profile.showtooltips': ashowtooltips,
-				'profile.showdownloadedlinks' : ashowdownloadedlinks,
-				'profile.searchproviders' : searchproviders
+				'profile.showdownloadedlinks': ashowdownloadedlinks,
+				'profile.searchproviders': searchproviders
 			}
-		});		
-
+		});
 		// es wurde gespeichert, Dialog schließen
 		Session.set("showAccountSettingsDialog", false);
 	},
-
 	'click .cancel': function () {
 		// User hat abgebrochen, Dialog schließen
 		Session.set("showAccountSettingsDialog", false);
 	}
 });
-
 Template.filterSitesDialog.events({
-	'click #filter_all' : function (event, template) {
+	'click #filter_all': function (event, template) {
 		if (!event.target.checked === true) {
 			var selected = _.pluck(Sites.find({}, {
 				fields: {
@@ -2203,33 +1922,29 @@ Template.filterSitesDialog.events({
 	},
 	'click .site_checkbox': function (event, template) {
 		var selected = Session.get("temp_filter_sites");
-		if (event.target.checked)
-			selected = _.without(selected, this.feedurl);
-		else
-			selected.push(this.feedurl);
+		if (event.target.checked) selected = _.without(selected, this.feedurl);
+		else selected.push(this.feedurl);
 		Session.set("temp_filter_sites", _.uniq(selected));
 		if (!selected.length) $('#filter_all').prop("checked", false);
 	},
 	'click .save': function () {
 		Meteor.users.update({
 			_id: Meteor.userId()
-			}, {
-				$set: {
-					'profile.filteredsites': Session.get("temp_filter_sites")
-				}
+		}, {
+			$set: {
+				'profile.filteredsites': Session.get("temp_filter_sites")
+			}
 		});
 		Session.set("filter_sites", Session.get("temp_filter_sites"));
 		// User hat abgebrochen, Dialog schließen
 		Session.set("showFilterSitesDialog", false);
 	}
 });
-	
+
 function refreshJDOnlineStatus() {
 	if (Meteor.user() && Meteor.user().profile) {
 		if (Meteor.user().profile.autoupdateip === true) {
-			Meteor.http.call("GET", "http://api.hostip.info/get_json.php",
-
-			function (error, result) {
+			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
 				if (result && result.statusCode === 200 && result.data && result.data.ip) Meteor.user().profile.ip = result.data.ip;
 			});
@@ -2245,8 +1960,8 @@ function refreshJDOnlineStatus() {
 		});
 	}
 }
-
 //Hilfsfunktion für die Kopierenfunktion von Links - alle Link URLs in einem neuen Fenster anzeigen
+
 function writeConsole(content) {
 	top.consoleRef = window.open('', 'Links', 'width=250,height=500' + ',menubar=0' + ',toolbar=0' + ',status=0' + ',scrollbars=0' + ',resizable=1');
 	top.consoleRef.document.writeln('<html><head><title>Console</title></head>' + '<body bgcolor=white onLoad="self.focus()">' + content + '</body></html>');

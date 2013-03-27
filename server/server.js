@@ -1,34 +1,58 @@
 //Eventhandler User wird erstellt auf dem Server
-Meteor.startup(function(){
-        Links._ensureIndex({date_published: 1});
-        Links._ensureIndex({url: 1}, {unique: 1});
-		Links._ensureIndex({source: 1});
-		Links._ensureIndex({status: 1});
-		Links._ensureIndex({downloaders: 1});
-		Links._ensureIndex({keywords: 1});
-        Sites._ensureIndex({last_crawled: 1});
-		Sites._ensureIndex({creator: 1});
-        Sites._ensureIndex({feedurl: 1}, {unique: 1});
-		Sites._ensureIndex({url: 1}, {unique: 1});
-        Meteor.users._ensureIndex({id: 1}, {unique: 1});
+Meteor.startup(function () {
+	Links._ensureIndex({
+		date_published: 1
+	});
+	Links._ensureIndex({
+		url: 1
+	}, {
+		unique: 1
+	});
+	Links._ensureIndex({
+		source: 1
+	});
+	Links._ensureIndex({
+		status: 1
+	});
+	Links._ensureIndex({
+		downloaders: 1
+	});
+	Links._ensureIndex({
+		keywords: 1
+	});
+	Sites._ensureIndex({
+		last_crawled: 1
+	});
+	Sites._ensureIndex({
+		creator: 1
+	});
+	Sites._ensureIndex({
+		feedurl: 1
+	}, {
+		unique: 1
+	});
+	Sites._ensureIndex({
+		url: 1
+	}, {
+		unique: 1
+	});
+	Meteor.users._ensureIndex({
+		id: 1
+	}, {
+		unique: 1
+	});
 });
-
 Accounts.onCreateUser(function (options, user) {
 	if (options.profile) user.profile = options.profile;
-
 	var accessToken = user.services.facebook.accessToken,
 		result;
-
 	// Das Profilbild muessen wir extra abfragen...
-	result = Meteor.http.get(
-		"https://graph.facebook.com/me/picture?access_token=&redirect=false", {
+	result = Meteor.http.get("https://graph.facebook.com/me/picture?access_token=&redirect=false", {
 		params: {
 			access_token: accessToken
 		}
 	});
-
 	if (result.error) throw result.error;
-
 	// Benutzerprofil mit den gesammelten Daten anreichen und
 	// default-Werte setzen
 	user.profile.autoupdateip = true;
@@ -36,11 +60,10 @@ Accounts.onCreateUser(function (options, user) {
 	user.profile.showdownloadedlinks = false;
 	user.profile.showunknownlinks = false;
 	user.profile.filteredsites = [];
-	user.profile.searchproviders = ["zippysharemusic","muzon","soundcloud"];
+	user.profile.searchproviders = ["zippysharemusic", "muzon", "soundcloud"];
 	user.profile.ip = "";
 	user.profile.port = 10025;
 	user.profile.pictureurl = result.data.data.url;
-
 	// email und username werden direkt im Benutzer gesetzt, daher
 	// loeschen wir diese Attribute auch aus dem Profil-Objekt
 	user.emails = new Array({
