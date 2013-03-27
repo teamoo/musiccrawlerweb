@@ -1508,7 +1508,7 @@ Template.searchresult.events({
 		if (event.target.className.indexOf("icon") === -1)
 			event.target.innerHTML = "<i class='icon-loader'></i>";
 		else {
-			event.srcElement.outerHTML = "<i class='icon-loader'></i>";
+			event.target.outerHTML = "<i class='icon-loader'></i>";
 		}	
 			
 		if (Session.equals("JDOnlineStatus", true)) {
@@ -1522,7 +1522,7 @@ Template.searchresult.events({
 					if (event.target.className.indexOf("icon") === -1)
 						event.target.innerHTML = "<i class='icon-remove'></i>";
 					else {
-						event.srcElement.outerHTML = "<i class='icon-remove'></i>";
+						event.target.outerHTML = "<i class='icon-remove'></i>";
 					}
 					console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
 				}
@@ -1530,7 +1530,7 @@ Template.searchresult.events({
 					if (event.target.className.indexOf("icon") === -1)
 						event.target.innerHTML = "<i class='icon-ok'></i>";
 					else {
-						event.srcElement.outerHTML = "<i class='icon-ok'></i>";					
+						event.target.outerHTML = "<i class='icon-ok'></i>";					
 					}
 				}
 			});
@@ -1539,7 +1539,7 @@ Template.searchresult.events({
 			if (event.target.className.indexOf("icon") === -1)
 				event.target.innerHTML = "<i class='icon-ok'></i>";
 			else {
-				event.srcElement.outerHTML = "<i class='icon-ok'></i>";					
+				event.target.outerHTML = "<i class='icon-ok'></i>";					
 			}
 		}
 		return false;
@@ -1551,7 +1551,7 @@ Template.searchresult.events({
 		if (event.target.className.indexOf("icon") === -1)
 			event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";
 		else {
-			event.srcElement.outerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";				
+			event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";				
 		}
 		
 		var sitefilter = Session.get("filter_sites");
@@ -1563,14 +1563,14 @@ Template.searchresult.events({
 				if (event.target.className.indexOf("icon") === -1)
 					event.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";
 				else {
-					event.srcElement.outerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";				
+					event.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";				
 				}
 			}
 			if (result) {
 				if (event.target.className.indexOf("icon") === -1)
 					event.target.innerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";
 				else {
-					event.srcElement.outerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";				
+					event.target.innerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";				
 				}
 				Meteor.call('updateLinkContributionCount');
 			}
