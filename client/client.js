@@ -1504,7 +1504,13 @@ Template.searchresult.events({
 		event.preventDefault();
 		event.stopPropagation();
 		event.target.disabled = true;
-		event.target.innerHTML = "<i class='icon-loader'></i>";
+		
+		if (event.target.className.indexOf("icon") === -1)
+			event.target.innerHTML = "<i class='icon-loader'></i>";
+		else {
+			event.target.outerHTML = "<i class='icon-loader'></i>";
+		}	
+			
 		if (Session.equals("JDOnlineStatus", true)) {
 			var grabberoption;
 			if (this.url.match(/youtube|vimeo/i)) grabberoption = "grabber1";
@@ -1513,16 +1519,28 @@ Template.searchresult.events({
 			requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
 			Meteor.call("sendLinks", requeststring, function (error, result) {
 				if (error) {
-					event.target.innerHTML = "<i class='icon-remove'></i>";
+					if (event.target.className.indexOf("icon") === -1)
+						event.target.innerHTML = "<i class='icon-remove'></i>";
+					else {
+						event.target.outerHTML = "<i class='icon-remove'></i>";
+					}
 					console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
 				}
 				if (result) {
-					event.target.innerHTML = "<i class='icon-ok'></i>";
+					if (event.target.className.indexOf("icon") === -1)
+						event.target.innerHTML = "<i class='icon-ok'></i>";
+					else {
+						event.target.outerHTML = "<i class='icon-ok'></i>";					
+					}
 				}
 			});
 		} else {
 			writeConsole(this.url);
-			event.target.innerHTML = "<i class='icon-ok'></i>";
+			if (event.target.className.indexOf("icon") === -1)
+				event.target.innerHTML = "<i class='icon-ok'></i>";
+			else {
+				event.target.outerHTML = "<i class='icon-ok'></i>";					
+			}
 		}
 		return false;
 	},
@@ -1530,17 +1548,30 @@ Template.searchresult.events({
 		event.preventDefault();
 		event.stopPropagation();
 		event.target.disabled = true;
-		event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";
+		if (event.target.className.indexOf("icon") === -1)
+			event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";
+		else {
+			event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";				
+		}
+		
 		var sitefilter = Session.get("filter_sites");
 		sitefilter.push(Meteor.user().id);
 		Session.set("filter_sites", sitefilter);
 		Meteor.call('createLink', this.url, this.stream_url, function (error, result) {
 			if (error) {
 				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
-				event.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";
+				if (event.target.className.indexOf("icon") === -1)
+					event.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";
+				else {
+					event.target.innerHTML = "<i class='icon-remove'></i> Link zur Datenbank hinzufügen";				
+				}
 			}
 			if (result) {
-				event.target.innerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";
+				if (event.target.className.indexOf("icon") === -1)
+					event.target.innerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";
+				else {
+					event.target.innerHTML = "<i class='icon-ok'></i> Link zur Datenbank hinzufügen";				
+				}
 				Meteor.call('updateLinkContributionCount');
 			}
 		});
