@@ -8,6 +8,9 @@ Session.setDefault("links_completed", false);
 Session.setDefault("users_completed", false);
 Session.setDefault("counts_completed", false);
 Session.setDefault("status", undefined);
+Session.setDefault("selected_links", []);
+Session.setDefault("JDOnlineStatus", false);
+Session.setDefault("temp_set",[]);
 Session.setDefault("showAccountSettingsDialog", false);
 Session.setDefault("showAddLinkDialog", false);
 Session.setDefault("showAddSiteDialog", false);
@@ -26,11 +29,8 @@ Session.setDefault("filter_skip", 0);
 Session.setDefault("filter_sites", []);
 Session.setDefault("temp_filter_sites", []);
 Session.setDefault("filter_show_already_downloaded", false);
-Session.setDefault("selected_links", []);
-Session.setDefault("JDOnlineStatus", false);
 Session.setDefault("filter_id", undefined);
 Session.setDefault("filter_sort", "date_published");
-Session.setDefault("temp_set",[]);
 
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
