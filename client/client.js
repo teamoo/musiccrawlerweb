@@ -543,7 +543,7 @@ Template.user_loggedin.events({
 });
 Template.navigation.rendered = function () {	
 	$('#searchfield').typeahead({
-		items: 3,
+		items: 6,
 		minLength: 3,
 		source: function (query, process) {
 			Meteor.call("getSuggestionsForSearchTerm", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
@@ -1716,7 +1716,7 @@ Template.sitesDialog.rendered = function () {
 };
 Template.shareLinkDialog.rendered = function () {
 	$('#sharelinkaddress').typeahead({
-		items: 6,
+		items: 3,
 		minLength: 3,
 		source: function (aquery, process) {
 			searchterm = aquery.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").split(",");
