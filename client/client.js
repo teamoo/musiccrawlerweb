@@ -31,11 +31,8 @@ Session.setDefault("filter_id", undefined);
 Session.setDefault("filter_sort", "date_published");
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
-	/*Meteor.call("getLinksCount", new Date(new Date().setDate(new Date().getDate()-timespan)), function (error, count) {
-		if (count)
-			Session.set("links_count_" + timespan, count);
-	});*/
 });
+
 Meteor.Router.add({
 	'/link/:id': function (id) {
 		Session.set('filter_id', id);
@@ -70,13 +67,21 @@ Deps.autorun(function () {
 		Session.set("wait_for_items", false);
 	});
 	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), function onReady() {
-		Session.set('counts_completed', true);
+		//Session.set('counts_completed', true);
+		[1, 14, 30, 90, 365].forEach(function (timespan) {
+			var item = Counts.findOne({
+				_id: timespan
+				});
+			if (item) Session.set("links_count_" + timespan, item.count);
+		});
 	});
+	/*
 	if (Session.equals("counts_completed", true)) {
 		var query = Counts.find({});
 		query.observeChanges({
 			added: function (id, count) {
 				[1, 14, 30, 90, 365].forEach(function (timespan) {
+					console.log("COUNTS");
 					var item = Counts.findOne({
 						_id: timespan
 					});
@@ -85,6 +90,7 @@ Deps.autorun(function () {
 			},
 			changed: function () {
 				[1, 14, 30, 90, 365].forEach(function (timespan) {
+					console.log("COUNTS");
 					var item = Counts.findOne({
 						_id: timespan
 					});
@@ -93,7 +99,9 @@ Deps.autorun(function () {
 			}
 		});
 	}
+	*/
 });
+
 //
 // Startup function
 Meteor.startup(function () {
@@ -448,11 +456,13 @@ var openShareLinkDialog = function () {
 Template.page.events({
 	'click': function (event, template) {
 		if (event.target.className.indexOf("icon-user") === -1) $('#accountbtn').popover('hide');
+		/*
 		if (!(event.target.form && event.target.form.className == "newcommentform")) {
 			if (event.target.id.indexOf("comment") === -1) if (event.target.className.indexOf("popover") === -1) if (event.target.className.indexOf("comment") === -1) if (event.target.outerHTML.indexOf("comment") === -1) {
 							$('.icon-comment').popover('hide');
 						}
 		}
+		*/
 	}
 });
 // Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
@@ -531,9 +541,9 @@ Template.user_loggedin.events({
 		return false;
 	}
 });
-Template.navigation.rendered = function () {
+Template.navigation.rendered = function () {	
 	$('#searchfield').typeahead({
-		items: 6,
+		items: 3,
 		minLength: 3,
 		source: function (query, process) {
 			Meteor.call("getSuggestionsForSearchTerm", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
@@ -1070,6 +1080,7 @@ Template.linklist.events = ({
 		}
 	}
 });
+/*
 Template.link.rendered = function () {
 	link = this.data;
 	htmlstr = "<form class='newcommentform' id=" + link._id._str + "><textarea id='new_comment' name='new_comment' placeholder='Kommentar eingeben' rows='5' style='width:248px' type='text' required></textarea><button class='btn btn-small btn-primary' id='postcomment' type='submit'>Posten</button></form>";
@@ -1098,6 +1109,7 @@ Template.link.rendered = function () {
 		}
 	});
 };
+*/
 Template.linklist.rendered = function () {
 	$('.linkname').editable();
 	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {

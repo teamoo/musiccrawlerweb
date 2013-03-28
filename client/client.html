@@ -240,7 +240,7 @@
 			<th><i class="icon-volume-up"></i></th>
 			<th>Name</th>
 			<th>URL</th>
-			<th></th>
+			<!--<th></th>-->
 			{{/constant}}
 			<th>
 				<i class="icon-thumbs-up hand" id="sort_like"></i>{{#if sortLikes}} <i class="icon-chevron-down" id="filter_links"></i>{{/if}}
@@ -315,6 +315,7 @@
 			</td>
 		  <td style="max-width: 400px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
 		  <td class="hidden-phone" style="max-width: 200px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
+			<!--
 			<td style="width:14px;min-width:14px;max-width:14px">
 				{{#if comments}}
 					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
@@ -322,6 +323,7 @@
 					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
 				{{/if}}
 			</td>
+			-->
 			<td style="width:40px;min-width:40px;max-width:40px">
 				<i class="icon-thumbs-up hand like"></i>
 				{{#if likes}}{{likes}}{{else}}0{{/if}}
@@ -376,6 +378,7 @@
 			</td>
 			<td style="max-width: 400px;color: gray;"><a style="color: gray;" class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
 			<td class="hidden-phone" style="max-width: 200px;color: gray;"><a style="color: gray;" href="{{url}}" target="_blank">{{url}}</a></td>
+			<!--
 			<td style="width:14px;min-width:14px;max-width:14px">
 				{{#if comments}}
 					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
@@ -383,6 +386,7 @@
 					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
 				{{/if}}
 			</td>
+			-->
 			<td style="width:40px;min-width:40px;max-width:40px;color: gray;">
 				<i class="icon-thumbs-up hand like"></i>
 				{{#if likes}}{{likes}}{{else}}0{{/if}}

@@ -21,6 +21,7 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
 	var initializing = true;
 	var thedownloaders = "dummy";
 	if (this.userId) thedownloaders = this.userId;
+	/*
 	var handle = Links.find({
 		status: {
 			$in: filter_status
@@ -91,6 +92,7 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
 	// run.  Now return an initial value and mark the subscription
 	// as ready.
 	initializing = false;
+	*/
 	[1, 14, 30, 90, 365].forEach(function (timespan) {
 		var count = Links.find({
 			date_published: {
@@ -111,9 +113,11 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
 	// Stop observing the cursor when client unsubs.
 	// Stopping a subscription automatically takes
 	// care of sending the client any removed messages.
+	/*
 	self.onStop(function () {
 		handle.stop();
 	});
+	*/
 });
 // Publish filtered list to all clients
 Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites, filter_sort, filter_id) {
@@ -187,7 +191,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 				likes: 1,
 				likers: 1,
 				downloaders: 1,
-				comments: 1,
+				//comments: 1,
 				url: 1,
 				hoster: 1,
 				source: 1,
