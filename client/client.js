@@ -1,4 +1,3 @@
-//TODO: Search does not always start
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
@@ -797,183 +796,200 @@ Template.navigation.events({
 				Session.set("loading_results", false);
 			}, 8000);
 		
-		Meteor.setTimeout(function () {
-			
-			if (Session.equals("links_completed", true) && (!Links.findOne() || (Links.find().count() < 3))) {
-				var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");
-				if (filter_term_external != "") {
-					if (!Meteor.user().profile.searchproviders.length) {
-						Session.set("loading_results", false);
-						return;
-					}
-					Session.set("filter_term_external", filter_term_external);
-					if (_.contains(Meteor.user().profile.searchproviders, "zippysharemusic")) {
-						Meteor.http.get("https://www.googleapis.com/customsearch/v1?key=" + Meteor.settings.public.google.search_api_key + "&cx=partner-pub-9019877854699644%3At1iell5gp8b&alt=json&fields=items(pagemap)&q=" + encodeURIComponent(filter_term_external), function (error, result) {
-							if (result && result.data && result.data.items) {
-								var items = result.data.items;
-								var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i;
-								var pattern2 = /\d{3,8}(?=\/file\.html)/i;
-								if (items && items.length) {
-									for (var i = 0; i <= items.length; i++) {
-										if (items[i]) {
-											var theurl = items[i].pagemap.metatags[0]["og:url"].replace("\\");
-											var stream_url = undefined;
-											var match1 = pattern1.exec(theurl);
-											var match2 = pattern2.exec(theurl);
-											if (match1 && match2) stream_url = match1 + "/downloadMusic?key=" + match2;
-											if (!SearchResults.findOne({
-												url: theurl
-											})) SearchResults.insert({
-													hoster: "zippyshare.com",
-													status: "unknown",
-													name: unescape(items[i].pagemap.metatags[0]["og:title"].replace("null").replace("undefined").trim()),
-													url: items[i].pagemap.metatags[0]["og:url"].replace("\\"),
-													stream_url: stream_url,
-													duration: moment(0)
-												});
+		var waitcount = 0;
+		
+		function waitForCompletionOfLinks()
+		{
+			if(Session.equals("links_completed",false) && waitcount <= 16)
+			{
+				waitcount++;
+			}
+			else
+			{	
+				Meteor.clearInterval(timerID); // stop firing the timer
+				
+				Meteor.setTimeout(function() {
+					if (Session.equals("links_completed", true) && (!Links.findOne() || (Links.find().count() < 3))) {
+					
+						var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");
+						if (filter_term_external != "") {
+							if (!Meteor.user().profile.searchproviders.length) {
+								Session.set("loading_results", false);
+								return;
+							}
+							Session.set("filter_term_external", filter_term_external);
+							if (_.contains(Meteor.user().profile.searchproviders, "zippysharemusic")) {
+								Meteor.http.get("https://www.googleapis.com/customsearch/v1?key=" + Meteor.settings.public.google.search_api_key + "&cx=partner-pub-9019877854699644%3At1iell5gp8b&alt=json&fields=items(pagemap)&q=" + encodeURIComponent(filter_term_external), function (error, result) {
+									if (result && result.data && result.data.items) {
+										var items = result.data.items;
+										var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i;
+										var pattern2 = /\d{3,8}(?=\/file\.html)/i;
+										if (items && items.length) {
+											for (var i = 0; i <= items.length; i++) {
+												if (items[i]) {
+													var theurl = items[i].pagemap.metatags[0]["og:url"].replace("\\");
+													var stream_url = undefined;
+													var match1 = pattern1.exec(theurl);
+													var match2 = pattern2.exec(theurl);
+													if (match1 && match2) stream_url = match1 + "/downloadMusic?key=" + match2;
+													if (!SearchResults.findOne({
+														url: theurl
+													})) SearchResults.insert({
+															hoster: "zippyshare.com",
+															status: "unknown",
+															name: unescape(items[i].pagemap.metatags[0]["og:title"].replace("null").replace("undefined").trim()),
+															url: items[i].pagemap.metatags[0]["og:url"].replace("\\"),
+															stream_url: stream_url,
+															duration: moment(0)
+														});
+												}
+											}
+											Session.set("loading_results", false);
 										}
 									}
-									Session.set("loading_results", false);
-								}
+								});
 							}
-						});
-					}
-					if (_.contains(Meteor.user().profile.searchproviders, "muzon")) {
-						Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function (error, result) {
-							if (result) {
-								var pattern1 = /<span.*id.*(aid|oid|autor|title|time).*>.*(?=<\/span>)/gi;
-								var pattern2 = /http.*(?=<img src="\/JJS\/download.png)/gi;
-								var tempaid = undefined;
-								var tempoid = undefined;
-								var tempautor = undefined;
-								var temptitle = undefined;
-								var temptime = undefined;
-								var tempurl = undefined;
-								var matches;
-								while (matches = pattern1.exec(result)) {
-									if (matches[0].indexOf("aid\">") !== -1) {
-										tempaid = (matches[0].split("aid\">")[1]);
+							if (_.contains(Meteor.user().profile.searchproviders, "muzon")) {
+								Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function (error, result) {
+									if (result) {
+										var pattern1 = /<span.*id.*(aid|oid|autor|title|time).*>.*(?=<\/span>)/gi;
+										var pattern2 = /http.*(?=<img src="\/JJS\/download.png)/gi;
+										var tempaid = undefined;
+										var tempoid = undefined;
+										var tempautor = undefined;
+										var temptitle = undefined;
+										var temptime = undefined;
+										var tempurl = undefined;
+										var matches;
+										while (matches = pattern1.exec(result)) {
+											if (matches[0].indexOf("aid\">") !== -1) {
+												tempaid = (matches[0].split("aid\">")[1]);
+											}
+											if (matches[0].indexOf("oid\">") !== -1) {
+												tempoid = (matches[0].split("oid\">")[1]);
+											}
+											if (matches[0].indexOf("autor\">") !== -1) {
+												tempautor = (matches[0].split("autor\">")[1]);
+											}
+											if (matches[0].indexOf("title\">") !== -1) {
+												temptitle = (matches[0].split("title\">")[1]);
+											}
+											if (matches[0].indexOf("time\">") !== -1) {
+												temptime = (matches[0].split("time\">")[1]);
+											}
+											if (tempaid && tempoid && tempautor && temptitle && temptime) {
+												var matches2;
+												while (matches2 = pattern2.exec(result)) {
+													var temp = matches2[0].split(" ")[0];
+													if (temp.indexOf(tempoid) !== -1 && temp.indexOf(tempaid) !== -1) {
+														var tempname = temptitle;
+														if (temptitle.indexOf(tempautor) === -1) tempname = tempautor + " - " + temptitle;
+														tempurl = temp;
+														if (!SearchResults.findOne({
+															url: tempurl
+														})) SearchResults.insert({
+																hoster: "muzon.ws",
+																status: "on",
+																name: unescape(tempname.replace("null").replace("undefined").trim()),
+																url: tempurl,
+																duration: moment(temptime * 1000),
+																stream_url: "http://s2.muzon.ws/audio/" + tempaid + "/" + tempoid + "/play.mp3"
+															});
+														tempaid = undefined;
+														tempoid = undefined;
+														tempautor = undefined;
+														temptitle = undefined;
+														temptile = undefined;
+														tempurl = undefined;
+													}
+												}
+												Session.set("loading_results", false);
+											}
+										}
 									}
-									if (matches[0].indexOf("oid\">") !== -1) {
-										tempoid = (matches[0].split("oid\">")[1]);
-									}
-									if (matches[0].indexOf("autor\">") !== -1) {
-										tempautor = (matches[0].split("autor\">")[1]);
-									}
-									if (matches[0].indexOf("title\">") !== -1) {
-										temptitle = (matches[0].split("title\">")[1]);
-									}
-									if (matches[0].indexOf("time\">") !== -1) {
-										temptime = (matches[0].split("time\">")[1]);
-									}
-									if (tempaid && tempoid && tempautor && temptitle && temptime) {
-										var matches2;
-										while (matches2 = pattern2.exec(result)) {
-											var temp = matches2[0].split(" ")[0];
-											if (temp.indexOf(tempoid) !== -1 && temp.indexOf(tempaid) !== -1) {
-												var tempname = temptitle;
-												if (temptitle.indexOf(tempautor) === -1) tempname = tempautor + " - " + temptitle;
-												tempurl = temp;
+								});
+							}
+							if (_.contains(Meteor.user().profile.searchproviders, "soundcloud")) {
+								SC.get('/tracks', {
+									filter: 'public',
+									limit: 10,
+									q: filter_term_external
+								}, function (tracks) {
+									if (tracks && tracks.length) {
+										for (var i = 0; i <= tracks.length; i++) {
+											if (tracks[i]) {
 												if (!SearchResults.findOne({
-													url: tempurl
+													url: tracks[i].permalink_url
 												})) SearchResults.insert({
-														hoster: "muzon.ws",
+														hoster: "soundcloud.com",
 														status: "on",
-														name: unescape(tempname.replace("null").replace("undefined").trim()),
-														url: tempurl,
-														duration: moment(temptime * 1000),
-														stream_url: "http://s2.muzon.ws/audio/" + tempaid + "/" + tempoid + "/play.mp3"
+														name: tracks[i].title,
+														url: tracks[i].permalink_url,
+														duration: moment(tracks[i].duration)
 													});
-												tempaid = undefined;
-												tempoid = undefined;
-												tempautor = undefined;
-												temptitle = undefined;
-												temptile = undefined;
-												tempurl = undefined;
 											}
 										}
 										Session.set("loading_results", false);
 									}
-								}
+								});
 							}
-						});
-					}
-					if (_.contains(Meteor.user().profile.searchproviders, "soundcloud")) {
-						SC.get('/tracks', {
-							filter: 'public',
-							limit: 10,
-							q: filter_term_external
-						}, function (tracks) {
-							if (tracks && tracks.length) {
-								for (var i = 0; i <= tracks.length; i++) {
-									if (tracks[i]) {
-										if (!SearchResults.findOne({
-											url: tracks[i].permalink_url
-										})) SearchResults.insert({
-												hoster: "soundcloud.com",
-												status: "on",
-												name: tracks[i].title,
-												url: tracks[i].permalink_url,
-												duration: moment(tracks[i].duration)
-											});
+							if (_.contains(Meteor.user().profile.searchproviders, "youtube")) {
+								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
+									return String(memo + "+" + token);
+								});
+								Meteor.http.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json", function (error, result) {
+									if (result && result.data && result.data.feed && result.data.feed.entry) {
+										var entry = result.data.feed.entry;
+										for (var i = 0; i <= entry.length; i++) {
+											if (entry[i]) {
+												if (!SearchResults.findOne({
+													url: entry[i].link[0].href
+												})) SearchResults.insert({
+														hoster: "youtube.com",
+														status: "on",
+														name: entry[i].title.$t,
+														url: entry[i].link[0].href,
+														duration: moment(entry[i].media$group.yt$duration.seconds * 1000)
+													});
+											}
+										}
+										Session.set("loading_results", false);
 									}
-								}
-								Session.set("loading_results", false);
+								});
 							}
-						});
-					}
-					if (_.contains(Meteor.user().profile.searchproviders, "youtube")) {
-						var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
-							return String(memo + "+" + token);
-						});
-						Meteor.http.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json", function (error, result) {
-							if (result && result.data && result.data.feed && result.data.feed.entry) {
-								var entry = result.data.feed.entry;
-								for (var i = 0; i <= entry.length; i++) {
-									if (entry[i]) {
-										if (!SearchResults.findOne({
-											url: entry[i].link[0].href
-										})) SearchResults.insert({
-												hoster: "youtube.com",
-												status: "on",
-												name: entry[i].title.$t,
-												url: entry[i].link[0].href,
-												duration: moment(entry[i].media$group.yt$duration.seconds * 1000)
-											});
+							if (_.contains(Meteor.user().profile.searchproviders, "ex.fm")) {
+								Meteor.http.get("http://ex.fm/api/v3/song/search/" + filter_term_external, function (error, result) {
+									if (result && result.data && result.data.status_code === 200) {
+										var songs = result.data.songs;
+										for (var i = 0; i <= songs.length; i++) {
+											if (songs[i]) {
+												console.log("http://ex.fm/api/v3/song/" + songs[i].id);
+												console.log(songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim());
+												if (!SearchResults.findOne({
+													url: "http://ex.fm/api/v3/song/" + songs[i].id
+												})) SearchResults.insert({
+														hoster: "ex.fm",
+														status: "on",
+														name: unescape((songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim())),
+														url: "http://ex.fm/api/v3/song/" + songs[i].id,
+														duration: moment(0)
+													});
+											}
+										}
+										Session.set("loading_results", false);
 									}
-								}
-								Session.set("loading_results", false);
+								});
 							}
-						});
+						}
+					} else {
+						Session.set("loading_results", false);
 					}
-					if (_.contains(Meteor.user().profile.searchproviders, "ex.fm")) {
-						Meteor.http.get("http://ex.fm/api/v3/song/search/" + filter_term_external, function (error, result) {
-							if (result && result.data && result.data.status_code === 200) {
-								var songs = result.data.songs;
-								for (var i = 0; i <= songs.length; i++) {
-									if (songs[i]) {
-										console.log("http://ex.fm/api/v3/song/" + songs[i].id);
-										console.log(songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim());
-										if (!SearchResults.findOne({
-											url: "http://ex.fm/api/v3/song/" + songs[i].id
-										})) SearchResults.insert({
-												hoster: "ex.fm",
-												status: "on",
-												name: unescape((songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim())),
-												url: "http://ex.fm/api/v3/song/" + songs[i].id,
-												duration: moment(0)
-											});
-									}
-								}
-								Session.set("loading_results", false);
-							}
-						});
-					}
-				}
-			} else {
-				Session.set("loading_results", false);
+				},500);
 			}
-		}, 1000);
+		}
+
+		var timerID = Meteor.setInterval(waitForCompletionOfLinks, 250, waitcount);
+
 		Meteor.Router.to("/");
 		return false;
 	}
