@@ -1516,7 +1516,11 @@ Template.searchresult.events({
 	'click .download_external_link': function (event, template) {
 		event.preventDefault();
 		event.stopPropagation();
-		event.target.disabled = true;
+		
+		if (event.target.className.indexOf("icon") === -1)
+			event.target.disabled = true;
+		else
+			event.target.parentElement.disabled = true;
 		
 		if (event.target.className.indexOf("icon") === -1)
 			event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";
@@ -1556,7 +1560,11 @@ Template.searchresult.events({
 	'click .add_external_link': function (event, template) {
 		event.preventDefault();
 		event.stopPropagation();
-		event.target.disabled = true;
+		
+		if (event.target.className.indexOf("icon") === -1)
+			event.target.disabled = true;
+		else
+			event.target.parentElement.disabled = true;
 		
 		if (event.target.className.indexOf("icon") === -1)
 			event.target.innerHTML = "<i class='icon-loader'></i> Link zur Datenbank hinzufügen";
