@@ -259,11 +259,7 @@ Template.navigation.getSiteCount = function () {
 };
 // Links-Outlet: alle Links, die gerade in der Subscription sind
 Template.linklist.links = function () {
-	return Links.find({}, {
-		sort: {
-			date_published: -1
-		}
-	});
+	return Links.find();
 };
 Template.searchresultlist.searchresults = function () {
 	return SearchResults.find({});

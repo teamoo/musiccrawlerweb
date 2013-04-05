@@ -122,16 +122,6 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
 // Publish filtered list to all clients
 Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites, filter_sort, filter_id) {
 	//XXX wenn Meteor projections kann, downloaders nicht komplett zurückgeben, sondern mit uns drin oder komplett leer
-	if ((filter_sort) == "date_published") {
-		likesort = 0;
-		publishedsort = -1;
-	} else if ((filter_sort) == "likes") {
-		likesort = -1;
-		publishedsort = -0;
-	} else {
-		likesort = 0;
-		publishedsort = -1;
-	}
 	if (filter_id) {
 		var aid;
 		try {
@@ -160,52 +150,102 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 		searchterms[i] = new RegExp(searchterms[i], "i");
 	}
 	if (filter_already_downloaded === false) thedownloaders = this.userId;
-	if (this.userId) return Links.find({
-			date_published: {
-				$gte: filter_date
-			},
-			status: {
-				$in: filter_status
-			},
-			source: {
-				$ne: filter_sites
-			},
-			downloaders: {
-				$ne: thedownloaders
-			},
-			name: {
-				$all: searchterms
-			},
-			source: {
-				$not: {
-					$in: filter_sites
+	if (this.userId) 
+	{
+		if (filter_sort && (filter_sort == "likes"))
+		return Links.find({
+				date_published: {
+					$gte: filter_date
+				},
+				status: {
+					$in: filter_status
+				},
+				source: {
+					$ne: filter_sites
+				},
+				downloaders: {
+					$ne: thedownloaders
+				},
+				name: {
+					$all: searchterms
+				},
+				source: {
+					$not: {
+						$in: filter_sites
+					}
 				}
-			}
-		}, {
-			limit: thelimit,
-			skip: filter_skip,
-			fields: {
-				_id: 1,
-				name: 1,
-				size: 1,
-				likes: 1,
-				likers: 1,
-				downloaders: 1,
-				//comments: 1,
-				url: 1,
-				hoster: 1,
-				source: 1,
-				date_published: 1,
-				stream_url: 1,
-				status: 1,
-				creator: 1
-			},
-			sort: {
-				likes: likesort,
-				date_published: publishedsort,
-				_id: -1
-			}
-		});
+			}, {
+				fields: {
+					_id: 1,
+					name: 1,
+					size: 1,
+					likes: 1,
+					likers: 1,
+					downloaders: 1,
+					//comments: 1,
+					url: 1,
+					hoster: 1,
+					source: 1,
+					date_published: 1,
+					stream_url: 1,
+					status: 1,
+					creator: 1
+				},
+				sort: {
+					likes: -1,
+					_id: -1
+				},
+				limit: thelimit,
+				skip: filter_skip
+			});	
+	
+		else
+		return Links.find({
+				date_published: {
+					$gte: filter_date
+				},
+				status: {
+					$in: filter_status
+				},
+				source: {
+					$ne: filter_sites
+				},
+				downloaders: {
+					$ne: thedownloaders
+				},
+				name: {
+					$all: searchterms
+				},
+				source: {
+					$not: {
+						$in: filter_sites
+					}
+				}
+			}, {
+				fields: {
+					_id: 1,
+					name: 1,
+					size: 1,
+					likes: 1,
+					likers: 1,
+					downloaders: 1,
+					//comments: 1,
+					url: 1,
+					hoster: 1,
+					source: 1,
+					date_published: 1,
+					stream_url: 1,
+					status: 1,
+					creator: 1
+				},
+				sort: {
+					date_published: -1,
+					_id: -1
+				},
+				limit: thelimit,
+				skip: filter_skip
+			});	
+	}
 });
 // Quellen
 // Publish all sites
