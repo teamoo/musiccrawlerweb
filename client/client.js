@@ -542,11 +542,13 @@ Template.user_loggedin.events({
 Template.navigation.rendered = function () {	
 	$('#searchfield').typeahead({
 		items: 6,
-		minLength: 3,
+		minLength: 4,
 		source: function (query, process) {
-			Meteor.call("getSuggestionsForSearchTerm", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
-				if (result.length) result.unshift(query.trim());
-				process(result);
+			Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
+				if (result && result.length) {
+					result.unshift(query.trim());
+					process(result);
+				}
 			});
 		},
 		updater: function (name) {
