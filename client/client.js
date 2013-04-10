@@ -212,7 +212,9 @@ Template.page.linksFoundLessThanThree = function () {
 };
 
 Template.page.isExternalSearch = function () {
-	return (!(Session.equals("filter_term", ".*")) && Meteor.user().profile.searchproviders.length);
+	if (Meteor.user() && Meteor.user().profile)
+		return (!(Session.equals("filter_term", ".*")) && Meteor.user().profile.searchproviders.length);
+	return false;
 };
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
 Template.navigation.isAnyLinkSelected = function () {
