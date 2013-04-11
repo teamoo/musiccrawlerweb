@@ -18,8 +18,8 @@ Session.setDefault("showShareLinkDialog", false);
 Session.setDefault("progressActive", false);
 Session.setDefault("progress", undefined);
 Session.setDefault("progressState", undefined);
-Session.setDefault("selected_navitem", 14);
-Session.setDefault("filter_date", new Date(new Date().setDate(new Date().getDate() - 14)));
+Session.setDefault("selected_navitem", 90);
+Session.setDefault("filter_date", new Date(new Date().setDate(new Date().getDate() - 90)));
 Session.setDefault("filter_status", ["on"]);
 Session.setDefault("filter_term", ".*");
 Session.setDefault("filter_limit", 1);
@@ -81,7 +81,6 @@ Deps.autorun(function () {
 		query.observeChanges({
 			added: function (id, count) {
 				[1, 14, 30, 90, 365].forEach(function (timespan) {
-					console.log("COUNTS");
 					var item = Counts.findOne({
 						_id: timespan
 					});
@@ -90,7 +89,6 @@ Deps.autorun(function () {
 			},
 			changed: function () {
 				[1, 14, 30, 90, 365].forEach(function (timespan) {
-					console.log("COUNTS");
 					var item = Counts.findOne({
 						_id: timespan
 					});
@@ -490,7 +488,7 @@ Template.user_loggedout.events({
 			requestPermissions: ['email']
 		}, function (error) {
 			if (error) {
-				alert("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.\nBitte probier es noch einmal, ansonsten frag bitte im Elektrobriefkasten um Hilfe.");
+				alert("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.");
 				console.log(error);
 			} else {
 				Meteor.call('updateFacebookTokensForUser');
@@ -541,14 +539,14 @@ Template.user_loggedin.events({
 });
 Template.navigation.rendered = function () {	
 	$('#searchfield').typeahead({
-		items: 6,
+		items: 11,
 		minLength: 4,
 		source: function (query, process) {
 			Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
 				if (result && result.length) {
 					result.unshift(query.trim());
-					process(result);
 				}
+				process(result);
 			});
 		},
 		updater: function (name) {
@@ -574,9 +572,10 @@ Template.navigation.rendered = function () {
 		},
 		highlighter: function (item) {
 			var searchterms = this.query.trim().split(" ");
+			var newitem = item;
 			for (var i = 0; i < searchterms.length; i++) {
 				var regex = new RegExp('(' + searchterms[i] + ')', 'i');
-				newitem = item.replace(regex, "<strong>$1</strong>");
+				newitem = newitem.replace(regex, "<strong>$1</strong>");
 			}
 			return newitem;
 		},
@@ -973,8 +972,6 @@ Template.navigation.events({
 										var songs = result.data.songs;
 										for (var i = 0; i <= songs.length; i++) {
 											if (songs[i]) {
-												console.log("http://ex.fm/api/v3/song/" + songs[i].id);
-												console.log(songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim());
 												if (!SearchResults.findOne({
 													url: "http://ex.fm/api/v3/song/" + songs[i].id
 												})) SearchResults.insert({

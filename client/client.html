@@ -1,9 +1,9 @@
 <head>
 	<title>MusicCrawler</title> 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	{{#constant}}
+
 		<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':1,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
-	{{/constant}}
+
 </head>
 
 <body>
@@ -137,7 +137,7 @@
 			{{#if currentUser}}
 				<a class="brand" id="brand" style="margin-left:-15px;cursor:default">MusicCrawler</a>
 				<ul class="nav" role="navigation">
-					<li class="dropdown">
+					<li class="dropdown hidden-phone">
 	                      <a id="drop1" role="button" class="dropdown-toggle hand" data-toggle="dropdown">Links <b class="caret"></b></a>
 	                      	<ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
 	                      			<li class="linkfilter hand"><a tabindex="-1" id="1">Letzte 24 Stunden <span class="badge" id="1">{{session "links_count_1"}}</span></a></li>
@@ -156,7 +156,7 @@
 	                      		<li class="hand"><a tabindex="-1" id="showsitesbutton"><i class="icon-th-list"></i> Seiten anzeigen <span class="badge">{{getSiteCount}}</span></a></li>
 	                      </ul>
 	                </li>
-					<li class="divider-vertical"></li>
+					<li class="divider-vertical hidden-phone"></li>
 					<a class="btn hidden-phone" id="addlinkbutton"><i class="icon-plus"></i> Link hinzufügen</a>
 					{{#if isAnyLinkSelected}}
 						<a class="btn hidden-phone hidden-tablet" id="copybutton"><i class="icon-file"></i> Zwischenablage</a>
@@ -171,13 +171,13 @@
 					{{/if}}
 				</ul>
 				<ul class="nav pull-right">
-					<li>
+					<li class="hidden-phone">
 						<form class="navbar-search pull-right" id="searchform">
 							<input type="search" class="search-query span20" placeholder="Titel, Interpret, Album..." id="searchfield" value="{{getLastSearchTerm}}" autocomplete="off" data-provide="typeahead">
 							<div class="icon-search"></div>
 						</form>
 					</li>
-					<li class="divider-vertical"></li>
+					<li class="divider-vertical hidden-phone"></li>
 					<li>
 						<div class="btn-group">
 							{{> user_info}}		  
@@ -213,7 +213,7 @@
 		<a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
 		<ul class="dropdown-menu pull-right">
 			<li class="hand"><a id="showsettings"><i class="icon-wrench"></i> Einstellungen</a></li>
-			<li class="hand"><a id="showsitefilter"><i class="icon-filter"></i> Seitenfilter</a></li>
+			<li class="hand hidden-phone"><a id="showsitefilter"><i class="icon-filter"></i> Seitenfilter</a></li>
 			<li class="divider"></li>
 			<li class="hand"><a id="logout"><i class="icon-off"></i> Abmelden</a></li>
 		</ul>
@@ -230,22 +230,22 @@
 			<th>
 				<input type="checkbox" id="select_all">
 			</th>
-			<th>
+			<th class="hidden-phone">
 				{{#if isAnyLinkSelectedSet}}
 					<i class="icon-share hand" id="share_links"><i>
 				{{/if}}
 			</th>
-			<th></th>
+			<th class="hidden-phone"></th>
 			{{#constant}}
-			<th><i class="icon-volume-up"></i></th>
+			<th class="hidden-phone"><i class="icon-volume-up"></i></th>
 			<th>Name</th>
-			<th>URL</th>
+			<th class="hidden-phone">URL</th>
 			<!--<th></th>-->
 			{{/constant}}
 			<th>
 				<i class="icon-thumbs-up hand" id="sort_like"></i>{{#if sortLikes}} <i class="icon-chevron-down" id="filter_links"></i>{{/if}}
 			</th>
-			<th>
+			<th class="hidden-phone">
 				{{#if currentUser.profile.showunknownlinks}}
 					<i class="icon-filter icon-white hand" id="filter_links"></i>
 				{{else}}
@@ -253,14 +253,14 @@
 				{{/if}}	
 			</th>
 			{{#constant}}
-			<th>Quelle</th>
-			<th>Größe</th>
+			<th class="hidden-phone">Quelle</th>
+			<th class="hidden-phone">Größe</th>
 			{{/constant}}
-			<th class="hand" style="text-align:right" id="sort_date_published">Veröffentlicht{{#if sortPublished}} <i class="icon-chevron-down" id="filter_links"></i>{{else}}&nbsp;&nbsp;&nbsp;&nbsp;{{/if}}</th>
+			<th class="hidden-phone hand" style="text-align:right" id="sort_date_published">Veröffentlicht{{#if sortPublished}} <i class="icon-chevron-down" id="filter_links"></i>{{else}}&nbsp;&nbsp;&nbsp;&nbsp;{{/if}}</th>
 			{{#if session "filter_show_already_downloaded"}}
 			{{else}}
 				{{#if isAnyLinkSelected}}
-					<th><i class="icon-remove hand" id="hide_selected_links"></i></th>
+					<th class="hidden-phone"><i class="icon-remove hand" id="hide_selected_links"></i></th>
 				{{/if}}
 			{{/if}}
 		</thead>
@@ -294,19 +294,19 @@
 					<input type="checkbox" class="link_checkbox">
 				{{/if}}
 			</td>
-			<td style="width:14px;min-width:14px;max-width:14px">
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#if isLinkSelectedSet}}
 					<i class="icon-minus hand removelinkfromset"><i>
 				{{else}}
 					<i class="icon-plus hand addlinktoset"><i>
 				{{/if}}
 			</td>
-			<td style="width:14px;min-width:14px;max-width:14px">
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#constant}}
 				<i class="icon-refresh hand refreshlink"></i>
 				{{/constant}}
 			</td>
-			<td style="width:14px;min-width:14px;max-width:14px">
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#constant}}
 				{{#if isPlayable}}
 					<i class="icon-play player hand"></i>
@@ -328,23 +328,23 @@
 				<i class="icon-thumbs-up hand like"></i>
 				{{#if likes}}{{likes}}{{else}}0{{/if}}
 			</td>
-			<td style="width:14px;min-width:14px;max-width:14px;text-align:center">
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px;text-align:center">
 				<i class="{{getStatusIcon}}"></i>
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
-			<td style="width:150px;min-width:150px;max-width:150px;text-align:right;">{{dateFormatPretty date_published}}</td>
+			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;text-align:right;">{{dateFormatPretty date_published}}</td>
 			
 			{{#if session "filter_show_already_downloaded"}}
 				{{#if currentUser.admin}}	
-					<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
+					<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 				{{/if}}
 			{{else}}
 				{{#if currentUser.admin}}	
-					<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
-					<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
+					<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
+					<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 				{{else}}
-					<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
+					<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
 				{{/if}}
 			{{/if}}	
 		</tr>
@@ -357,19 +357,19 @@
 					<input type="checkbox" class="link_checkbox">
 				{{/if}}
 			</td>
-			<td style="width:14px;min-width:14px;max-width:14px">
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#if isLinkSelectedSet}}
 					<i class="icon-minus hand removelinkfromset"><i>
 				{{else}}
 					<i class="icon-plus hand addlinktoset"><i>
 				{{/if}}
 			</td>
-			<td style="width:14px;min-width:14px;max-width:14px">
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#constant}}
 				<i class="icon-refresh hand refreshlink"></i>
 				{{/constant}}
 			</td>
-			<td style="width:14px;min-width:14px;max-width:14px">
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#constant}}
 				{{#if isPlayable}}
 					<i class="icon-play player hand"></i>
@@ -391,14 +391,14 @@
 				<i class="icon-thumbs-up hand like"></i>
 				{{#if likes}}{{likes}}{{else}}0{{/if}}
 			</td>
-			<td style="width:14px;min-width:14px;max-width:14px;text-align:center;">
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px;text-align:center;">
 				<i class="{{getStatusIcon}}"></i>
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;color: gray;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;color:gray">{{getSizeinMB}}</td>
-			<td style="width:150px;min-width:150px;max-width:150px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
+			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
 			{{#if currentUser.admin}}	
-				<td style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
+				<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{/if}}
