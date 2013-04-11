@@ -1395,7 +1395,7 @@ Template.link.events({
 		});
 	},
 	//X-Editable Formular - Namensänderung übernehmen
-	'submit .form-inline': function (event, template) {
+	'submit .form-inline, click .editable-submit': function (event, template) {
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
 		if (newName != "") Links.update({
