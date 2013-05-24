@@ -15,6 +15,7 @@ Session.setDefault("showAddSiteDialog", false);
 Session.setDefault("showSitesDialog", false);
 Session.setDefault("showFilterSitesDialog", false);
 Session.setDefault("showShareLinkDialog", false);
+Session.setDefault("showBulkDownloadDialog", false);
 Session.setDefault("progressActive", false);
 Session.setDefault("progress", undefined);
 Session.setDefault("progressState", undefined);
@@ -446,6 +447,9 @@ var openFilterSitesDialog = function () {
 var openShareLinkDialog = function () {
 	if (Meteor.status().connected) Session.set("showShareLinkDialog", true);
 };
+var openBulkDownloadDialog = function () {
+	if (Meteor.status().connected) Session.set("showBulkDownloadDialog", true);
+};
 //
 // Eventhandler
 //
@@ -535,7 +539,7 @@ Template.user_loggedin.events({
 		event.preventDefault();
 		event.stopPropagation();
 		return false;
-	}
+	},
 });
 Template.navigation.rendered = function () {	
 	$('#searchfield').typeahead({
@@ -729,6 +733,11 @@ Template.navigation.events({
 		Meteor.setTimeout(function () {
 			activateInput($("#newlinkurl"));
 		}, 250);
+		return false;
+	},
+	'click #bulkdownloadbutton': function (event) {
+		event.preventDefault();
+		openBulkDownloadDialog();
 		return false;
 	},
 	'click .linkfilter': function (event, template) {
@@ -2016,6 +2025,66 @@ Template.filterSitesDialog.events({
 		Session.set("showFilterSitesDialog", false);
 	}
 });
+Template.bulkDownloadDialog.events({
+	'click .cancel': function () {
+		Session.set("showBulkDownloadDialog", false);
+		Session.set("status", undefined);
+	},
+	
+	'click #bulkdownloadselect' : function (event, template) {
+		if (event.target.selectedOptions[0].value > 0)
+			template.find("#bulkcopy").disabled = false;
+		else
+			template.find("#bulkcopy").disabled = true;
+	},
+	'submit #bulkdownloadform': function (event, template) {
+		event.preventDefault();
+		template.find("#bulkcopy").disabled = true;
+		
+		var sel_days;
+		
+		switch(template.find("#bulkdownloadselect").selectedIndex)
+		{
+		case 0:
+		  sel_days = 1;
+		  break;
+		case 1:
+		  sel_days = 14;
+		   break;
+		case 2:
+		  sel_days = 30;
+		  break;
+		case 3:
+		  sel_days = 90;
+		  break;
+		case 4:
+		  sel_days = 365;
+		  break;
+		default:
+		  sel_days = 1;
+		}
+		
+		untildate = new Date(new Date().setDate(new Date().getDate() - sel_days));
+		
+		Meteor.call("getLinkURLsByDate", untildate, function (error, result) {
+			if (result && result.length) {
+				console.log(result);
+				
+				writeConsole(_.reduce(result, function (memo, aUrl) {
+					return memo + "<br/>" + aUrl;
+				}));
+				
+				Meteor.call("markLinksAsDownloadedByDate", untildate, function (error, result) {
+					if (result) Session.set("links_count_" + sel_days, 0);
+					if (error) console.log("Error updating Links while copying to clipboard.");
+				});
+				
+			}
+			if (error) console.log("Error getting Links while copying to clipboard.");
+		});
+	}
+});
+
 
 function refreshJDOnlineStatus() {
 	if (Meteor.user() && Meteor.user().profile) {

@@ -35,6 +35,10 @@
 				  {{> filterSitesDialog}}
 				{{/if}}
 				
+				{{#if session "showBulkDownloadDialog"}}
+				  {{> bulkDownloadDialog}}
+				{{/if}}
+				
 	<div class="container-fluid">
 		<div class="row-fluid">
 			<div class="span12">
@@ -169,6 +173,8 @@
 						<a class="btn hidden-phone hidden-tablet" id="copybutton" disabled><i class="icon-file"></i> Zwischenablage</a>
 						<a class="btn btn-primary" id="downloadbutton" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
 					{{/if}}
+					<li class="divider-vertical hidden-phone"></li>
+					<a class="btn" id="bulkdownloadbutton" class="hidden-phone"><i class="icon-hdd"></i> Massendownload</a>
 				</ul>
 				<ul class="nav pull-right">
 					<li class="hidden-phone">
@@ -744,5 +750,34 @@
   <div class="modal-footer status">
     {{{session "status"}}}
   </div>        
+</div>
+</template>
+
+
+<template name="bulkDownloadDialog">
+<div class="mask"> </div>
+<div id="showBulkDownloadModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close cancel">&times;</button>
+    <h3 align="center">Massendownload</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" id="bulkdownloadform">
+		<p>Zeitraum:
+			<select required autofocus id="bulkdownloadselect">
+			  <option value={{session "links_count_1"}}>Letzte 24 Stunden ({{session "links_count_1"}})</option>
+			  <option value={{session "links_count_14"}}>Letzte 14 Tage ({{session "links_count_14"}})</option>
+			  <option value={{session "links_count_30"}}>Letzte 30 Tage ({{session "links_count_30"}})</option>
+			  <option value={{session "links_count_90"}}>Letzte 90 Tage ({{session "links_count_90"}})</option>
+			  <option value={{session "links_count_365"}}>Letztes Jahr ({{session "links_count_365"}})</option>
+			</select>
+			{{#if session "links_count_1"}}
+				<button class="btn pull-right" id="bulkcopy"><i class="icon-file"></i> Zwischenablage</button>
+			{{else}}
+				<button class="btn pull-right" id="bulkcopy" disabled><i class="icon-file"></i> Zwischenablage</button>
+			{{/if}}
+		</p>
+	</form>
+  </div>      
 </div>
 </template>
