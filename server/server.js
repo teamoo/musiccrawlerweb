@@ -47,12 +47,17 @@ Accounts.onCreateUser(function (options, user) {
 	var accessToken = user.services.facebook.accessToken,
 		result;
 	// Das Profilbild muessen wir extra abfragen...
-	result = Meteor.http.get("https://graph.facebook.com/me/picture?access_token=&redirect=false", {
-		params: {
-			access_token: accessToken
-		}
-	});
-	if (result.error) throw result.error;
+	
+	try {
+		result = Meteor.http.get("https://graph.facebook.com/me/picture?access_token=&redirect=false", {
+			params: {
+				access_token: accessToken
+			}
+		});	
+	}
+	catch (e) {
+		console.log("Error receiving user picture from facebook");
+	}
 	// Benutzerprofil mit den gesammelten Daten anreichen und
 	// default-Werte setzen
 	user.profile.autoupdateip = true;

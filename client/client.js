@@ -502,7 +502,7 @@ Template.user_loggedout.events({
 				// dann rufen wir die neue IP ab und speichern sie im Profil
 				Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error2, result) {
 					if (error2) console.log("Fehler beim ermitteln der Benutzer-IP");
-					if (result && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
+					if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
 							_id: Meteor.userId()
 						}, {
 							$set: {
@@ -1887,7 +1887,7 @@ Template.accountSettingsDialog.events({
 		var aport = Meteor.user().profile.port;
 		Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 			if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-			if (result && result.statusCode === 200 && result.data && result.data.ip) {
+			if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) {
 				Meteor.users.update({
 					_id: Meteor.userId()
 				}, {
@@ -1943,7 +1943,7 @@ Template.accountSettingsDialog.events({
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-				if (result && result.statusCode === 200 && result.data && result.data.ip) {
+				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) {
 					Meteor.users.update({
 						_id: Meteor.userId()
 					}, {
@@ -2091,7 +2091,7 @@ function refreshJDOnlineStatus() {
 		if (Meteor.user().profile.autoupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-				if (result && result.statusCode === 200 && result.data && result.data.ip) Meteor.user().profile.ip = result.data.ip;
+				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) Meteor.user().profile.ip = result.data.ip;
 			});
 		}
 		// unabhängig von autoupdate schauen wir, ob die gewünschte IP
