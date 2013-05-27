@@ -221,6 +221,10 @@
 			<li class="hand"><a id="showsettings"><i class="icon-wrench"></i> Einstellungen</a></li>
 			<li class="hand hidden-phone"><a id="showsitefilter"><i class="icon-filter"></i> Seitenfilter</a></li>
 			<li class="divider"></li>
+			{{#if currentUser.admin}}	
+			<li class="hand"><a id="cleandatabase"><i class="icon-fire"></i> Datenbank bereinigen</a></li>
+			<li class="divider"></li>
+			{{/if}}
 			<li class="hand"><a id="logout"><i class="icon-off"></i> Abmelden</a></li>
 		</ul>
 	{{/if}}

@@ -540,6 +540,22 @@ Template.user_loggedin.events({
 		event.stopPropagation();
 		return false;
 	},
+	'click #cleandatabase': function (event, template) {
+		event.preventDefault();
+		event.target.innerHTML = "<i class='icon-loader'></i> Datenbank bereinigen";
+		
+		Meteor.call("scheduleCleanup", function (error, result) {
+			if (result && result.data && result.data.status == "ok") {
+				console.log("Successfully scheduled database cleanup.");
+				event.target.innerHTML = "<i class='icon-ok'></i> Datenbank bereinigen";
+			}
+			if (error) {
+				console.log("Error scheduling database cleanup.");
+				event.target.innerHTML = "<i class='icon-remove'></i> Datenbank bereinigen";
+			}
+		});
+		return false;
+	}
 });
 Template.navigation.rendered = function () {	
 	$('#searchfield').typeahead({
