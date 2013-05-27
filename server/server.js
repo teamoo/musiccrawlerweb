@@ -17,9 +17,6 @@ Meteor.startup(function () {
 	Links._ensureIndex({
 		downloaders: 1
 	});
-	Links._ensureIndex({
-		keywords: 1
-	});
 	Sites._ensureIndex({
 		last_crawled: 1
 	});

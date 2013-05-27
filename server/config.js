@@ -12,12 +12,12 @@ Meteor.AppCache.config({
 	safari: true
 });
 // Facebook-Konfiguration entfernen
-Accounts.loginServiceConfiguration.remove({
-    service : "facebook"
-});
+//Accounts.loginServiceConfiguration.remove({
+//    service : "facebook"
+//});
 // Facebook-Konfiguration anlegen
-Accounts.loginServiceConfiguration.insert({
-    service : "facebook",
-    appId : Meteor.settings.facebook.appId,
-    secret : Meteor.settings.facebook.secret
-});
+//Accounts.loginServiceConfiguration.insert({
+//    service : "facebook",
+//    appId : Meteor.settings.facebook.appId,
+//    secret : Meteor.settings.facebook.secret
+//});
