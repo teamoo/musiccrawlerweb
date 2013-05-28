@@ -698,7 +698,6 @@ Template.navigation.events({
 					}
 					if (result) {
 						Meteor.call("markLinksAsDownloadedByURL", sel_links, function (error2, result2) {
-							if (result2) console.log("Error updating Links after Download.");
 							if (error2) console.log("Error updating Links after Download.");
 						});
 					}
@@ -734,7 +733,6 @@ Template.navigation.events({
 				}
 			}).fetch(), 'url');
 			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
-				if (result) console.log("Error updating Links while copying to clipboard.");
 				if (error) console.log("Error updating Links while copying to clipboard.");
 			});
 			Session.set("selected_links", []);
@@ -1095,7 +1093,6 @@ Template.linklist.events = ({
 		var selected = Session.get("selected_links");
 		if (selected.length) {
 			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
-				if (result) console.log("Error updating Links while marking as read.");
 				if (error) console.log("Error updating Links while marking as read.");
 			});
 			Session.set("selected_links", []);
@@ -1460,15 +1457,19 @@ Template.link.events({
 		});
 	},
 	'click .hide_link': function (event, template) {
-		query = {
-			_id: this._id,
-		};
-		update = {
-			'$addToSet': {
-				'downloaders': Meteor.userId()
-			}
-		};
-		Links.update(query, update);
+		Meteor.call("markLinksAsDownloadedById", new Array(this._id), function (error, result) {
+			if (error) console.log("Error updating Links while marking as read.");
+		});
+//		single version, no intelligent removing of duplicates when one is being downloaded		
+//		query = {
+//			_id: this._id,
+//		};
+//		update = {
+//			'$addToSet': {
+//				'downloaders': Meteor.userId()
+//			}
+//		};
+//		Links.update(query, update);
 	}
 });
 //Events im Link hinzufügen Dialog
@@ -2082,7 +2083,7 @@ Template.bulkDownloadDialog.events({
 		
 		untildate = new Date(new Date().setDate(new Date().getDate() - sel_days));
 		
-		Meteor.call("getLinkURLsByDate", untildate, function (error, result) {
+		Meteor.call("getLinkURLsByDate", untildate, Session.get("filter_sites"), function (error, result) {
 			if (result && result.length) {
 				console.log(result);
 				
@@ -2090,7 +2091,7 @@ Template.bulkDownloadDialog.events({
 					return memo + "<br/>" + aUrl;
 				}));
 				
-				Meteor.call("markLinksAsDownloadedByDate", untildate, function (error, result) {
+				Meteor.call("markLinksAsDownloadedByDate", untildate, Session.get("filter_sites"),function (error, result) {
 					if (result) Session.set("links_count_" + sel_days, 0);
 					if (error) console.log("Error updating Links while copying to clipboard.");
 				});

@@ -169,11 +169,6 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 				name: {
 					$all: searchterms
 				},
-				source: {
-					$not: {
-						$in: filter_sites
-					}
-				}
 			}, {
 				fields: {
 					_id: 1,
@@ -216,11 +211,6 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 				name: {
 					$all: searchterms
 				},
-				source: {
-					$not: {
-						$in: filter_sites
-					}
-				}
 			}, {
 				fields: {
 					_id: 1,
