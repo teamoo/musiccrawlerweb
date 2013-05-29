@@ -158,7 +158,9 @@ Meteor.startup(function () {
 				Session.equals("showFilterSitesDialog", false) &&
 				Session.equals("showShareLinkDialog", false) &&
 				Session.equals("showBulkDownloadDialog", false) &&
-				Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
+				Links.findOne() &&
+				$(document).height() - $(window).height() <= $(window).scrollTop() + threshold
+			){
 						if (Session.get("filter_limit") <= 4 && Session.equals("wait_for_items", false) && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
 							Session.set("wait_for_items", true);
 							Session.set("filter_limit", Session.get("filter_limit") + 1);
