@@ -150,11 +150,19 @@ Meteor.startup(function () {
 			itemHeight = 30;
 			threshold = 10 * itemHeight + bottomMargin;
 				
-			if (Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
-					if (Session.get("filter_limit") <= 4 && Session.equals("wait_for_items", false) && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
-						Session.set("wait_for_items", true);
-						Session.set("filter_limit", Session.get("filter_limit") + 1);
-					}
+			if (
+				Session.equals("showAccountSettingsDialog", false) &&
+				Session.equals("showAddLinkDialog", false) &&
+				Session.equals("showAddSiteDialog", false) &&
+				Session.equals("showSitesDialog", false) &&
+				Session.equals("showFilterSitesDialog", false) &&
+				Session.equals("showShareLinkDialog", false) &&
+				Session.equals("showBulkDownloadDialog", false) &&
+				Links.findOne() && $(document).height() - $(window).height() <= $(window).scrollTop() + threshold) {
+						if (Session.get("filter_limit") <= 4 && Session.equals("wait_for_items", false) && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
+							Session.set("wait_for_items", true);
+							Session.set("filter_limit", Session.get("filter_limit") + 1);
+						}
 			}
 		}
 	}, 300);
