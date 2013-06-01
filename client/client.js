@@ -67,7 +67,7 @@ Deps.autorun(function () {
 		Session.set('links_completed', true);
 		Session.set("wait_for_items", false);
 	});
-	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), function onReady() {
+	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), Session.get("filter_sites"), function onReady() {
 		//Session.set('counts_completed', true);
 		[1, 14, 30, 90, 365].forEach(function (timespan) {
 			var item = Counts.findOne({
@@ -601,12 +601,18 @@ Template.navigation.rendered = function () {
 			return true;
 		},
 		highlighter: function (item) {
+		
+			console.log("BEFORE: " + item);
+		
 			var searchterms = this.query.trim().split(" ");
 			var newitem = item;
 			for (var i = 0; i < searchterms.length; i++) {
 				var regex = new RegExp('(' + searchterms[i] + ')', 'i');
 				newitem = newitem.replace(regex, "<strong>$1</strong>");
 			}
+			
+			console.log("AFTER: " + newitem);
+			
 			return newitem;
 		},
 	});

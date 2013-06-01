@@ -16,7 +16,7 @@ Meteor.publish("allUserData", function () {
 			}
 		});
 });
-Meteor.publish("counts-by-timespan", function (filter_status) {
+Meteor.publish("counts-by-timespan", function (filter_status, filter_sites) {
 	var self = this;
 	var initializing = true;
 	var thedownloaders = "dummy";
@@ -103,6 +103,9 @@ Meteor.publish("counts-by-timespan", function (filter_status) {
 			},
 			downloaders: {
 				'$ne': thedownloaders
+			},
+			source: {
+				$ne: filter_sites
 			}
 		}).count(false);
 		self.added("counts", timespan, {
