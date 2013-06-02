@@ -418,6 +418,8 @@ Template.sitesDialog.getFeedTypeIcon = function (data) {
 			return "icon-rss";
 		case "facebook-group":
 			return "icon-facebook";
+		case "vkontakte":
+			return "vk";
 		default:
 			return "icon-globe";
 	}

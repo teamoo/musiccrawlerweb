@@ -74,6 +74,11 @@ body {
     background-position: center center;
 }
 
+.icon-vk {
+	background:transparent url("/vk.png");
+    background-position: center center;
+}
+
 .icon-ok-green {
 	background:transparent url("/ok-green.png");
     background-position: center center;
