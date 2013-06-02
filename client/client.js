@@ -264,6 +264,11 @@ Template.navigation.getLastSearchTerm = function () {
 	if (lastterm != "" && lastterm != ".*") return lastterm.replace(/\.\*/g, "").replace(/\\/g, "");
 	return undefined;
 };
+Template.link.isSearch = function () {
+	var lastterm = Session.get("filter_term");
+	if (lastterm != "" && lastterm != ".*") return true;
+	return false;
+};
 // Funktion um die Anzahl der Seiten als badge anzuzeigen
 Template.navigation.getSiteCount = function () {
 	return Sites.find({}).count();

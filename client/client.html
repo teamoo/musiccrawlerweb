@@ -410,6 +410,9 @@
 			{{#if currentUser.admin}}	
 				<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
+			{{#if isSearch}}
+				<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
+			{{/if}}
 		</tr>
 	{{/if}}
 </template>
