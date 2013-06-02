@@ -33,6 +33,11 @@ Meteor.startup(function () {
 	}, {
 		unique: 1
 	});
+	Sites._ensureIndex({
+		url: 1
+	}, {
+		groupid: 1
+	});
 	Meteor.users._ensureIndex({
 		id: 1
 	}, {
