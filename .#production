@@ -1,0 +1,4 @@
+export MONGO_URL='mongodb://dbuser:pass@localhost:10050/musiccrawler'
+export ROOT_URL='http://'+ec2metadata --public-ipv4
+export NODE_ENV='production'
+export PORT=80

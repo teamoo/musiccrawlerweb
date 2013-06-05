@@ -471,7 +471,7 @@ var openBulkDownloadDialog = function () {
 // Eventhandler
 //
 Template.page.events({
-	'click': function (event, template) {
+	'tap': function (event, template) {
 		if (event.target.className.indexOf("icon-user") === -1) $('#accountbtn').popover('hide');
 		/*
 		if (!(event.target.form && event.target.form.className == "newcommentform")) {
@@ -484,14 +484,14 @@ Template.page.events({
 });
 // Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
 Template.connectionLostWarning.events({
-	'click #terminateappbutton': function () {
+	'tap #terminateappbutton': function () {
 		if ($.browser.opera || $.browser.mozilla) window.close();
 		else {
 			window.open('', '_self', '');
 			window.close();
 		}
 	},
-	'click #waitbutton': function (event) {
+	'tap #waitbutton': function (event) {
 		event.preventDefault();
 		event.target.disabled = true;
 		event.target.innerHTML = "<i class='icon-loader'></i> Warten";
@@ -502,7 +502,7 @@ Template.connectionLostWarning.events({
 });
 // Klick auf Login-Button
 Template.user_loggedout.events({
-	'click #login': function () {
+	'tap #login': function () {
 		// wir loggen den User mit Facebook ein, erbitten Zugriff auf seine
 		// eMail-Addresse
 		Meteor.loginWithFacebook({
@@ -533,7 +533,7 @@ Template.user_loggedout.events({
 });
 // Logout-Eventhandler
 Template.user_loggedin.events({
-	'click #logout': function () {
+	'tap #logout': function () {
 		Meteor.logout(function (error) {
 			if (error) {
 				alert("Fehler beim Ausloggen", "Beim Ausloggen ist ein unerwarteter Fehler aufgetreten.");
@@ -541,23 +541,23 @@ Template.user_loggedin.events({
 		});
 	},
 	//Accounteinstellungen anzeigen
-	'click #showsettings': function (event) {
+	'tap #showsettings': function (event) {
 		event.preventDefault();
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		openAccountSettingsDialog();
 		return false;
 	},
-	'click #showsitefilter': function (event) {
+	'tap #showsitefilter': function (event) {
 		event.preventDefault();
 		openFilterSitesDialog();
 		return false;
 	},
-	'click #accountbtn': function (event) {
+	'tap #accountbtn': function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		return false;
 	},
-	'click #cleandatabase': function (event, template) {
+	'tap #cleandatabase': function (event, template) {
 		event.preventDefault();
 		event.target.innerHTML = "<i class='icon-loader'></i> Datenbank bereinigen";
 		
@@ -656,7 +656,7 @@ Template.navigation.rendered = function () {
 //Eventhandler für die Navigationsleiste
 Template.navigation.events({
 	//Seite hinzufügen Dialog öffnen
-	'click #addsitebutton': function (event) {
+	'tap #addsitebutton': function (event) {
 		event.preventDefault();
 		openAddSiteDialog();
 		Meteor.setTimeout(function () {
@@ -665,13 +665,13 @@ Template.navigation.events({
 		return false;
 	},
 	//Seiten anzeigen Dialog öffnen
-	'click #showsitesbutton': function (event) {
+	'tap #showsitesbutton': function (event) {
 		event.preventDefault();
 		openSitesDialog();
 		return false;
 	},
 	//Links downloaden Aktion ausführen
-	'click #downloadbutton': function (event, template) {
+	'tap #downloadbutton': function (event, template) {
 		var selected = Session.get("selected_links");
 		if (selected.length && Session.equals("JDOnlineStatus", true)) {
 			Session.set("progressActive", true);
@@ -742,7 +742,7 @@ Template.navigation.events({
 		}
 	},
 	//Link-URLs kopieren Aktion ausführen
-	'click #copybutton': function (event, template) {
+	'tap #copybutton': function (event, template) {
 		var selected = Session.get("selected_links");
 		if (selected.length) {
 			var selectedurls = _.pluck(Links.find({
@@ -764,7 +764,7 @@ Template.navigation.events({
 			}));
 		}
 	},
-	'click #addlinkbutton': function (event, template) {
+	'tap #addlinkbutton': function (event, template) {
 		event.preventDefault();
 		openAddLinkDialog();
 		Meteor.setTimeout(function () {
@@ -772,12 +772,12 @@ Template.navigation.events({
 		}, 250);
 		return false;
 	},
-	'click #bulkdownloadbutton': function (event) {
+	'tap #bulkdownloadbutton': function (event) {
 		event.preventDefault();
 		openBulkDownloadDialog();
 		return false;
 	},
-	'click .linkfilter': function (event, template) {
+	'tap .linkfilter': function (event, template) {
 		event.preventDefault();
 		$("html, body").animate({
 			scrollTop: 0
@@ -1050,7 +1050,7 @@ Template.navigation.events({
 //Events für das Template der Linkliste
 Template.linklist.events = ({
 	//Links teilen
-	'click #share_links': function (event, template) {
+	'tap #share_links': function (event, template) {
 		event.preventDefault();
 		openShareLinkDialog();
 		Meteor.setTimeout(function () {
@@ -1058,13 +1058,13 @@ Template.linklist.events = ({
 		}, 250);
 		return false;
 	},
-	'click #sort_like': function (event, template) {
+	'tap #sort_like': function (event, template) {
 		Session.set("filter_sort", "likes");
 	},
-	'click #sort_date_published': function (event, template) {
+	'tap #sort_date_published': function (event, template) {
 		Session.set("filter_sort", "date_published");
 	},
-	'click #paginate': function (event, template) {
+	'tap #paginate': function (event, template) {
 		$("html, body").animate({
 			scrollTop: 0
 		}, "fast");
@@ -1073,7 +1073,7 @@ Template.linklist.events = ({
 		Session.set("selected_links", []);
 	},
 	//Links filtern (alle / auch unbekannte)
-	'click #filter_links': function (event, template) {
+	'tap #filter_links': function (event, template) {
 		event.preventDefault();
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
@@ -1102,7 +1102,7 @@ Template.linklist.events = ({
 		Session.set("filter_status", _.uniq(tmp_status));
 	},
 	//alle Links anhaken, die gerade zu sehen sind
-	'click #select_all': function (event, template) {
+	'tap #select_all': function (event, template) {
 		if (event.target.checked === true) {
 			var selected = _.pluck(Links.find({}, {
 				fields: {
@@ -1112,7 +1112,7 @@ Template.linklist.events = ({
 			Session.set("selected_links", selected);
 		} else Session.set("selected_links", []);
 	},
-	'click #hide_selected_links': function (event, template) {
+	'tap #hide_selected_links': function (event, template) {
 		var selected = Session.get("selected_links");
 		if (selected.length) {
 			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
@@ -1271,7 +1271,7 @@ Template.user_loggedin.rendered = function () {
 };
 //Events für die einzelnen Link-Objekte
 Template.link.events({
-	'click .player': function (event, template) {
+	'tap .player': function (event, template) {
 		if (this.status != 'off') {
 			switch (this.hoster) {
 				case "soundcloud.com":
@@ -1371,7 +1371,7 @@ Template.link.events({
 			template.find('#postcomment').disabled = false;
 		}
 	},
-	'click #postcomment': function (event, template) {
+	'tap #postcomment': function (event, template) {
 		linkid = this._id;
 		event.preventDefault();
 		event.stopPropagation();
@@ -1385,7 +1385,7 @@ Template.link.events({
 		return false;
 	},
 	//Anhaken eines Links
-	'click .link_checkbox': function (event, template) {
+	'tap .link_checkbox': function (event, template) {
 		var selected = Session.get("selected_links");
 		if (event.target.checked) {
 			var contains = false;
@@ -1410,12 +1410,12 @@ Template.link.events({
 		}
 		if (!selected.length) $('#select_all').prop("checked", false);
 	},
-	'click .addlinktoset': function (event, template) {
+	'tap .addlinktoset': function (event, template) {
 		var selected = Session.get("temp_set");
 		selected.push(this._id);
 		Session.set("temp_set", selected);
 	},
-	'click .removelinkfromset': function (event, template) {
+	'tap .removelinkfromset': function (event, template) {
 		var selected = Session.get("temp_set");
 		selectedloop: for (var i = 0; i < selected.length; i++) {
 			if (EJSON.equals(this._id, selected[i])) {
@@ -1426,7 +1426,7 @@ Template.link.events({
 		}
 	},
 	//Link-Status aktualisieren
-	'click .icon-refresh': function (event, template) {
+	'tap .icon-refresh': function (event, template) {
 		event.target.className = "icon-refreshing";
 		var linkurl = this.url;
 		Meteor.call("refreshLink", this._id, function (error, result) {
@@ -1440,7 +1440,7 @@ Template.link.events({
 		});
 	},
 	//X-Editable Formular - Namensänderung übernehmen
-	'submit .form-inline, click .editable-submit': function (event, template) {
+	'submit .form-inline, tap .editable-submit': function (event, template) {
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
 		if (newName != "") Links.update({
@@ -1451,13 +1451,13 @@ Template.link.events({
 				}
 			});
 	},
-	'click .icon-comment': function (event) {
+	'tap .icon-comment': function (event) {
 		event.stopPropagation();
 		$('.icon-comment:not(#' + event.target.id + ')').popover('hide');
 		return false;
 	},
 	//Link liken
-	'click .like': function (context) {
+	'tap .like': function (context) {
 		// This query succeeds only if the voters array doesn't contain the user
 		query = {
 			_id: this._id
@@ -1474,12 +1474,12 @@ Template.link.events({
 		};
 		Links.update(query, update);
 	},
-	'click .delete_link': function (event, template) {
+	'tap .delete_link': function (event, template) {
 		Links.remove({
 			_id: this._id
 		});
 	},
-	'click .hide_link': function (event, template) {
+	'tap .hide_link': function (event, template) {
 		Meteor.call("markLinksAsDownloadedById", new Array(this._id), function (error, result) {
 			if (error) console.log("Error updating Links while marking as read.");
 		});
@@ -1498,7 +1498,7 @@ Template.link.events({
 //Events im Link hinzufügen Dialog
 Template.addLinkDialog.events({
 	//Dialog schließen
-	'click .cancel': function () {
+	'tap .cancel': function () {
 		// User hat abgebrochen, Dialog schließen
 		Session.set("showAddLinkDialog", false);
 		Session.set("status", undefined);
@@ -1512,7 +1512,7 @@ Template.addLinkDialog.events({
 		}
 	},
 	//Link in die Datenbank aufnehmen, bzw. vorher prüfen
-	'click .addlink': function (event, template) {
+	'tap .addlink': function (event, template) {
 		event.preventDefault();
 		Session.set("status", '<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird überprüft</small></p>');
 		var newlinkurl = template.find("#newlinkurl").value;
@@ -1539,7 +1539,7 @@ Template.addLinkDialog.events({
 Template.searchresult.preserve([".add_external_link"]);
 Template.searchresult.preserve([".download_external_link"]);
 Template.searchresult.events({
-	'click .player': function (event, template) {
+	'tap .player': function (event, template) {
 		if (this.status != 'off') {
 			switch (this.hoster) {
 				case "soundcloud.com":
@@ -1571,7 +1571,7 @@ Template.searchresult.events({
 			}
 		} else event.target.className = "icon-remove";
 	},
-	'click .download_external_link': function (event, template) {
+	'tap .download_external_link': function (event, template) {
 		event.preventDefault();
 		event.stopPropagation();
 		
@@ -1615,7 +1615,7 @@ Template.searchresult.events({
 		}
 		return false;
 	},
-	'click .add_external_link': function (event, template) {
+	'tap .add_external_link': function (event, template) {
 		event.preventDefault();
 		event.stopPropagation();
 		
@@ -1654,7 +1654,7 @@ Template.searchresult.events({
 //Events für den "Seite hinzufügen"-Dialog
 Template.addSiteDialog.events({
 	// User hat abgebrochen, Dialog schließen
-	'click .cancel': function () {
+	'tap .cancel': function () {
 		Session.set("showAddSiteDialog", false);
 		Session.set("status", undefined);
 	},
@@ -1802,7 +1802,7 @@ Template.shareLinkDialog.events({
 			template.find('#sharelink').disabled = false;
 		}
 	},
-	'click .cancel': function () {
+	'tap .cancel': function () {
 		Session.set("showShareLinkDialog", false);
 		Session.set("status", undefined);
 	},
@@ -1829,10 +1829,10 @@ Template.shareLinkDialog.events({
 //Events des Seiten anzeigen Dialogs
 Template.sitesDialog.events({
 	// User hat abgebrochen, Dialog schließen
-	'click .cancel': function () {
+	'tap .cancel': function () {
 		Session.set("showSitesDialog", false);
 	},
-	'click #crawl_all_sites': function (event, template) {
+	'tap #crawl_all_sites': function (event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true) {
 			event.target.className = "icon-refreshing";
 			Sites.find().forEach(function (site) {
@@ -1861,7 +1861,7 @@ Template.sitesDialog.events({
 			});
 		}
 	},
-	'click .crawl_single_site': function (event, template) {
+	'tap .crawl_single_site': function (event, template) {
 		if (Meteor.user().admin && Meteor.user().admin === true) {
 			event.target.className = "icon-refreshing";
 			if ((!this.next_crawl || this.next_crawl == null) && this.active === true) {
@@ -1899,7 +1899,7 @@ Template.sitesDialog.events({
 				}
 			});
 	},
-	'click .remove_site': function (event, template) {
+	'tap .remove_site': function (event, template) {
 		Sites.remove({
 			_id: this._id
 		});
@@ -1922,7 +1922,7 @@ Template.accountSettingsDialog.events({
 		}
 	},
 	//IP-Adresse aktualisieren Button - IP checken und anzeigen
-	'click #refreship': function (event, template) {
+	'tap #refreship': function (event, template) {
 		Session.set("status", '<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i></p>');
 		var aport = Meteor.user().profile.port;
 		Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
@@ -1955,14 +1955,14 @@ Template.accountSettingsDialog.events({
 		});
 	},
 	//IP-Feld für Eingbae aktivieren/deaktivieren, je nachdem ob autoupdate eingeschaltet ist
-	'click #autoupdate': function (event, template) {
+	'tap #autoupdate': function (event, template) {
 		if (template.find("#autoupdate").checked) {
 			$('#ip').prop("disabled", true);
 			if (template.find('#port').validity.valid && template.find('#ip').validity.valid) template.find('.save').disabled = false;
 		} else $('#ip').prop("disabled", false);
 	},
 	//eingaben speichern und IP nochmal updaten, falls der User was komisches eingegeben hat
-	'click .save': function (event, template) {
+	'tap .save': function (event, template) {
 		var aip = template.find("#ip").value;
 		var aport = template.find("#port").value;
 		var aupdateip = template.find("#autoupdate").checked;
@@ -2029,13 +2029,13 @@ Template.accountSettingsDialog.events({
 		// es wurde gespeichert, Dialog schließen
 		Session.set("showAccountSettingsDialog", false);
 	},
-	'click .cancel': function () {
+	'tap .cancel': function () {
 		// User hat abgebrochen, Dialog schließen
 		Session.set("showAccountSettingsDialog", false);
 	}
 });
 Template.filterSitesDialog.events({
-	'click #filter_all': function (event, template) {
+	'tap #filter_all': function (event, template) {
 		if (!event.target.checked === true) {
 			var selected = _.pluck(Sites.find({}, {
 				fields: {
@@ -2045,14 +2045,14 @@ Template.filterSitesDialog.events({
 			Session.set("temp_filter_sites", selected);
 		} else Session.set("temp_filter_sites", []);
 	},
-	'click .site_checkbox': function (event, template) {
+	'tap .site_checkbox': function (event, template) {
 		var selected = Session.get("temp_filter_sites");
 		if (event.target.checked) selected = _.without(selected, this.feedurl);
 		else selected.push(this.feedurl);
 		Session.set("temp_filter_sites", _.uniq(selected));
 		if (!selected.length) $('#filter_all').prop("checked", false);
 	},
-	'click .save': function () {
+	'tap .save': function () {
 		Meteor.users.update({
 			_id: Meteor.userId()
 		}, {
@@ -2066,12 +2066,12 @@ Template.filterSitesDialog.events({
 	}
 });
 Template.bulkDownloadDialog.events({
-	'click .cancel': function () {
+	'tap .cancel': function () {
 		Session.set("showBulkDownloadDialog", false);
 		Session.set("status", undefined);
 	},
 	
-	'click #bulkdownloadselect' : function (event, template) {
+	'tap #bulkdownloadselect' : function (event, template) {
 		if (event.target.selectedOptions[0].value > 0)
 			template.find("#bulkcopy").disabled = false;
 		else
