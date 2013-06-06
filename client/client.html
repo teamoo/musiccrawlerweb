@@ -1,5 +1,5 @@
 <head>
-	<title>MusicCrawler</title> 
+	<title>MusicCrawler Web</title> 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	{{#constant}}
 		<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':1,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
@@ -139,7 +139,7 @@
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			{{#if currentUser}}
-				<a class="brand" id="brand" style="margin-left:-15px;cursor:default">MusicCrawler</a>
+				<a class="brand" id="brand" style="margin-left:-15px;cursor:default">MusicCrawler <bdi style="color:black">Web</bdi></a>
 				<ul class="nav" role="navigation">
 					<li class="dropdown hidden-phone">
 	                      <a id="drop1" role="button" class="dropdown-toggle hand" data-toggle="dropdown">Links <b class="caret"></b></a>
@@ -157,7 +157,7 @@
 	                      <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
 	                      		<li class="hand"><a tabindex="-1" id="addsitebutton"><i class="icon-plus"></i> Seite hinzufügen</a></li>
 	                      		<li class="divider"></li>
-	                      		<li class="hand"><a tabindex="-1" id="showsitesbutton"><i class="icon-th-list"></i> Seiten anzeigen <span class="badge">{{getSiteCount}}</span></a></li>
+	                      		<li class="hand"><a tabindex="-1" id="showsitesbutton"><i class="icon-th-list"></i> Seiten anzeigen <span class="badge">{{getActiveSitesCount}}</span></a></li>
 	                      </ul>
 	                </li>
 					<li class="divider-vertical hidden-phone"></li>

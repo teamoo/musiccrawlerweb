@@ -270,8 +270,8 @@ Template.link.isSearch = function () {
 	return false;
 };
 // Funktion um die Anzahl der Seiten als badge anzuzeigen
-Template.navigation.getSiteCount = function () {
-	return Sites.find({}).count();
+Template.navigation.getActiveSitesCount = function () {
+	return Sites.find({"active" : true}).count();
 };
 // Links-Outlet: alle Links, die gerade in der Subscription sind
 Template.linklist.links = function () {
@@ -419,7 +419,7 @@ Template.sitesDialog.getFeedTypeIcon = function (data) {
 		case "facebook-group":
 			return "icon-facebook";
 		case "vkontakte":
-			return "vk";
+			return "icon-vk";
 		default:
 			return "icon-globe";
 	}
