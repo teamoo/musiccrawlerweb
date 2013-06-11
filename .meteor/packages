@@ -6,9 +6,9 @@
 preserve-inputs
 accounts-facebook
 bootstrap
-x-editable-bootstrap
 ejson
 email
 appcache
+x-editable-bootstrap-1.4.4
 HTML5-History-API
-router
+router-0.5.1
