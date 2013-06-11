@@ -362,6 +362,8 @@ Template.link.isPlayable = function () {
 				return true;
 			case "vimeo.com":
 				return false;
+			case "vk.com":
+				return true;
 			default:
 				return false;
 		}
@@ -383,6 +385,8 @@ Template.searchresult.isPlayable = function () {
 				return true;
 			case "vimeo.com":
 				return false;
+			case "vk.com":
+				return true;
 			default:
 				return false;
 		}
@@ -395,6 +399,7 @@ Template.searchresult.getExternalSourceIcon = function () {
 	if (this.hoster == "muzon.ws") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>";
 	if (this.hoster == "youtube.com") return "<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='youtube.png'></a>";
 	if (this.hoster == "ex.fm") return "<a href='http://ex.fm'><img alt='ex.fm Attribution' src='exfm.png'></a>";
+	if (this.hoster == "vk.com") return "<a href='http://vk.com'><img alt='vk.com Attribution' src='vkontakte.png'></a>";
 	return undefined;
 };
 // Funktion um alle Seiten ins Template zu geben (die subscription)
@@ -1033,6 +1038,34 @@ Template.navigation.events({
 									}
 								});
 							}
+							
+							if (_.contains(Meteor.user().profile.searchproviders, "vk.com")) {
+								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
+									return String(memo + "+" + token);
+								});
+								Meteor.http.get("https://api.vk.com/method/audio.search?q=" + filter_term_external + "&auto_complete=1&sort=0&count=10&access_token=" + Meteor.settings.public.vk.access_token , function (error, result) {
+									if (result && result.data) {
+										
+										var entry = result.data.response[0];
+										for (var i = 0; i <= entry.length; i++) {
+											if (entry[i]) {
+												if (!SearchResults.findOne({
+													url: decodeURI(entry[i].url)
+												})) SearchResults.insert({
+														hoster: "vk.com",
+														status: "on",
+														name: entry[i].artist + " " + entry[i].title,
+														url: decodeURI(entry[i].url),
+														duration: moment(entry[i].duration * 1000)
+													});
+											}
+										}
+										Session.set("loading_results", false);
+									}
+									else
+										console.log(error);
+								});
+							}
 						}
 					} else {
 						Session.set("loading_results", false);
@@ -1326,6 +1359,16 @@ Template.link.events({
 						event.target.className = "icon-list";
 					} else event.target.className = "icon-remove";
 					break;
+				case "vk.com":
+					event.target.className = "icon-loader";
+					if (window.SCM) {
+						SCM.play({
+							title: this.name,
+							url: this.url
+						});
+						event.target.className = "icon-list";
+					} else event.target.className = "icon-remove";
+					break;
 				case "zippyshare.com":
 					event.target.className = "icon-loader";
 					if (window.SCM) {
@@ -1544,6 +1587,7 @@ Template.searchresult.events({
 			switch (this.hoster) {
 				case "soundcloud.com":
 				case "youtube.com":
+				case "vk.com":
 				case "ex.fm":
 					event.target.className = "icon-loader";
 					if (window.SCM) {
@@ -1973,12 +2017,14 @@ Template.accountSettingsDialog.events({
 		var searchsoundcloud = template.find("#searchsoundcloud").checked;
 		var searchyoutube = template.find("#searchyoutube").checked;
 		var searchexfm = template.find("#searchexfm").checked;
+		var searchvk = template.find("#searchvk").checked;
 		var searchproviders = [];
 		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
 		if (searchmuzon) searchproviders.push("muzon");
 		if (searchsoundcloud) searchproviders.push("soundcloud");
 		if (searchyoutube) searchproviders.push("youtube");
 		if (searchexfm) searchproviders.push("ex.fm");
+		if (searchvk) searchproviders.push("vk.com");
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
