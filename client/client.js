@@ -130,6 +130,14 @@ Meteor.startup(function () {
 	SC.initialize({
 		client_id: Meteor.settings.public.soundcloud.client_id
 	});
+	
+	VK.init({
+		apiId:3685402
+	});
+	
+	if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
+		VK.Auth.login(undefined,8)
+		
 	$.fn.editable.defaults.validate = function (value) {
 		if ($.trim(value) == '') {
 			return 'Name darf nicht leer sein.';
@@ -1043,18 +1051,19 @@ Template.navigation.events({
 								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
 									return String(memo + "+" + token);
 								});
-								Meteor.http.get("https://api.vk.com/method/audio.search?q=" + filter_term_external + "&auto_complete=1&sort=0&count=10&access_token=" + Meteor.settings.public.vk.access_token , function (error, result) {
-									if (result && result.data) {
+								
+								VK.Api.call("audio.search",{q:filter_term_external,auto_complete:1,count:10}, function(result){								
+									if (result && result.response && !result.error) {
 										
-										var entry = result.data.response[0];
-										for (var i = 0; i <= entry.length; i++) {
+										var entry = result.response;
+										for (var i = 1; i <= entry.length; i++) {
 											if (entry[i]) {
 												if (!SearchResults.findOne({
 													url: decodeURI(entry[i].url)
 												})) SearchResults.insert({
 														hoster: "vk.com",
 														status: "on",
-														name: entry[i].artist + " " + entry[i].title,
+														name: htmlDecode(entry[i].artist) + " " + htmlDecode(entry[i].title),
 														url: decodeURI(entry[i].url),
 														duration: moment(entry[i].duration * 1000)
 													});
@@ -1063,7 +1072,7 @@ Template.navigation.events({
 										Session.set("loading_results", false);
 									}
 									else
-										console.log(error);
+										console.log("Error getting results from vk.com: " + result.error["error_msg"]);
 								});
 							}
 						}
@@ -2006,6 +2015,11 @@ Template.accountSettingsDialog.events({
 		} else $('#ip').prop("disabled", false);
 	},
 	//eingaben speichern und IP nochmal updaten, falls der User was komisches eingegeben hat
+	'click #searchvk' : function (event, template) {
+		if (template.find("#searchvk").checked)
+			VK.Auth.login(undefined,8);
+	},
+	
 	'click .save': function (event, template) {
 		var aip = template.find("#ip").value;
 		var aport = template.find("#port").value;
@@ -2024,7 +2038,7 @@ Template.accountSettingsDialog.events({
 		if (searchsoundcloud) searchproviders.push("soundcloud");
 		if (searchyoutube) searchproviders.push("youtube");
 		if (searchexfm) searchproviders.push("ex.fm");
-		if (searchvk) searchproviders.push("vk.com");
+		if (searchvk && VK.Auth.getSession()) searchproviders.push("vk.com");
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
@@ -2198,4 +2212,10 @@ function writeConsole(content) {
 	top.consoleRef.document.writeln('<html><head><title>Console</title></head>' + '<body bgcolor=white onLoad="self.focus()">' + content + '</body></html>');
 	alert("Bitte JDownloader starten und alles markieren und kopieren.\nJDownloader erkennt dann die Links");
 	top.consoleRef.document.close();
+}
+
+function htmlDecode(input){
+  var e = document.createElement('div');
+  e.innerHTML = input;
+  return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
 }
