@@ -1533,7 +1533,7 @@ Template.link.events({
 		});
 	},
 	'click .hide_link': function (event, template) {
-		Meteor.call("markLinksAsDownloadedById", new Array(this._id), function (error, result) {
+		Meteor.call("markLinksAsDownloadedById", new Array(this._id._str), function (error, result) {
 			if (error) console.log("Error updating Links while marking as read.");
 		});
 //		single version, no intelligent removing of duplicates when one is being downloaded		
