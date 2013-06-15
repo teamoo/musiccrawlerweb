@@ -406,11 +406,11 @@
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;color: gray;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;color:gray">{{getSizeinMB}}</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
-			{{#if currentUser.admin}}	
-				<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
-			{{/if}}
 			{{#if isSearch}}
 				<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
+			{{/if}}
+			{{#if currentUser.admin}}	
+				<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
 			{{/if}}
 		</tr>
 	{{/if}}
