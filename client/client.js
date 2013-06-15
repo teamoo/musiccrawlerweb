@@ -1160,6 +1160,7 @@ Template.linklist.events = ({
 		if (selected.length) {
 			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
 				if (error) console.log("Error updating Links while marking as read.");
+				console.log(error);
 			});
 			Session.set("selected_links", []);
 		}
@@ -1535,6 +1536,7 @@ Template.link.events({
 	'click .hide_link': function (event, template) {
 		Meteor.call("markLinksAsDownloadedById", new Array(this._id._str), function (error, result) {
 			if (error) console.log("Error updating Links while marking as read.");
+			console.log(error);
 		});
 //		single version, no intelligent removing of duplicates when one is being downloaded		
 //		query = {
