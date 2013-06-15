@@ -866,6 +866,7 @@ Template.navigation.events({
 		
 		var waitcount = 0;
 		
+		
 		function waitForCompletionOfLinks()
 		{
 			if(Session.equals("links_completed",false) && waitcount <= 16)
