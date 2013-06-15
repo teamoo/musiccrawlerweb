@@ -622,19 +622,13 @@ Template.navigation.rendered = function () {
 		matcher: function (item) {
 			return true;
 		},
-		highlighter: function (item) {
-		
-			console.log("BEFORE: " + item);
-		
+		highlighter: function (item) {		
 			var searchterms = this.query.trim().split(" ");
 			var newitem = item;
 			for (var i = 0; i < searchterms.length; i++) {
 				var regex = new RegExp('(' + searchterms[i] + ')', 'i');
 				newitem = newitem.replace(regex, "<strong>$1</strong>");
 			}
-			
-			console.log("AFTER: " + newitem);
-			
 			return newitem;
 		},
 	});
