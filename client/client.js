@@ -105,6 +105,16 @@ Deps.autorun(function () {
 // Startup function
 Meteor.startup(function () {
 	activateInput($('#searchfield'));
+	
+	//initialize soundcloud API for external search with app key
+	SC.initialize({
+		client_id: Meteor.settings.public.soundcloud.client_id
+	});
+	
+	VK.init({
+		apiId: Meteor.settings.public.vk.apiId
+	});
+	
 	Meteor.setTimeout(function () {
 		// if user profile is already available, set session varibles for filtering links just for specific sites
 		// and showing already downloaded items. They are not reactive because we need to change them when searching
@@ -118,6 +128,9 @@ Meteor.startup(function () {
 				Session.set("filter_sites", Meteor.user().profile.filteredsites);
 				Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
 			}
+			
+			if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
+				VK.Auth.login(undefined,8)
 		}
 		// update user IP and check if JD Remote is responding
 		refreshJDOnlineStatus();
@@ -126,17 +139,6 @@ Meteor.startup(function () {
 		// Update the number of links and sites the user contributed to the app and save it in his profile
 		Meteor.call('updateLinkContributionCount');
 	}, 2500);
-	//initialize soundcloud API for external search with app key
-	SC.initialize({
-		client_id: Meteor.settings.public.soundcloud.client_id
-	});
-	
-	VK.init({
-		apiId:3685402
-	});
-	
-	if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
-		VK.Auth.login(undefined,8)
 		
 	$.fn.editable.defaults.validate = function (value) {
 		if ($.trim(value) == '') {
