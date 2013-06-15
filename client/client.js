@@ -1936,6 +1936,7 @@ Template.sitesDialog.events({
 						console.log("Error canceling crawl for site " + this.name + " (" + error.reason + ")");
 					}
 					if (result && result.data && result.data.status == "ok") {
+					
 						event.target.className = "icon-search";
 					} else event.target.className = "icon-remove";
 				});
