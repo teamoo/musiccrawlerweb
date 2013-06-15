@@ -558,7 +558,8 @@ Template.user_loggedin.events({
 	//Accounteinstellungen anzeigen
 	'click #showsettings': function (event) {
 		event.preventDefault();
-		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+		if (Meteor.user() && Meteor.user().profile)
+			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		openAccountSettingsDialog();
 		return false;
 	},
@@ -710,7 +711,8 @@ Template.navigation.events({
 				var grabberoption;
 				if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 				else grabberoption = "grabber0";
-				var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
+				if (Meteor.user() && Meteor.user().profile)
+					var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
 				requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
 				Meteor.call("sendLinks", requeststring, function (error, result) {
 					if (error) {
@@ -794,7 +796,8 @@ Template.navigation.events({
 		Session.set("links_completed", false);
 		Session.set("filter_id", undefined);
 		var sitefilter = Session.get("filter_sites");
-		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+		if (Meteor.user() && Meteor.user().profile)
+			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		Session.set("filter_sites", _.without(sitefilter, Meteor.user().id));
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
@@ -830,9 +833,10 @@ Template.navigation.events({
 			Session.set("filter_status", ["on", "off", "unknown"]);
 			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
 		} else {
-			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+			if (Meteor.user() && Meteor.user().profile)
+				Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 			Session.set("filter_term", ".*");
-			if (Meteor.user().profile.filteredsites) {
+			if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.filteredsites) {
 				Session.set("filter_sites", Meteor.user().profile.filteredsites);
 				Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
 			}
@@ -850,12 +854,12 @@ Template.navigation.events({
 				var activenumber = Session.get("selected_navitem");
 				$('li.linkfilter #' + activenumber).parent().addClass("active");
 			}
-			if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
+			if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
 			else {
 				Session.set("filter_status", ["on"]);
 			}
 		}
-		if (Meteor.user().profile.searchproviders.length && term && term != undefined && term != "") Session.set("loading_results", true);
+		if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.searchproviders.length && term && term != undefined && term != "") Session.set("loading_results", true);
 			Meteor.setTimeout(function () {
 				Session.set("loading_results", false);
 			}, 8000);
@@ -876,7 +880,7 @@ Template.navigation.events({
 					if (Session.equals("links_completed", true) && (!Links.findOne() || (Links.find().count() < 3))) {
 					
 						var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");
-						if (filter_term_external != "") {
+						if (filter_term_external != "" && Meteor.user() && Meteor.user().profile) {
 							if (!Meteor.user().profile.searchproviders.length) {
 								Session.set("loading_results", false);
 								return;
@@ -1638,7 +1642,8 @@ Template.searchresult.events({
 			var grabberoption;
 			if (this.url.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 			else grabberoption = "grabber0";
-			var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + this.url;
+			if (Meteor.user() && Meteor.user().profile)
+				var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + this.url;
 			requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
 			Meteor.call("sendLinks", requeststring, function (error, result) {
 				if (error) {
@@ -1973,7 +1978,8 @@ Template.accountSettingsDialog.events({
 	//IP-Adresse aktualisieren Button - IP checken und anzeigen
 	'click #refreship': function (event, template) {
 		Session.set("status", '<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i></p>');
-		var aport = Meteor.user().profile.port;
+		if (Meteor.user() && Meteor.user().profile)
+			var aport = Meteor.user().profile.port;
 		Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 			if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
 			if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) {
