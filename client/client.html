@@ -668,7 +668,7 @@
 					<td>
 						{{#if currentUser.admin}}
 							{{#if next_crawl}}
-								<i class="icon-time" id="{{_id._str}}_crawlstatus"></i>
+								<i class="icon-time hand crawl_single_site" id="{{_id._str}}_crawlstatus"></i>
 							{{else}}
                                 {{#if canCrawlAgain}}
 									{{#if active}}
@@ -683,7 +683,7 @@
 							{{#if currentUser.admin}}
 							{{else}}
 								{{#if next_crawl}}
-									<i class="icon-time hand crawl_single_site" id="{{_id._str}}_crawlstatus"></i>
+									<i class="icon-time hand crawl_single_site"  id="{{_id._str}}_crawlstatus"></i>
 								{{else}}
 									{{#if canCrawlAgain}}
 										{{#if active}}
