@@ -1177,7 +1177,9 @@ Template.linklist.events = ({
 		} else Session.set("selected_links", []);
 	},
 	'click #hide_selected_links': function (event, template) {
-		var selected = Session.get("selected_links");
+		var selected = _.map(Session.get("selected_links"), function (linkobj) {
+			return linkobj._str;
+		});
 		if (selected.length) {
 			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
 				if (error) console.log("Error updating Links while marking as read.");
