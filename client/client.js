@@ -115,6 +115,24 @@ Meteor.startup(function () {
 		apiId: Meteor.settings.public.vk.apiId
 	});
 	
+	VK.Observer.subscribe("auth.statusChange", function f() 
+	{ 
+		if (!VK.Auth.getSession()) {
+			if (Meteor.user() && Meteor.user().profile && _.contains(Meteor.user().profile.searchproviders, "vk.com")) {
+				var newproviders = _.without(Meteor.user().profile.searchproviders,"vk.com");
+				
+				Meteor.users.update({
+					_id: Meteor.userId()
+				}, {
+					$set: {
+						'profile.searchproviders': newproviders
+					}
+				});
+			}
+				
+		}
+	}); 
+	
 	Meteor.setTimeout(function () {
 		// if user profile is already available, set session varibles for filtering links just for specific sites
 		// and showing already downloaded items. They are not reactive because we need to change them when searching
@@ -2022,8 +2040,9 @@ Template.accountSettingsDialog.events({
 	},
 	//eingaben speichern und IP nochmal updaten, falls der User was komisches eingegeben hat
 	'click #searchvk' : function (event, template) {
-		if (template.find("#searchvk").checked)
+		if (template.find("#searchvk").checked) {
 			VK.Auth.login(undefined,8);
+		}	
 	},
 	
 	'click .save': function (event, template) {
