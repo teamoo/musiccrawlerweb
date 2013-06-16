@@ -1571,7 +1571,7 @@ Template.addLinkDialog.events({
 		event.preventDefault();
 		Session.set("status", '<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird überprüft</small></p>');
 		var newlinkurl = template.find("#newlinkurl").value;
-		Meteor.call('createLink', newlinkurl, undefined, function (error, result) {
+		Meteor.call('createLink', newlinkurl, undefined, undefined, function (error, result) {
 			if (error) switch (error.error) {
 					case 409:
 						Session.set("status", '<p class="pull-left statustext"><i class="icon-warning-sign"></i><small>' + " " + error.details + "</small></p>");
@@ -1689,7 +1689,7 @@ Template.searchresult.events({
 		var sitefilter = Session.get("filter_sites");
 		sitefilter.push(Meteor.user().id);
 		Session.set("filter_sites", sitefilter);
-		Meteor.call('createLink', this.url, this.stream_url, function (error, result) {
+		Meteor.call('createLink', this.url, this.stream_url, this.title, function (error, result) {
 			if (error) {
 				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
 				if (event.target.className.indexOf("icon") === -1)
