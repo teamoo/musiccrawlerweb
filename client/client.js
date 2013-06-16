@@ -641,12 +641,15 @@ Template.navigation.rendered = function () {
 		matcher: function (item) {
 			return true;
 		},
-		highlighter: function (item) {		
+		highlighter: function (item) {
+			var badtag = /^s$|^t$|^r$|^o$|^n$|^g$|^s$|^s$|^st$|^str$|^stro$|^stron$|^strong$/gi
+		
 			var searchterms = this.query.trim().split(" ");
 			var newitem = item;
 			for (var i = 0; i < searchterms.length; i++) {
 				var regex = new RegExp('(' + searchterms[i] + ')', 'i');
-				newitem = newitem.replace(regex, "<strong>$1</strong>");
+				if (!badtag.test(searchterms[i]))
+					newitem = newitem.replace(regex, "<strong>$1</strong>");
 			}
 			return newitem;
 		},
