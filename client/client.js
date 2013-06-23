@@ -1982,6 +1982,14 @@ Template.sitesDialog.events({
 		Sites.remove({
 			_id: this._id
 		});
+	},
+	'click .site_active': function (event, template) {
+		if (this.active === true && Meteor.user().admin && Meteor.user().admin === true) {
+			Sites.update({_id: this._id},{$set: {active: false}});
+		};
+		if (this.active === false && Meteor.user().admin && Meteor.user().admin === true) {
+			Sites.update({_id: this._id},{$set: {active: true}});
+		};
 	}
 });
 //Events des Einstellungs-Dialogs
@@ -2219,7 +2227,14 @@ function refreshJDOnlineStatus() {
 		if (Meteor.user().profile.autoupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
-				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) Meteor.user().profile.ip = result.data.ip;
+				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip)
+					Meteor.users.update({
+						_id: Meteor.userId()
+					}, {
+						$set: {
+							'profile.ip': result.data.ip,
+						}
+					});
 			});
 		}
 		// unabhängig von autoupdate schauen wir, ob die gewünschte IP

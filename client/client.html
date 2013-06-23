@@ -657,10 +657,10 @@
 					<td>{{discovered_links}}</td>
 					<td>{{dateFormatPretty last_crawled}}</td>
 					<td><i class="{{getFeedTypeIcon}}"></i></td>
-					<td>
-						{{#if active}}
-							<i class="icon-ok-sign"></i>
-						{{/if}}
+					<td class="site_active">
+					{{#if active}}
+						<i class="icon-ok-sign"></i>
+					{{/if}}
 					</td>
 					{{#if currentUser.admin}}
 						<td>{{dateFormatPretty last_post}}</td>
