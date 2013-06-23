@@ -928,7 +928,7 @@ Template.navigation.events({
 															hoster: "zippyshare.com",
 															status: "unknown",
 															name: unescape(items[i].pagemap.metatags[0]["og:title"].replace("null").replace("undefined").trim()),
-															url: items[i].pagemap.metatags[0]["og:url"].replace("\\").replace('"'),
+															url: items[i].pagemap.metatags[0]["og:url"].replace("\\").replace('"').replace('"'),
 															stream_url: stream_url.replace('"'),
 															duration: moment(0)
 														});
