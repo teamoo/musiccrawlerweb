@@ -70,6 +70,7 @@ Accounts.onCreateUser(function (options, user) {
 	user.profile.searchproviders = ["zippysharemusic", "muzon", "soundcloud"];
 	user.profile.ip = "";
 	user.profile.port = 10025;
+	user.profile.volume = 100;
 	user.profile.pictureurl = result.data.data.url;
 	// email und username werden direkt im Benutzer gesetzt, daher
 	// loeschen wir diese Attribute auch aus dem Profil-Objekt

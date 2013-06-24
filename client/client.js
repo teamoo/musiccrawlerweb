@@ -137,6 +137,10 @@ Meteor.startup(function () {
 		// if user profile is already available, set session varibles for filtering links just for specific sites
 		// and showing already downloaded items. They are not reactive because we need to change them when searching
 		if (Meteor.user() && Meteor.user().profile) {
+			if (window.SCM && Meteor.user().profile.volume) {
+				SCM.volume(Meteor.user().profile.volume);
+			}
+		
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 			if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
 			else {
@@ -1710,7 +1714,7 @@ Template.searchresult.events({
 		var sitefilter = Session.get("filter_sites");
 		sitefilter.push(Meteor.user().id);
 		Session.set("filter_sites", sitefilter);
-		Meteor.call('createLink', this.url, this.stream_url, this.title, function (error, result) {
+		Meteor.call('createLink', this.url, this.stream_url, this.name, function (error, result) {
 			if (error) {
 				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
 				if (event.target.className.indexOf("icon") === -1)
