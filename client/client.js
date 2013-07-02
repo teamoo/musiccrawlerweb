@@ -555,7 +555,7 @@ Template.user_loggedout.events({
 			if (Meteor.user() && Meteor.user().profile.autoupdateip === true) {
 				// dann rufen wir die neue IP ab und speichern sie im Profil
 				Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error2, result) {
-					if (error2) console.log("Fehler beim ermitteln der Benutzer-IP");
+					if (error2) console.log("Fehler beim Ermitteln der Benutzer-IP");
 					if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
 							_id: Meteor.userId()
 						}, {
@@ -2018,7 +2018,7 @@ Template.accountSettingsDialog.events({
 		if (Meteor.user() && Meteor.user().profile)
 			var aport = Meteor.user().profile.port;
 		Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
-			if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
+			if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
 			if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) {
 				Meteor.users.update({
 					_id: Meteor.userId()
@@ -2034,13 +2034,13 @@ Template.accountSettingsDialog.events({
 					port: aport
 				}, function (error2, isOnline) {
 					if (error2) {
-						console.log("Fehler beim ermitteln des Online-Status");
+						console.log("Fehler beim Ermitteln des Online-Status");
 					}
 					Session.set("JDOnlineStatus", isOnline);
 					Session.set("status", undefined);
 				});
 			} else {
-				console.log("Fehler beim ermitteln des Online-Status: ungültige Anwort vom Server");
+				console.log("Fehler beim Ermitteln des Online-Status: ungültige Anwort vom Server");
 				Session.set("JDOnlineStatus", false);
 				Session.set("status", undefined);
 			}
@@ -2082,7 +2082,7 @@ Template.accountSettingsDialog.events({
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
-				if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
+				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
 				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) {
 					Meteor.users.update({
 						_id: Meteor.userId()
@@ -2098,7 +2098,7 @@ Template.accountSettingsDialog.events({
 						port: aport
 					}, function (error2, isOnline) {
 						if (error2) {
-							console.log("Fehler beim ermitteln des Online-Status");
+							console.log("Fehler beim Ermitteln des Online-Status");
 						}
 						Session.set("JDOnlineStatus", isOnline);
 					});
@@ -2230,7 +2230,7 @@ function refreshJDOnlineStatus() {
 	if (Meteor.user() && Meteor.user().profile) {
 		if (Meteor.user().profile.autoupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
-				if (error) console.log("Fehler beim ermitteln der Benutzer-IP");
+				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
 				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip)
 					Meteor.users.update({
 						_id: Meteor.userId()
