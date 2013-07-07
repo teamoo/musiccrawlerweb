@@ -187,7 +187,8 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 					date_published: 1,
 					stream_url: 1,
 					status: 1,
-					creator: 1
+					creator: 1,
+					aid: 1
 				},
 				sort: {
 					likes: -1,
@@ -229,7 +230,8 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 					date_published: 1,
 					stream_url: 1,
 					status: 1,
-					creator: 1
+					creator: 1,
+					aid: 1
 				},
 				sort: {
 					date_published: -1,

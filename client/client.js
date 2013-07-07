@@ -395,7 +395,9 @@ Template.link.isPlayable = function () {
 			case "vimeo.com":
 				return false;
 			case "vk.com":
-				return true;
+				if (this.aid && this.oid)
+					return true;
+				return false;
 			default:
 				return false;
 		}
@@ -987,7 +989,9 @@ Template.navigation.events({
 																name: unescape(tempname.replace("null").replace("undefined").trim()),
 																url: tempurl,
 																duration: moment(temptime * 1000),
-																stream_url: "http://s2.muzon.ws/audio/" + tempaid + "/" + tempoid + "/play.mp3"
+																stream_url: "http://s2.muzon.ws/audio/" + tempaid + "/" + tempoid + "/play.mp3",
+																aid: tempaid,
+																oid: tempoid
 															});
 														tempaid = undefined;
 														tempoid = undefined;
@@ -1083,7 +1087,7 @@ Template.navigation.events({
 										
 										var entry = result.response;
 										for (var i = 1; i <= entry.length; i++) {
-											if (entry[i]) {
+											if (entry[i]) {																					
 												if (!SearchResults.findOne({
 													url: decodeURI(entry[i].url)
 												})) SearchResults.insert({
@@ -1091,7 +1095,9 @@ Template.navigation.events({
 														status: "on",
 														name: htmlDecode(entry[i].artist) + " " + htmlDecode(entry[i].title),
 														url: decodeURI(entry[i].url),
-														duration: moment(entry[i].duration * 1000)
+														duration: moment(entry[i].duration * 1000),
+														aid : entry[i].aid,
+														oid: entry[i].owner_id
 													});
 											}
 										}
@@ -1398,11 +1404,19 @@ Template.link.events({
 					break;
 				case "vk.com":
 					event.target.className = "icon-loader";
-					if (window.SCM) {
-						SCM.play({
-							title: this.name,
-							url: this.url
-						});
+					if (window.SCM && VK.Auth.getSession()) {
+						VK.Api.call("audio.getById",{audios: this.oid+"_"+this.aid}, function(result)
+							{
+								if (result.response && result.response[0].url)
+								{
+									SCM.play({
+										title: this.name,
+										url: result.response[0].url
+									});
+								}
+								else event.target.className = "icon-remove"
+							}
+						)
 						event.target.className = "icon-list";
 					} else event.target.className = "icon-remove";
 					break;
@@ -1596,7 +1610,7 @@ Template.addLinkDialog.events({
 		event.preventDefault();
 		Session.set("status", '<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird überprüft</small></p>');
 		var newlinkurl = template.find("#newlinkurl").value;
-		Meteor.call('createLink', newlinkurl, undefined, undefined, function (error, result) {
+		Meteor.call('createLink', newlinkurl, undefined, undefined, undefined, undefined, function (error, result) {
 			if (error) switch (error.error) {
 					case 409:
 						Session.set("status", '<p class="pull-left statustext"><i class="icon-warning-sign"></i><small>' + " " + error.details + "</small></p>");
@@ -1714,7 +1728,13 @@ Template.searchresult.events({
 		var sitefilter = Session.get("filter_sites");
 		sitefilter.push(Meteor.user().id);
 		Session.set("filter_sites", sitefilter);
-		Meteor.call('createLink', this.url, this.stream_url, this.name, function (error, result) {
+		
+		var aid = undefined;
+		var oid = undefined;
+		if (this.aid) aid = this.aid;
+		if (this.oid) oid = this.oid;
+		
+		Meteor.call('createLink', this.url, this.stream_url, this.name, aid, oid, function (error, result) {
 			if (error) {
 				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
 				if (event.target.className.indexOf("icon") === -1)
