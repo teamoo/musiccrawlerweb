@@ -1382,7 +1382,7 @@ Template.link.events({
 								return;
 							});
 							break;
-						}
+						} 
 						SCM.play({
 							title: this.name,
 							url: this.url.replace("/download", "")
