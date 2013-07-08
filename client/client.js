@@ -1990,8 +1990,8 @@ Template.sitesDialog.events({
 			}
 		}
 	},
-	// Hilfsfunktion, um die Eingaben in X-Editable in der Meteor DB einzutragen
-	'submit .form-inline': function (event, template) {
+	// Hilfsfunktion, um die Eingaben in X-Editable in der Meteor DB einzutragen	
+	'submit .form-inline, click .editable-submit': function (event, template) {
 		event.preventDefault();
 		var newName = template.find('.editable-input input').value;
 		if (Meteor.userId() && newName != "") Sites.update({
