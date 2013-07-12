@@ -1405,7 +1405,7 @@ Template.link.events({
 				case "vk.com":
 					event.target.className = "icon-loader";
 					if (window.SCM && VK.Auth.getSession()) {
-						var atitle = this.name
+						var atitle = this.name;
 					
 						VK.Api.call("audio.getById",{audios: this.oid+"_"+this.aid}, function(result)
 							{
@@ -1416,7 +1416,13 @@ Template.link.events({
 										url: result.response[0].url
 									});
 									
-									Links.update({_id: this,_id},{$set: {url : result.response[0].url}})
+									Links.update({
+											_id: this._id
+										}, {
+											$set: {
+												url: result.response[0].url
+											}
+										});
 								}
 								else event.target.className = "icon-remove"
 							}
