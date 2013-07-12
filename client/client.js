@@ -1413,6 +1413,8 @@ Template.link.events({
 										title: this.name,
 										url: result.response[0].url
 									});
+									
+									Links.update({_id: this,_id},{$set: {url : result.response[0].url}})
 								}
 								else event.target.className = "icon-remove"
 							}
