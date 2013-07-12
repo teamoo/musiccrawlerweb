@@ -1405,12 +1405,14 @@ Template.link.events({
 				case "vk.com":
 					event.target.className = "icon-loader";
 					if (window.SCM && VK.Auth.getSession()) {
+						var atitle = this.name
+					
 						VK.Api.call("audio.getById",{audios: this.oid+"_"+this.aid}, function(result)
 							{
 								if (result.response && result.response[0].url)
 								{
 									SCM.play({
-										title: this.name,
+										title: atitle,
 										url: result.response[0].url
 									});
 									
