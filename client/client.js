@@ -2237,9 +2237,7 @@ Template.bulkDownloadDialog.events({
 		untildate = new Date(new Date().setDate(new Date().getDate() - sel_days));
 		
 		Meteor.call("getLinkURLsByDate", untildate, Session.get("filter_sites"), function (error, result) {
-			if (result && result.length) {
-				console.log(result);
-				
+			if (result && result.length) {				
 				writeConsole(_.reduce(result, function (memo, aUrl) {
 					return memo + "<br/>" + aUrl;
 				}));
