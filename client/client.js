@@ -1178,11 +1178,20 @@ Template.linklist.events = ({
 	//alle Links anhaken, die gerade zu sehen sind
 	'click #select_all': function (event, template) {
 		if (event.target.checked === true) {
-			var selected = _.pluck(Links.find({}, {
-				fields: {
-					_id: 1
-				}
-			}).fetch(), '_id');
+			if (VK.Auth.getSession()) {
+				var selected = _.pluck(Links.find({}, {
+					fields: {
+						_id: 1
+					}
+				}).fetch(), '_id');
+			}
+			else {
+				var selected = _.pluck(Links.find({"hoster":{$ne: "vk.com"}}, {
+					fields: {
+						_id: 1
+					}
+				}).fetch(), '_id');
+			}
 			Session.set("selected_links", selected);
 		} else Session.set("selected_links", []);
 	},
@@ -1429,6 +1438,7 @@ Template.link.events({
 						)
 						event.target.className = "icon-list";
 					} else event.target.className = "icon-remove";
+					if (!VK.Auth.getSession()) alert("Du benötigst einen VK.com Account, um diesen Link hören oder downloaden zu können.\nWenn du bereits einen VK.com Account besitzt, kannst du dich in deinen Accounteinstellungen jetzt anmelden.")
 					break;
 				case "zippyshare.com":
 					event.target.className = "icon-loader";
@@ -1500,8 +1510,15 @@ Template.link.events({
 				}
 			}
 			if (contains === false) {
-				selected.push(this._id);
-				Session.set("selected_links", selected);
+				if (this.hoster != "vk.com" || VK.Auth.getSession()) {
+					selected.push(this._id);
+					Session.set("selected_links", selected);
+				}
+				else {
+					alert("Du benötigst einen VK.com Account, um diesen Link hören oder downloaden zu können.\nWenn du bereits einen VK.com Account besitzt, kannst du dich in deinen Accounteinstellungen jetzt anmelden.")
+					event.preventDefault();
+					return false;
+				}
 			}
 		} else {
 			selectedloop: for (var i = 0; i < selected.length; i++) {
@@ -2087,7 +2104,10 @@ Template.accountSettingsDialog.events({
 	'click #searchvk' : function (event, template) {
 		if (template.find("#searchvk").checked) {
 			VK.Auth.login(undefined,8);
-		}	
+		}
+		else {
+			if (VK.Auth.getSession()) VK.Auth.logout();
+		}
 	},
 	
 	'click .save': function (event, template) {
