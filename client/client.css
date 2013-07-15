@@ -98,7 +98,7 @@ body {
 }
 
 .status  {
-	padding-top: 0 px;
+	padding-top: 0px;
 	padding-bottom: 0px;
 	min-height: 25px;
 	margin: 0px;
@@ -162,7 +162,8 @@ textarea#new_comment, #postcomment {
 }
 
 .navbar-search .icon-searching {
-	background-image:transparent url("/ajax-loader2.gif");
+	background-image:url("/ajax-loader2.gif");
+	background-color:transparent;
     background-position: center center;
 	width: 16px;
 	height: 16px;
