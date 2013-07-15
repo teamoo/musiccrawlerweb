@@ -9,6 +9,7 @@ bootstrap
 ejson
 email
 appcache
+momentjs-2.1.0
 x-editable-bootstrap-1.4.5b
 page-js-ie-support
 HTML5-History-API-4.0.0

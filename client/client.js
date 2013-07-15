@@ -720,7 +720,10 @@ Template.navigation.events({
 			}, {
 				fields: {
 					_id: -1,
-					url: 1
+					url: 1,
+					aid: 1,
+					oid: 1,
+					hoster: 1
 				}
 			}).fetch(), 'url');
 			var urls_per_request = 20;
@@ -731,10 +734,36 @@ Template.navigation.events({
 				Session.set("progressState", "progress-info");
 				var oldprogress = Session.get("progress");
 				Session.set("progress", parseInt(oldprogress + progressstep));
-				var sel_links = selectedurls.splice(0, urls_per_request);
-				var links_chained = _.reduce(sel_links, function (memo, aUrl) {
-					return String(memo + " " + aUrl);
+				var sel_links_raw = selectedurls.splice(0, urls_per_request);
+				
+				var selectedurls_vk;
+				
+				if (VK.Auth.getSession())
+				{
+					var selectedids_vk = _.reduce(sel_links_raw, function(memo, item){ 
+						if (item.hoster === "vk.com")
+							return memo + "," + item.oid+"_"+item.aid;
+						else return memo;
+					});
+					
+					if (selectedids_vk && selectedids_vk.length)
+					{
+						VK.Api.call("audio.getById",{audios: selectedids_vk}, function(result)
+						{
+								if (result.response)
+									selectedurls_vk = _.pluck(result.response,url);
+						});
+					}
+				}
+				
+				sel_links = _.union(_.reject(sel_links_raw,function(item){return item.hoster === "vk.com"}),selectedurls_vk);			
+
+				var links_chained = _.reduce(sel_links, function (memo, item) {
+					if (item && item.url)
+						return memo + "<br/>" + item.url;
+					return memo + "<br/>" + item;
 				});
+				
 				var grabberoption;
 				if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 				else grabberoption = "grabber0";
@@ -783,22 +812,50 @@ Template.navigation.events({
 	'click #copybutton': function (event, template) {
 		var selected = Session.get("selected_links");
 		if (selected.length) {
-			var selectedurls = _.pluck(Links.find({
+			var selectedurls_raw = _.pluck(Links.find({
 				_id: {
 					'$in': selected
 				}
 			}, {
 				fields: {
 					_id: -1,
-					url: 1
+					url: 1,
+					aid: 1,
+					oid: 1,
+					hoster: 1
 				}
 			}).fetch(), 'url');
 			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
 				if (error) console.log("Error updating Links while copying to clipboard.");
 			});
 			Session.set("selected_links", []);
-			writeConsole(_.reduce(selectedurls, function (memo, aUrl) {
-				return memo + "<br/>" + aUrl;
+			
+			var selectedurls_vk;
+			
+			if (VK.Auth.getSession())
+			{
+				var selectedids_vk = _.reduce(selectedurls_raw, function(memo, item){ 
+					if (item.hoster === "vk.com")
+						return memo + "," + item.oid+"_"+item.aid;
+					else return memo;
+				});
+				
+				if (selectedids_vk && selectedids_vk.length)
+				{
+					VK.Api.call("audio.getById",{audios: selectedids_vk}, function(result)
+					{
+							if (result.response)
+								selectedurls_vk = _.pluck(result.response,url);
+					});
+				}
+			}
+			
+			selectedurls = _.union(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),selectedurls_vk);
+			
+			writeConsole(_.reduce(selectedurls, function (memo, item) {
+				if (item && item.url)
+					return memo + "<br/>" + item.url;
+				return memo + "<br/>" + item;
 			}));
 		}
 	},
