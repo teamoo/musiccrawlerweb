@@ -713,7 +713,7 @@ Template.navigation.events({
 		if (selected.length && Session.equals("JDOnlineStatus", true)) {
 			Session.set("progressActive", true);
 			Session.set("progress", 5);
-			var selectedurls = _.pluck(Links.find({
+			var selectedurls = Links.find({
 				_id: {
 					$in: selected
 				}
@@ -725,7 +725,7 @@ Template.navigation.events({
 					oid: 1,
 					hoster: 1
 				}
-			}).fetch(), 'url');
+			}).fetch();
 			var urls_per_request = 20;
 			var times = parseInt(Math.ceil(selectedurls.length / urls_per_request));
 			var progressstep = 95 / (times * 2);
@@ -735,84 +735,135 @@ Template.navigation.events({
 				var oldprogress = Session.get("progress");
 				Session.set("progress", parseInt(oldprogress + progressstep));
 				var sel_links_raw = selectedurls.splice(0, urls_per_request);
-				
+
 				var selectedurls_vk;
-				
+			
 				if (VK.Auth.getSession())
-				{
+				{	
 					var selectedids_vk = _.reduce(sel_links_raw, function(memo, item){ 
-						if (item.hoster === "vk.com")
-							return memo + "," + item.oid+"_"+item.aid;
-						else return memo;
-					});
+						if (item.hoster === "vk.com" && item.oid && item.aid)
+							return item.oid+"_"+item.aid + "," + memo;
+						return memo;
+					},"");	
 					
-					if (selectedids_vk && selectedids_vk.length)
-					{
+					if (selectedids_vk.length > 0)
+					{				
 						VK.Api.call("audio.getById",{audios: selectedids_vk}, function(result)
 						{
 								if (result.response)
-									selectedurls_vk = _.pluck(result.response,url);
+								{
+									selectedurls_vk = _.pluck(result.response,"url");
+									selectedurls = _.union(_.reject(sel_links_raw,function(item){return item.hoster === "vk.com"}),selectedurls_vk);
+									
+									var links_chained = _.reduce(selectedurls, function (memo, item) {
+										if (item && item.url)
+											return memo + "<br/>" + item.url;
+										return memo + "<br/>" + item;
+									});	
+									
+									var grabberoption;
+									if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
+									else grabberoption = "grabber0";
+									if (Meteor.user() && Meteor.user().profile)
+										var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
+									requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
+									Meteor.call("sendLinks", requeststring, function (error, result) {
+										if (error) {
+											errorcount++;
+											if (errorcount > 2) {
+												Session.set("progressState", "progress-danger");
+												Session.set("progress", 100);
+												Session.set("progressActive", false);
+												Meteor.setTimeout(function () {
+													Session.set("progress", undefined);
+													Session.set("progressState", undefined);
+												}, 3500);
+												return;
+											}
+											console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
+											Session.set("progressState", "progress-warning");
+										}
+										if (result) {
+											Meteor.call("markLinksAsDownloadedByURL", sel_links, function (error2, result2) {
+												if (error2) console.log("Error updating Links after Download.");
+											});
+										}
+										var oldprogress = Session.get("progress");
+										Session.set("progress", parseInt(oldprogress + progressstep));
+										if (Session.get("progress") >= 99) {
+											if (Session.equals("progressState", "progress-warning")) Session.set("progressState", "progress-danger");
+											else Session.set("progressState", "progress-success");
+											Session.set("progress", 100);
+											Session.set("progressActive", false);
+											Meteor.setTimeout(function () {
+												Session.set("progress", undefined);
+												Session.set("progressState", undefined);
+											}, 3500);
+											Session.set("selected_links", []);
+										}
+									});
+								}
 						});
 					}
-				}
-				
-				sel_links = _.union(_.reject(sel_links_raw,function(item){return item.hoster === "vk.com"}),selectedurls_vk);			
-
-				var links_chained = _.reduce(sel_links, function (memo, item) {
-					if (item && item.url)
-						return memo + "<br/>" + item.url;
-					return memo + "<br/>" + item;
-				});
-				
-				var grabberoption;
-				if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
-				else grabberoption = "grabber0";
-				if (Meteor.user() && Meteor.user().profile)
-					var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
-				requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
-				Meteor.call("sendLinks", requeststring, function (error, result) {
-					if (error) {
-						errorcount++;
-						if (errorcount > 2) {
-							Session.set("progressState", "progress-danger");
-							Session.set("progress", 100);
-							Session.set("progressActive", false);
-							Meteor.setTimeout(function () {
-								Session.set("progress", undefined);
-								Session.set("progressState", undefined);
-							}, 3500);
-							return;
-						}
-						console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
-						Session.set("progressState", "progress-warning");
+					else {
+						var links_chained = _.reduce(_.reject(sel_links_raw,function(item){return item.hoster === "vk.com"}), function (memo, item) {
+							if (item && item.url)
+								return memo + "<br/>" + item.url;
+							return memo + "<br/>" + item;
+						});	
+									
+						var grabberoption;
+						if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
+						else grabberoption = "grabber0";
+						if (Meteor.user() && Meteor.user().profile)
+							var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
+						requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
+						Meteor.call("sendLinks", requeststring, function (error, result) {
+							if (error) {
+								errorcount++;
+								if (errorcount > 2) {
+									Session.set("progressState", "progress-danger");
+									Session.set("progress", 100);
+									Session.set("progressActive", false);
+									Meteor.setTimeout(function () {
+										Session.set("progress", undefined);
+										Session.set("progressState", undefined);
+									}, 3500);
+									return;
+								}
+								console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
+								Session.set("progressState", "progress-warning");
+							}
+							if (result) {
+								Meteor.call("markLinksAsDownloadedByURL", sel_links, function (error2, result2) {
+									if (error2) console.log("Error updating Links after Download.");
+								});
+							}
+							var oldprogress = Session.get("progress");
+							Session.set("progress", parseInt(oldprogress + progressstep));
+							if (Session.get("progress") >= 99) {
+								if (Session.equals("progressState", "progress-warning")) Session.set("progressState", "progress-danger");
+								else Session.set("progressState", "progress-success");
+								Session.set("progress", 100);
+								Session.set("progressActive", false);
+								Meteor.setTimeout(function () {
+									Session.set("progress", undefined);
+									Session.set("progressState", undefined);
+								}, 3500);
+								Session.set("selected_links", []);
+							}
+						});					
 					}
-					if (result) {
-						Meteor.call("markLinksAsDownloadedByURL", sel_links, function (error2, result2) {
-							if (error2) console.log("Error updating Links after Download.");
-						});
-					}
-					var oldprogress = Session.get("progress");
-					Session.set("progress", parseInt(oldprogress + progressstep));
-					if (Session.get("progress") >= 99) {
-						if (Session.equals("progressState", "progress-warning")) Session.set("progressState", "progress-danger");
-						else Session.set("progressState", "progress-success");
-						Session.set("progress", 100);
-						Session.set("progressActive", false);
-						Meteor.setTimeout(function () {
-							Session.set("progress", undefined);
-							Session.set("progressState", undefined);
-						}, 3500);
-						Session.set("selected_links", []);
-					}
-				});
+				}			
 			}
 		}
 	},
 	//Link-URLs kopieren Aktion ausführen
 	'click #copybutton': function (event, template) {
 		var selected = Session.get("selected_links");
+		
 		if (selected.length) {
-			var selectedurls_raw = _.pluck(Links.find({
+			var selectedurls_raw = Links.find({
 				_id: {
 					'$in': selected
 				}
@@ -824,39 +875,52 @@ Template.navigation.events({
 					oid: 1,
 					hoster: 1
 				}
-			}).fetch(), 'url');
-			Meteor.call("markLinksAsDownloadedById", selected, function (error, result) {
-				if (error) console.log("Error updating Links while copying to clipboard.");
-			});
-			Session.set("selected_links", []);
+			}).fetch();
 			
 			var selectedurls_vk;
 			
 			if (VK.Auth.getSession())
-			{
+			{	
 				var selectedids_vk = _.reduce(selectedurls_raw, function(memo, item){ 
-					if (item.hoster === "vk.com")
-						return memo + "," + item.oid+"_"+item.aid;
-					else return memo;
-				});
+					if (item.hoster === "vk.com" && item.oid && item.aid)
+						return item.oid+"_"+item.aid + "," + memo;
+					return memo;
+				},"");	
 				
-				if (selectedids_vk && selectedids_vk.length)
-				{
+				if (selectedids_vk.length > 0)
+				{				
 					VK.Api.call("audio.getById",{audios: selectedids_vk}, function(result)
 					{
 							if (result.response)
-								selectedurls_vk = _.pluck(result.response,url);
+							{
+								selectedurls_vk = _.pluck(result.response,"url");
+								selectedurls = _.union(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),selectedurls_vk);
+			
+								writeConsole(_.reduce(selectedurls, function (memo, item) {
+									if (item && item.url)
+										return memo + "<br/>" + item.url;
+									return memo + "<br/>" + item;
+								}));
+							}
 					});
+				}
+				else {
+					writeConsole(_.reduce(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}), function (memo, item) {
+						if (item && item.url)
+							return memo + "<br/>" + item.url;
+						return memo + "<br/>" + item;
+					}));
 				}
 			}
 			
-			selectedurls = _.union(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),selectedurls_vk);
-			
-			writeConsole(_.reduce(selectedurls, function (memo, item) {
-				if (item && item.url)
-					return memo + "<br/>" + item.url;
-				return memo + "<br/>" + item;
-			}));
+			var selected_str = _.map(selected, function (linkobj) {
+				return linkobj._str;
+			});
+
+			Meteor.call("markLinksAsDownloadedById", selected_str, function (error, result) {
+				if (error) console.log("Error updating Links while copying to clipboard.");
+			});
+			Session.set("selected_links", []);
 		}
 	},
 	'click #addlinkbutton': function (event, template) {
