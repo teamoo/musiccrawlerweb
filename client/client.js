@@ -72,7 +72,7 @@ Deps.autorun(function () {
 		[1, 14, 30, 90, 365].forEach(function (timespan) {
 			var item = Counts.findOne({
 				_id: timespan
-				});
+			});
 			if (item) Session.set("links_count_" + timespan, item.count);
 		});
 	});
@@ -129,7 +129,6 @@ Meteor.startup(function () {
 					}
 				});
 			}
-				
 		}
 	}); 
 	
@@ -719,7 +718,7 @@ Template.navigation.events({
 				}
 			}, {
 				fields: {
-					_id: -1,
+					_id: 1,
 					url: 1,
 					aid: 1,
 					oid: 1,
@@ -730,88 +729,39 @@ Template.navigation.events({
 			var times = parseInt(Math.ceil(selectedurls.length / urls_per_request));
 			var progressstep = 95 / (times * 2);
 			var errorcount = 0;
+			
 			for (var i = 1; i <= times; i++) {
 				Session.set("progressState", "progress-info");
 				var oldprogress = Session.get("progress");
 				Session.set("progress", parseInt(oldprogress + progressstep));
 				var sel_links_raw = selectedurls.splice(0, urls_per_request);
 
-				var selectedurls_vk;
+				var selectedurls_vk = [];
+				var selectedids_vk;
+						
 			
 				if (VK.Auth.getSession())
 				{	
-					var selectedids_vk = _.reduce(sel_links_raw, function(memo, item){ 
+					selectedids_vk = _.reduce(sel_links_raw, function(memo, item){ 
 						if (item.hoster === "vk.com" && item.oid && item.aid)
 							return item.oid+"_"+item.aid + "," + memo;
 						return memo;
 					},"");	
-					
-					if (selectedids_vk.length > 0)
-					{				
-						VK.Api.call("audio.getById",{audios: selectedids_vk}, function(result)
+								
+					VK.Api.call("audio.getById",{audios: selectedids_vk.substring(0, selectedids_vk.length - 1)}, function(result)
+					{
+						if (result)
 						{
-								if (result.response)
-								{
-									selectedurls_vk = _.pluck(result.response,"url");
-									selectedurls = _.union(_.reject(sel_links_raw,function(item){return item.hoster === "vk.com"}),selectedurls_vk);
-									
-									var links_chained = _.reduce(selectedurls, function (memo, item) {
-										if (item && item.url)
-											return memo + "<br/>" + item.url;
-										return memo + "<br/>" + item;
-									});	
-									
-									var grabberoption;
-									if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
-									else grabberoption = "grabber0";
-									if (Meteor.user() && Meteor.user().profile)
-										var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
-									requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
-									Meteor.call("sendLinks", requeststring, function (error, result) {
-										if (error) {
-											errorcount++;
-											if (errorcount > 2) {
-												Session.set("progressState", "progress-danger");
-												Session.set("progress", 100);
-												Session.set("progressActive", false);
-												Meteor.setTimeout(function () {
-													Session.set("progress", undefined);
-													Session.set("progressState", undefined);
-												}, 3500);
-												return;
-											}
-											console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
-											Session.set("progressState", "progress-warning");
-										}
-										if (result) {
-											Meteor.call("markLinksAsDownloadedByURL", sel_links, function (error2, result2) {
-												if (error2) console.log("Error updating Links after Download.");
-											});
-										}
-										var oldprogress = Session.get("progress");
-										Session.set("progress", parseInt(oldprogress + progressstep));
-										if (Session.get("progress") >= 99) {
-											if (Session.equals("progressState", "progress-warning")) Session.set("progressState", "progress-danger");
-											else Session.set("progressState", "progress-success");
-											Session.set("progress", 100);
-											Session.set("progressActive", false);
-											Meteor.setTimeout(function () {
-												Session.set("progress", undefined);
-												Session.set("progressState", undefined);
-											}, 3500);
-											Session.set("selected_links", []);
-										}
-									});
-								}
-						});
-					}
-					else {
-						var links_chained = _.reduce(_.reject(sel_links_raw,function(item){return item.hoster === "vk.com"}), function (memo, item) {
-							if (item && item.url)
-								return memo + "<br/>" + item.url;
+							if (result.response)
+								selectedurls_vk = _.pluck(result.response,"url");
+						}
+							
+						selectedurls = _.union(_.pluck(_.reject(sel_links_raw,function(item){return item.hoster === "vk.com"}),"url"),selectedurls_vk);
+							
+						var links_chained = _.reduce(selectedurls, function (memo, item) {
 							return memo + "<br/>" + item;
-						});	
-									
+						},"");	
+						
 						var grabberoption;
 						if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 						else grabberoption = "grabber0";
@@ -835,7 +785,7 @@ Template.navigation.events({
 								Session.set("progressState", "progress-warning");
 							}
 							if (result) {
-								Meteor.call("markLinksAsDownloadedByURL", sel_links, function (error2, result2) {
+								Meteor.call("markLinksAsDownloadedByURL", selectedurls, function (error2, result2) {
 									if (error2) console.log("Error updating Links after Download.");
 								});
 							}
@@ -852,9 +802,59 @@ Template.navigation.events({
 								}, 3500);
 								Session.set("selected_links", []);
 							}
-						});					
-					}
-				}			
+						});
+					});			
+				}
+				else
+				{
+					selectedurls = _.pluck(_.reject(sel_links_raw,function(item){return item.hoster === "vk.com"}),"url");
+					
+					var links_chained = _.reduce(selectedurls, function (memo, item) {
+							return memo + "<br/>" + item;
+					},"");	
+					
+					var grabberoption;
+					if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
+					else grabberoption = "grabber0";
+					if (Meteor.user() && Meteor.user().profile)
+						var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
+					requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
+					Meteor.call("sendLinks", requeststring, function (error, result) {
+						if (error) {
+							errorcount++;
+							if (errorcount > 2) {
+								Session.set("progressState", "progress-danger");
+								Session.set("progress", 100);
+								Session.set("progressActive", false);
+								Meteor.setTimeout(function () {
+									Session.set("progress", undefined);
+									Session.set("progressState", undefined);
+								}, 3500);
+								return;
+							}
+							console.log("Fehler beim Senden der Links an JDownloader. (" + error.details + ")");
+							Session.set("progressState", "progress-warning");
+						}
+						if (result) {
+							Meteor.call("markLinksAsDownloadedByURL", selectedurls, function (error2, result2) {
+								if (error2) console.log("Error updating Links after Download.");
+							});
+						}
+						var oldprogress = Session.get("progress");
+						Session.set("progress", parseInt(oldprogress + progressstep));
+						if (Session.get("progress") >= 99) {
+							if (Session.equals("progressState", "progress-warning")) Session.set("progressState", "progress-danger");
+							else Session.set("progressState", "progress-success");
+							Session.set("progress", 100);
+							Session.set("progressActive", false);
+							Meteor.setTimeout(function () {
+								Session.set("progress", undefined);
+								Session.set("progressState", undefined);
+							}, 3500);
+							Session.set("selected_links", []);
+						}
+					});
+				}
 			}
 		}
 	},
@@ -869,7 +869,7 @@ Template.navigation.events({
 				}
 			}, {
 				fields: {
-					_id: -1,
+					_id: 1,
 					url: 1,
 					aid: 1,
 					oid: 1,
@@ -877,49 +877,53 @@ Template.navigation.events({
 				}
 			}).fetch();
 			
-			var selectedurls_vk;
+			var selectedurls_vk = [];
+			var selectedids_vk;
 			
 			if (VK.Auth.getSession())
 			{	
-				var selectedids_vk = _.reduce(selectedurls_raw, function(memo, item){ 
+				 selectedids_vk = _.reduce(selectedurls_raw, function(memo, item){ 
 					if (item.hoster === "vk.com" && item.oid && item.aid)
 						return item.oid+"_"+item.aid + "," + memo;
 					return memo;
 				},"");	
-				
-				if (selectedids_vk.length > 0)
-				{				
-					VK.Api.call("audio.getById",{audios: selectedids_vk}, function(result)
-					{
+			
+				VK.Api.call("audio.getById",{audios: selectedids_vk.substring(0, selectedids_vk.length - 1)}, function(result)
+				{
+						if (result)
+						{
 							if (result.response)
-							{
 								selectedurls_vk = _.pluck(result.response,"url");
-								selectedurls = _.union(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),selectedurls_vk);
+						}
+						
+						selectedurls = _.union(_.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url"),selectedurls_vk);
+							
+						writeConsole(_.reduce(selectedurls, function (memo, item) {
+							return memo + "<br/>" + item;
+						}),"");
+										
+						var selected_str = _.pluck(selected,"_str")
 			
-								writeConsole(_.reduce(selectedurls, function (memo, item) {
-									if (item && item.url)
-										return memo + "<br/>" + item.url;
-									return memo + "<br/>" + item;
-								}));
-							}
-					});
-				}
-				else {
-					writeConsole(_.reduce(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}), function (memo, item) {
-						if (item && item.url)
-							return memo + "<br/>" + item.url;
-						return memo + "<br/>" + item;
-					}));
-				}
+						Meteor.call("markLinksAsDownloadedById", selected_str, function (error, result) {
+							if (error) console.log("Error updating Links while copying to clipboard.");
+						});
+				});			
 			}
-			
-			var selected_str = _.map(selected, function (linkobj) {
-				return linkobj._str;
-			});
+			else
+			{
+				selectedurls = _.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url");
+							
+				writeConsole(_.reduce(selectedurls, function (memo, item) {
+					return memo + "<br/>" + item;
+				}),"");		
 
-			Meteor.call("markLinksAsDownloadedById", selected_str, function (error, result) {
-				if (error) console.log("Error updating Links while copying to clipboard.");
-			});
+				var selected_str = _.pluck(_.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"_id"),"_str")
+			
+				Meteor.call("markLinksAsDownloadedById", selected_str, function (error, result) {
+					if (error) console.log("Error updating Links while copying to clipboard.");
+				});
+			}
+
 			Session.set("selected_links", []);
 		}
 	},
@@ -1155,7 +1159,7 @@ Template.navigation.events({
 							if (_.contains(Meteor.user().profile.searchproviders, "youtube")) {
 								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
 									return String(memo + "+" + token);
-								});
+								},"");
 								Meteor.http.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json", function (error, result) {
 									if (result && result.data && result.data.feed && result.data.feed.entry) {
 										var entry = result.data.feed.entry;
@@ -1201,7 +1205,7 @@ Template.navigation.events({
 							if (_.contains(Meteor.user().profile.searchproviders, "vk.com")) {
 								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
 									return String(memo + "+" + token);
-								});
+								},"");
 								
 								VK.Api.call("audio.search",{q:filter_term_external,auto_complete:1,count:10}, function(result){								
 									if (result && result.response && !result.error) {
@@ -2377,17 +2381,67 @@ Template.bulkDownloadDialog.events({
 		
 		untildate = new Date(new Date().setDate(new Date().getDate() - sel_days));
 		
+		var include_vk;
+		
+		if (VK.Auth.getSession()) include_vk = true;
+		else include_vk = false;
+		
 		Meteor.call("getLinkURLsByDate", untildate, Session.get("filter_sites"), function (error, result) {
-			if (result && result.length) {				
-				writeConsole(_.reduce(result, function (memo, aUrl) {
-					return memo + "<br/>" + aUrl;
-				}));
+			if (result && result.length) {
+				var selectedurls_raw = result;				
+				var newurls_vk = [];
+				var urls_per_request = 30;
 				
-				Meteor.call("markLinksAsDownloadedByDate", untildate, Session.get("filter_sites"),function (error, result) {
+				var selectedurls_vk = _.filter(selectedurls_raw, function(item){return item.hoster === "vk.com"});
+				var times = parseInt(Math.ceil(selectedurls_vk.length / urls_per_request));
+				
+				if (selectedurls_vk.length && VK.Auth.getSession())
+				{
+					for (var i = 1; i <= times; i++) {
+						var sel_links_raw_vk = selectedurls_vk.splice(0, urls_per_request);
+						
+						selectedids_vk = _.reduce(sel_links_raw_vk, function(memo, item){ 
+							if (item.hoster === "vk.com" && item.oid && item.aid)
+								return item.oid+"_"+item.aid + "," + memo;
+							return memo;
+						},"");	
+					
+						VK.Api.call("audio.getById",{audios: selectedids_vk.substring(0, selectedids_vk.length - 1)}, function(result2)
+						{
+							if (result2 && result2.response) {
+										tempurls_vk = _.pluck(result2.response,"url");
+										newurls_vk = _.union(newurls_vk, tempurls_vk);
+							};	
+						});
+					}
+					
+					selectedurls = _.union(_.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url"),newurls_vk);
+				
+					writeConsole(_.reduce(selectedurls, function (memo, item) {
+						if (item && item.url)
+							return memo + "<br/>" + item.url;
+						return memo + "<br/>" + item;
+					}),"");	
+				}
+				else 
+				{
+					alert("Du benötigst einen VK.com Account, um Links auf vk.com herunterzuladen.\nDiese Links wurden bisher ausgelassen.\nWenn du bereits einen VK.com Account besitzt, kannst du dich in deinen Accounteinstellungen jetzt anmelden.")
+					
+					console.log(selectedurls_raw);
+					
+					selectedurls = _.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url");
+					
+					console.log(selectedurls);
+					
+					writeConsole(_.reduce(selectedurls, function (memo, item) {
+						return memo + "<br/>" + item;
+					}),"");				
+				}
+				
+				Meteor.call("markLinksAsDownloadedByDate", untildate, Session.get("filter_sites"), include_vk ,function (error, result) {
 					if (result) Session.set("links_count_" + sel_days, 0);
 					if (error) console.log("Error updating Links while copying to clipboard.");
 				});
-				
 			}
 			if (error) console.log("Error getting Links while copying to clipboard.");
 		});
