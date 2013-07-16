@@ -2397,11 +2397,11 @@ Template.bulkDownloadDialog.events({
 				var selectedurls_vk = _.filter(selectedurls_raw, function(item){return item.hoster === "vk.com"});
 				var times = parseInt(Math.ceil(selectedurls_vk.length / urls_per_request));
 				
+				var remaining = times;
+				
 				if (selectedurls_vk.length && VK.Auth.getSession())
 				{
 					for (var i = 1; i <= times; i++) {
-						console.log("schleife");
-					
 						var sel_links_raw_vk = selectedurls_vk.splice(0, urls_per_request);
 						
 						selectedids_vk = _.reduce(sel_links_raw_vk, function(memo, item){ 
@@ -2409,25 +2409,25 @@ Template.bulkDownloadDialog.events({
 								return item.oid+"_"+item.aid + "," + memo;
 							return memo;
 						},"");	
-					
+
 						VK.Api.call("audio.getById",{audios: selectedids_vk.substring(0, selectedids_vk.length - 1)}, function(result2)
 						{
-							if (result2 && result2.response) {
-										tempurls_vk = _.pluck(result2.response,"url");
-										newurls_vk = _.union(newurls_vk, tempurls_vk);
-							};	
+							if (result2 && result2.response)
+								newurls_vk = newurls_vk.concat(_.pluck(result2.response,"url"));
+							
+							--remaining
+							
+							if (remaining <= 0)
+							{
+								selectedurls = _.union(_.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url"),newurls_vk);
+								if (selectedurls.length)
+									writeConsole(_.reduce(selectedurls, function (memo, item) {
+										return memo + "<br/>" + item;
+									}),"");	
+							}
 						});
-						
-						if (i === times)
-						{
-							selectedurls = _.union(_.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url"),newurls_vk);
-				
-							if (selectedurls.length)
-								writeConsole(_.reduce(selectedurls, function (memo, item) {
-									return memo + "<br/>" + item;
-								}),"");	
-						}
-					}					
+					}	
+
 				}
 				else 
 				{
