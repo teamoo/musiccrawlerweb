@@ -897,10 +897,11 @@ Template.navigation.events({
 						}
 						
 						selectedurls = _.union(_.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url"),selectedurls_vk);
-							
-						writeConsole(_.reduce(selectedurls, function (memo, item) {
-							return memo + "<br/>" + item;
-						}),"");
+						
+						if (selectedurls.length)
+							writeConsole(_.reduce(selectedurls, function (memo, item) {
+								return memo + "<br/>" + item;
+							}),"");
 										
 						var selected_str = _.pluck(selected,"_str")
 			
@@ -912,10 +913,11 @@ Template.navigation.events({
 			else
 			{
 				selectedurls = _.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url");
-							
-				writeConsole(_.reduce(selectedurls, function (memo, item) {
-					return memo + "<br/>" + item;
-				}),"");		
+				
+				if (selectedurls.length)				
+					writeConsole(_.reduce(selectedurls, function (memo, item) {
+						return memo + "<br/>" + item;
+					}),"");		
 
 				var selected_str = _.pluck(_.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"_id"),"_str")
 			
@@ -2398,6 +2400,8 @@ Template.bulkDownloadDialog.events({
 				if (selectedurls_vk.length && VK.Auth.getSession())
 				{
 					for (var i = 1; i <= times; i++) {
+						console.log("schleife");
+					
 						var sel_links_raw_vk = selectedurls_vk.splice(0, urls_per_request);
 						
 						selectedids_vk = _.reduce(sel_links_raw_vk, function(memo, item){ 
@@ -2413,29 +2417,28 @@ Template.bulkDownloadDialog.events({
 										newurls_vk = _.union(newurls_vk, tempurls_vk);
 							};	
 						});
-					}
-					
-					selectedurls = _.union(_.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url"),newurls_vk);
+						
+						if (i === times)
+						{
+							selectedurls = _.union(_.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url"),newurls_vk);
 				
-					writeConsole(_.reduce(selectedurls, function (memo, item) {
-						if (item && item.url)
-							return memo + "<br/>" + item.url;
-						return memo + "<br/>" + item;
-					}),"");	
+							if (selectedurls.length)
+								writeConsole(_.reduce(selectedurls, function (memo, item) {
+									return memo + "<br/>" + item;
+								}),"");	
+						}
+					}					
 				}
 				else 
 				{
 					alert("Du benötigst einen VK.com Account, um Links auf vk.com herunterzuladen.\nDiese Links wurden bisher ausgelassen.\nWenn du bereits einen VK.com Account besitzt, kannst du dich in deinen Accounteinstellungen jetzt anmelden.")
 					
-					console.log(selectedurls_raw);
-					
 					selectedurls = _.pluck(_.reject(selectedurls_raw,function(item){return item.hoster === "vk.com"}),"url");
 					
-					console.log(selectedurls);
-					
-					writeConsole(_.reduce(selectedurls, function (memo, item) {
-						return memo + "<br/>" + item;
-					}),"");				
+					if (selectedurls.length)					
+						writeConsole(_.reduce(selectedurls, function (memo, item) {
+							return memo + "<br/>" + item;
+						}),"");				
 				}
 				
 				Meteor.call("markLinksAsDownloadedByDate", untildate, Session.get("filter_sites"), include_vk ,function (error, result) {
