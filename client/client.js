@@ -152,8 +152,6 @@ Meteor.startup(function () {
 				SCM.volume(Meteor.user().profile.volume);
 			}
 			
-			Session.set("temp_autoupdate",Meteor.user().profile.autoupdateip);
-			
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 			if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
 			else {
@@ -2188,16 +2186,20 @@ Template.sitesDialog.events({
 Template.accountSettingsDialog.events({
 	'input #port': function (event, template) {
 		if (!event.target.validity.valid || !template.find('#ip').validity.valid) {
-			template.find('.save').disabled = true;
+			template.find('.cancel').disabled = true;
+			$('.cancel').prop("disabled", true);
 		} else {
-			template.find('.save').disabled = false;
+			template.find('.cancel').disabled = false;
+			$('.cancel').prop("disabled", false);
 		}
 	},
 	'input #ip': function (event, template) {
 		if (!event.target.validity.valid && !template.find('#autoupdate').checked || !template.find('#port').validity.valid) {
-			template.find('.save').disabled = true;
+			template.find('.cancel').disabled = true;
+			$('.cancel').prop("disabled", true);
 		} else {
-			template.find('.save').disabled = false;
+			template.find('.cancel').disabled = false;
+			$('.cancel').prop("disabled", false);
 		}
 	},
 	//IP-Adresse aktualisieren Button - IP checken und anzeigen
@@ -2262,8 +2264,10 @@ Template.accountSettingsDialog.events({
 					}
 			});
 			
-			//$('#ip').prop("disabled", true);
-			if (template.find('#port').validity.valid && template.find('#ip').validity.valid) template.find('.save').disabled = false;
+			if (template.find('#port').validity.valid && template.find('#ip').validity.valid) {
+				template.find('.cancel').disabled = false;
+				$('.cancel').prop("disabled", false);
+			}
 		} else {
 			Meteor.users.update({
 				_id: Meteor.userId()
@@ -2272,7 +2276,6 @@ Template.accountSettingsDialog.events({
 					'profile.autoupdateip': false,
 					}
 			});
-			//$('#ip').prop("disabled", false);
 		}
 	},
 	//eingaben speichern und IP nochmal updaten, falls der User was komisches eingegeben hat
@@ -2285,7 +2288,7 @@ Template.accountSettingsDialog.events({
 		}
 	},
 	
-	'click .save': function (event, template) {
+	'click .cancel': function (event, template) {
 		var aip = template.find("#ip").value;
 		var aport = template.find("#port").value;
 		var aupdateip = template.find("#autoupdate").checked;
@@ -2305,7 +2308,6 @@ Template.accountSettingsDialog.events({
 		if (searchexfm) searchproviders.push("ex.fm");
 		if (searchvk && VK.Auth.getSession()) searchproviders.push("vk.com");
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
-		Session.set("temp_autoupdate",aupdateip);
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
@@ -2353,18 +2355,6 @@ Template.accountSettingsDialog.events({
 			}
 		});
 		// es wurde gespeichert, Dialog schließen
-		Session.set("showAccountSettingsDialog", false);
-	},
-	'click .cancel': function () {
-		// User hat abgebrochen, Dialog schließen
-		Meteor.users.update({
-			_id: Meteor.userId()
-		}, {
-			$set: {
-				'profile.autoupdateip': Session.get("temp_autoupdate"),
-			}
-		});
-		
 		Session.set("showAccountSettingsDialog", false);
 	}
 });
