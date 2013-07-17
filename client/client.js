@@ -2305,6 +2305,7 @@ Template.accountSettingsDialog.events({
 		if (searchexfm) searchproviders.push("ex.fm");
 		if (searchvk && VK.Auth.getSession()) searchproviders.push("vk.com");
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
+		Session.set("temp_autoupdate",aupdateip);
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
@@ -2510,6 +2511,8 @@ Template.bulkDownloadDialog.events({
 
 function refreshJDOnlineStatus() {
 	if (Meteor.user() && Meteor.user().profile) {
+		var oldip = Meteor.user().profile.ip;
+	
 		if (Meteor.user().profile.autoupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
@@ -2529,7 +2532,18 @@ function refreshJDOnlineStatus() {
 			ip: Meteor.user().profile.ip,
 			port: Meteor.user().profile.port
 		}, function (error, isOnline) {
-			if (error) console.log("Fehler beim Ermitteln des Online-Status");
+			if (error) 
+			{
+				if (Meteor.user().profile.autoupdateip === true && (oldip != Meteor.user().profile.ip))
+					Meteor.call("checkJDOnlineStatus", {
+						ip: oldip,
+						port: Meteor.user().profile.port
+					}, function (error2, isOnline2) {
+						if (error2) console.log("Fehler beim Ermitteln des Online-Status");
+						Session.set("JDOnlineStatus", isOnline2);
+					});
+				else console.log("Fehler beim Ermitteln des Online-Status");
+			}
 			Session.set("JDOnlineStatus", isOnline);
 		});
 	}
