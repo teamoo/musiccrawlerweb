@@ -1707,6 +1707,7 @@ Template.link.events({
 								status: "on"
 							}
 						});
+						event.target.className = "icon-refresh";
 					}
 					else
 					{
@@ -1717,8 +1718,8 @@ Template.link.events({
 			}
 			else
 			{
-				console.log("Fehler beim Aktualisieren des Links " + linkurl + ": kein VK-Zugang oder keine VK-Objektinformationen");
 				event.target.className = "icon-remove";
+				console.log("Fehler beim Aktualisieren des Links " + linkurl + ": kein VK-Zugang oder keine VK-Objektinformationen");
 			}
 		}		
 		else
