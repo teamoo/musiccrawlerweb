@@ -1,5 +1,4 @@
-﻿
-//Initialize Session Variables
+﻿//Initialize Session Variables
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
 Session.setDefault("sites_completed", false);
