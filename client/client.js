@@ -41,7 +41,19 @@ Meteor.Router.add({
 	'/set/:id': function (id) {
 		Session.set('filter_id', id);
 	},
-	'/': 'page',
+	'/:searchterm': function (searchterm) {
+		var prev_filter_date = Session.get("filter_date");
+		var prev_filter_skip = Session.get("filter_skip");
+		Session.set("links_completed", false);
+		Session.set("prev_filter_skip", prev_filter_skip);
+		Session.set("prev_filter_date", prev_filter_date);
+		Session.set("filter_show_already_downloaded", true);
+		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
+		Session.set("filter_term", ".*" + searchterm.trim().replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace(/\_/g," ") + ".*");
+		
+		if (searchterm.indexOf(" ") != -1 || searchterm.indexOf("%20") != -1)
+			Meteor.Router.to("/"+searchterm.replace(/\s|\(/g,"_").replace(/\W/g,""));
+	},
 	'*': 'page'
 });
 //local Collection for external search results
@@ -139,7 +151,9 @@ Meteor.startup(function () {
 			if (window.SCM && Meteor.user().profile.volume) {
 				SCM.volume(Meteor.user().profile.volume);
 			}
-		
+			
+			Session.set("temp_autoupdate",Meteor.user().profile.autoupdateip);
+			
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 			if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
 			else {
@@ -2187,45 +2201,79 @@ Template.accountSettingsDialog.events({
 		}
 	},
 	//IP-Adresse aktualisieren Button - IP checken und anzeigen
-	'click #refreship': function (event, template) {
+	'click #refreship': function (event, template) {		
 		Session.set("status", '<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i></p>');
+
 		if (Meteor.user() && Meteor.user().profile)
 			var aport = Meteor.user().profile.port;
-		Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
-			if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
-			if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) {
-				Meteor.users.update({
-					_id: Meteor.userId()
-				}, {
-					$set: {
-						'profile.ip': result.data.ip,
-					}
-				});
-				template.find("#ip").value = result.data.ip;
-				// neue IP nutzen und checken, ob hier ein JD läuft...			
-				Meteor.call("checkJDOnlineStatus", {
-					ip: result.data.ip,
-					port: aport
-				}, function (error2, isOnline) {
-					if (error2) {
-						console.log("Fehler beim Ermitteln des Online-Status");
-					}
-					Session.set("JDOnlineStatus", isOnline);
+		if (template.find("#autoupdate").checked)
+		{		
+			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
+				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
+				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) {
+					Meteor.users.update({
+						_id: Meteor.userId()
+					}, {
+						$set: {
+							'profile.ip': result.data.ip,
+						}
+					});
+					template.find("#ip").value = result.data.ip;
+					// neue IP nutzen und checken, ob hier ein JD läuft...			
+					Meteor.call("checkJDOnlineStatus", {
+						ip: result.data.ip,
+						port: aport
+					}, function (error2, isOnline) {
+						if (error2) {
+							console.log("Fehler beim Ermitteln des Online-Status");
+						}
+						Session.set("JDOnlineStatus", isOnline);
+						Session.set("status", undefined);
+					});
+				} else {
+					console.log("Fehler beim Ermitteln des Online-Status: ungültige Anwort vom Server");
+					Session.set("JDOnlineStatus", false);
 					Session.set("status", undefined);
-				});
-			} else {
-				console.log("Fehler beim Ermitteln des Online-Status: ungültige Anwort vom Server");
-				Session.set("JDOnlineStatus", false);
+				}
+			});
+		}
+		else
+		{
+			Meteor.call("checkJDOnlineStatus", {
+				ip: template.find('#ip').value,
+				port: template.find('#port').value
+			}, function (error3, isOnline) {
+				if (error3) {
+					console.log("Fehler beim Ermitteln des Online-Status");
+				}
+				Session.set("JDOnlineStatus", isOnline);
 				Session.set("status", undefined);
-			}
-		});
+			});
+		}
 	},
 	//IP-Feld für Eingbae aktivieren/deaktivieren, je nachdem ob autoupdate eingeschaltet ist
 	'click #autoupdate': function (event, template) {
 		if (template.find("#autoupdate").checked) {
-			$('#ip').prop("disabled", true);
+			Meteor.users.update({
+				_id: Meteor.userId()
+					}, {
+				$set: {
+					'profile.autoupdateip': true,
+					}
+			});
+			
+			//$('#ip').prop("disabled", true);
 			if (template.find('#port').validity.valid && template.find('#ip').validity.valid) template.find('.save').disabled = false;
-		} else $('#ip').prop("disabled", false);
+		} else {
+			Meteor.users.update({
+				_id: Meteor.userId()
+					}, {
+				$set: {
+					'profile.autoupdateip': false,
+					}
+			});
+			//$('#ip').prop("disabled", false);
+		}
 	},
 	//eingaben speichern und IP nochmal updaten, falls der User was komisches eingegeben hat
 	'click #searchvk' : function (event, template) {
@@ -2308,6 +2356,14 @@ Template.accountSettingsDialog.events({
 	},
 	'click .cancel': function () {
 		// User hat abgebrochen, Dialog schließen
+		Meteor.users.update({
+			_id: Meteor.userId()
+		}, {
+			$set: {
+				'profile.autoupdateip': Session.get("temp_autoupdate"),
+			}
+		});
+		
 		Session.set("showAccountSettingsDialog", false);
 	}
 });
