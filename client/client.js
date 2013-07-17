@@ -1568,7 +1568,8 @@ Template.link.events({
 											_id: this._id
 										}, {
 											$set: {
-												url: result.response[0].url
+												url: result.response[0].url,
+												status: "on"
 											}
 										});
 								}
@@ -1689,15 +1690,49 @@ Template.link.events({
 	'click .icon-refresh': function (event, template) {
 		event.target.className = "icon-refreshing";
 		var linkurl = this.url;
-		Meteor.call("refreshLink", this._id, function (error, result) {
-			if (error) {
-				console.log("Fehler beim Aktualisieren des Links " + linkurl + ": " + error.reason);
+		
+		if (this.hoster === "vk.com")
+		{
+			if (VK.Auth.getSession() && this.aid && this.oid)
+			{
+				VK.Api.call("audio.getById",{audios: this.oid+"_"+this.aid}, function(result)
+				{
+					if (result && result.response && result.response[0].url)
+					{
+						Links.update({
+							_id: this._id
+						}, {
+							$set: {
+								url: result.response[0].url,
+								status: "on"
+							}
+						});
+					}
+					else
+					{
+						event.target.className = "icon-remove"
+						console.log("Fehler beim Aktualisieren des Links " + linkurl + ": Fehler bei der vk.com Kommunikation");
+					}
+				})
+			}
+			else
+			{
+				console.log("Fehler beim Aktualisieren des Links " + linkurl + ": kein VK-Zugang oder keine VK-Objektinformationen");
 				event.target.className = "icon-remove";
 			}
-			if (result) {
-				event.target.className = "icon-refresh";
-			}
-		});
+		}		
+		else
+		{
+			Meteor.call("refreshLink", this._id, function (error, result) {
+				if (error) {
+					console.log("Fehler beim Aktualisieren des Links " + linkurl + ": " + error.reason);
+					event.target.className = "icon-remove";
+				}
+				if (result) {
+					event.target.className = "icon-refresh";
+				}
+			});
+		}
 	},
 	//X-Editable Formular - Namensänderung übernehmen
 	'submit .form-inline, click .editable-submit': function (event, template) {
