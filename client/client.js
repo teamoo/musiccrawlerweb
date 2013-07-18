@@ -1994,6 +1994,7 @@ Template.addSiteDialog.events({
 								} else {
 									Meteor.call("updateFacebookGroupName", newsiteurl.split("groups/")[1].split("/")[0]);
 									Meteor.call("scheduleCrawl", siteid, function (error3, result3) {
+										if (error3) console.log(error3.details + error3.reason);
 										if (result3 && result3.data && result3.data.status == "ok") console.log("Successfully scheduled crawl for Site " + newsiteurl);
 										if (error3) console.log("Error scheduling crawl for Site " + newsiteurl);
 									});
