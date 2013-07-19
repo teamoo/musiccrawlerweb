@@ -105,7 +105,7 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites) {
 				'$ne': thedownloaders
 			},
 			source: {
-				$ne: filter_sites
+				$nin: filter_sites
 			}
 		}).count(false);
 		self.added("counts", timespan, {
