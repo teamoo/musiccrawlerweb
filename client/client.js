@@ -1,4 +1,4 @@
-﻿
+﻿moment.lang('de');
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
@@ -218,7 +218,6 @@ Meteor.startup(function () {
 // usage: {{dateFormatPretty creation_date}}
 Handlebars.registerHelper('dateFormatPretty', function (context) {
 	if (window.moment) {
-		moment().lang('de');
 		if (context && moment(context).isValid()) return moment(context).fromNow();
 		return "noch nie";
 	}
