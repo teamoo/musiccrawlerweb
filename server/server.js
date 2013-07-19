@@ -43,6 +43,11 @@ Meteor.startup(function () {
 	}, {
 		unique: 1
 	});
+	Links._ensureIndex({
+		aid: 1, oid: 1
+	}, {
+		unique: 1, sparse: 1, dropDups: 1
+	});
 });
 Accounts.onCreateUser(function (options, user) {
 	if (options.profile) user.profile = options.profile;
