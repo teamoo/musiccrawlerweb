@@ -164,7 +164,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 					$in: filter_status
 				},
 				source: {
-					$ne: filter_sites
+					$nin: filter_sites
 				},
 				downloaders: {
 					$ne: thedownloaders
@@ -208,7 +208,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 					$in: filter_status
 				},
 				source: {
-					$ne: filter_sites
+					$nin: filter_sites
 				},
 				downloaders: {
 					$ne: thedownloaders
