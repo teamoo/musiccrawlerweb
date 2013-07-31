@@ -559,40 +559,36 @@ Template.user_loggedout.events({
 		Meteor.loginWithFacebook({
 			requestPermissions: ['email']
 		}, function (error) {
-			Meteor.setTimeout(function () {
-				if (Meteor.user() && Meteor.user().profile) {
-					if (window.SCM && Meteor.user().profile.volume) {
-						SCM.volume(Meteor.user().profile.volume);
-					}
-					
-					Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
-					if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
-					else {
-						Session.set("filter_status", ["on"]);
-					}
-					if (Meteor.user().profile.filteredsites !== undefined) {
-						Session.set("filter_sites", Meteor.user().profile.filteredsites);
-						Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
-					}
-					
-					if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
-						VK.Auth.login(undefined,8)
+
+			if (Meteor.user() && Meteor.user().profile) {
+				if (window.SCM && Meteor.user().profile.volume) {
+					SCM.volume(Meteor.user().profile.volume);
+				}
 				
+				Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+				if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
+				else {
+					Session.set("filter_status", ["on"]);
+				}
+				if (Meteor.user().profile.filteredsites !== undefined) {
+					Session.set("filter_sites", Meteor.user().profile.filteredsites);
+					Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
+				}
+				
+				if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
+					VK.Auth.login(undefined,8)
+
+				if (error) {
+					alert("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.");
+					console.log(error);
+				} else {
 					// Add user facebook token to groups of the user that should be crawled, so the crawl will work
 					Meteor.call('updateFacebookTokensForUser');
 					// Update the number of links and sites the user contributed to the app and save it in his profile
 					Meteor.call('updateLinkContributionCount');
 				}
-			}, 2500);
-			// update user IP and check if JD Remote is responding
-			refreshJDOnlineStatus();
-
-			if (error) {
-				alert("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.");
-				console.log(error);
-			} else {
-				Meteor.call('updateFacebookTokensForUser');
 			}
+
 			// wenn die User-IP geupdate werden soll...
 			if (Meteor.user() && Meteor.user().profile.autoupdateip === true) {
 				// dann rufen wir die neue IP ab und speichern sie im Profil
@@ -606,6 +602,8 @@ Template.user_loggedout.events({
 							}
 						});
 				});
+				// update user IP and check if JD Remote is responding
+				refreshJDOnlineStatus();
 			}
 		});
 	}

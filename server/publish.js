@@ -4,7 +4,8 @@ Meteor.publish("userData", function () {
 			_id: this.userId
 		}, {
 			fields: {
-				'admin': 1
+				'admin': 1,
+				'profile' : 1
 			}
 		});
 });
