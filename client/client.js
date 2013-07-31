@@ -559,31 +559,31 @@ Template.user_loggedout.events({
 		Meteor.loginWithFacebook({
 			requestPermissions: ['email']
 		}, function (error) {
-			console.log("Login with facebook");
-		
-			if (Meteor.user() && Meteor.user().profile) {
-				if (window.SCM && Meteor.user().profile.volume) {
-					SCM.volume(Meteor.user().profile.volume);
-				}
+			Meteor.setTimeout(function () {
+				if (Meteor.user() && Meteor.user().profile) {
+					if (window.SCM && Meteor.user().profile.volume) {
+						SCM.volume(Meteor.user().profile.volume);
+					}
+					
+					Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+					if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
+					else {
+						Session.set("filter_status", ["on"]);
+					}
+					if (Meteor.user().profile.filteredsites !== undefined) {
+						Session.set("filter_sites", Meteor.user().profile.filteredsites);
+						Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
+					}
+					
+					if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
+						VK.Auth.login(undefined,8)
 				
-				Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
-				if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
-				else {
-					Session.set("filter_status", ["on"]);
+					// Add user facebook token to groups of the user that should be crawled, so the crawl will work
+					Meteor.call('updateFacebookTokensForUser');
+					// Update the number of links and sites the user contributed to the app and save it in his profile
+					Meteor.call('updateLinkContributionCount');
 				}
-				if (Meteor.user().profile.filteredsites !== undefined) {
-					Session.set("filter_sites", Meteor.user().profile.filteredsites);
-					Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
-				}
-				
-				if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
-					VK.Auth.login(undefined,8)
-			
-				// Add user facebook token to groups of the user that should be crawled, so the crawl will work
-				Meteor.call('updateFacebookTokensForUser');
-				// Update the number of links and sites the user contributed to the app and save it in his profile
-				Meteor.call('updateLinkContributionCount');
-			}
+			}, 2500);
 			// update user IP and check if JD Remote is responding
 			refreshJDOnlineStatus();
 
@@ -2408,7 +2408,7 @@ Template.accountSettingsDialog.events({
 		var ashowdownloadedlinks = template.find("#showdownloadedlinks").checked;
 		var searchzippysharemusic = template.find("#searchzippysharemusic").checked;
 		var searchmuzon = template.find("#searchmuzon").checked;
-		var searchmuzofon = template.find("#searchmuzofon").checked;
+		//var searchmuzofon = template.find("#searchmuzofon").checked;
 		var searchsoundcloud = template.find("#searchsoundcloud").checked;
 		var searchyoutube = template.find("#searchyoutube").checked;
 		var searchexfm = template.find("#searchexfm").checked;
@@ -2416,7 +2416,7 @@ Template.accountSettingsDialog.events({
 		var searchproviders = [];
 		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
 		if (searchmuzon) searchproviders.push("muzon");
-		if (searchmuzofon) searchproviders.push("muzofon");
+		//if (searchmuzofon) searchproviders.push("muzofon");
 		if (searchsoundcloud) searchproviders.push("soundcloud");
 		if (searchyoutube) searchproviders.push("youtube");
 		if (searchexfm) searchproviders.push("ex.fm");
