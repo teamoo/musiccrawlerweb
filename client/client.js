@@ -442,6 +442,7 @@ Template.searchresult.getExternalSourceIcon = function () {
 	if (this.hoster == "zippyshare.com") return "<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='zippyshare.png'></a>";
 	if (this.hoster == "soundcloud.com") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>";
 	if (this.hoster == "muzon.ws") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>";
+	if (this.hoster == "muzofon.com") return "<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='muzofon.png'></a>";
 	if (this.hoster == "youtube.com") return "<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='youtube.png'></a>";
 	if (this.hoster == "ex.fm") return "<a href='http://ex.fm'><img alt='ex.fm Attribution' src='exfm.png'></a>";
 	if (this.hoster == "vk.com") return "<a href='http://vk.com'><img alt='vk.com Attribution' src='vkontakte.png'></a>";
@@ -558,6 +559,8 @@ Template.user_loggedout.events({
 		Meteor.loginWithFacebook({
 			requestPermissions: ['email']
 		}, function (error) {
+			console.log("Login with facebook");
+		
 			if (Meteor.user() && Meteor.user().profile) {
 				if (window.SCM && Meteor.user().profile.volume) {
 					SCM.volume(Meteor.user().profile.volume);
@@ -1109,6 +1112,52 @@ Template.navigation.events({
 											Session.set("loading_results", false);
 										}
 									}
+								});
+							}
+							if (_.contains(Meteor.user().profile.searchproviders, "muzofon")) {
+								Meteor.call('searchMuzofon', encodeURIComponent(filter_term_external), function (error, result) {
+									
+									if (result && result.content)
+									{
+										var doc = document.implementation.createHTMLDocument("example");
+										doc.documentElement.innerHTML = result.content;
+										
+										var iternames = doc.evaluate( '//div[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
+										
+										var iterlinks = doc.evaluate( '//div[@class=\'controls\']/a[1]/@href', doc, null, XPathResult.ANY_TYPE, null );
+
+										try {
+										  var thisNode1 = iternames.iterateNext();
+										  var thisNode2 = iterlinks.iterateNext();
+										  
+										  while (thisNode1 && thisNode2) {										
+											durationmatch = thisNode1.textContent.replace(/\s+/g,' ').match(/\[.*\]/g)
+											if (durationmatch && durationmatch.length === 1)
+											{
+												duration = durationmatch[0].replace("[","").replace("]","")
+											}
+											
+											theurl = "http://muzofon.com" + thisNode2.textContent
+											
+											if (!SearchResults.findOne({
+												url: theurl
+											})) SearchResults.insert({
+												hoster: "muzofon.com",
+												status: "unknown",
+												name: thisNode1.textContent.replace(/\s+/g,' ').replace(/\[.*\]/g,"").trim(),
+												url: theurl,
+												duration: moment(duration,"mm:ss")
+											});
+											
+											
+											thisNode1 = iternames.iterateNext();
+											thisNode2 = iterlinks.iterateNext();
+										  }	
+										}
+										catch (e) {
+										  dump( 'Error: Document tree modified during iteration ' + e );
+										}
+									}				
 								});
 							}
 							if (_.contains(Meteor.user().profile.searchproviders, "muzon")) {
@@ -2359,6 +2408,7 @@ Template.accountSettingsDialog.events({
 		var ashowdownloadedlinks = template.find("#showdownloadedlinks").checked;
 		var searchzippysharemusic = template.find("#searchzippysharemusic").checked;
 		var searchmuzon = template.find("#searchmuzon").checked;
+		var searchmuzofon = template.find("#searchmuzofon").checked;
 		var searchsoundcloud = template.find("#searchsoundcloud").checked;
 		var searchyoutube = template.find("#searchyoutube").checked;
 		var searchexfm = template.find("#searchexfm").checked;
@@ -2366,6 +2416,7 @@ Template.accountSettingsDialog.events({
 		var searchproviders = [];
 		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
 		if (searchmuzon) searchproviders.push("muzon");
+		if (searchmuzofon) searchproviders.push("muzofon");
 		if (searchsoundcloud) searchproviders.push("soundcloud");
 		if (searchyoutube) searchproviders.push("youtube");
 		if (searchexfm) searchproviders.push("ex.fm");

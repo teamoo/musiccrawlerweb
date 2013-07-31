@@ -3,9 +3,10 @@
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+	<!--
 	{{#constant}}
 		<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':1,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
-	{{/constant}}
+	{{/constant}}-->
 </head>
 
 <body>
@@ -520,7 +521,16 @@
 		{{/if}}
 		<a href="http://www.muzon.ws"><img alt='muzon' src='muzon.png'></a>
 		</label>
-		
+		<!--
+		<label class="checkbox">
+		{{#if searchProviderEnabled "muzofon"}}
+			<input id="searchmuzofon" type="checkbox" checked="checked">
+		{{else}}
+			<input id="searchmuzofon" type="checkbox">
+		{{/if}}
+		<a href="http://www.muzofon.com"><img alt='muzofon' src='muzofon.png'></a>
+		</label>
+		-->
 		<label class="checkbox">
 		{{#if searchProviderEnabled "soundcloud"}}
 			<input id="searchsoundcloud" type="checkbox" checked="checked">
