@@ -27,6 +27,7 @@ Session.setDefault("filter_term", ".*");
 Session.setDefault("filter_limit", 1);
 Session.setDefault("filter_skip", 0);
 Session.setDefault("filter_sites", []);
+Session.setDefault("filter_mixes", false);
 Session.setDefault("temp_filter_sites", []);
 Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("filter_id", undefined);
@@ -48,6 +49,7 @@ Meteor.Router.add({
 		Session.set("links_completed", false);
 		Session.set("prev_filter_skip", prev_filter_skip);
 		Session.set("prev_filter_date", prev_filter_date);
+		Session.set("hide_mixes",false);
 		Session.set("filter_show_already_downloaded", true);
 		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
 		Session.set("filter_term", ".*" + searchterm.trim().replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace(/\_/g," ") + ".*");
@@ -74,7 +76,7 @@ Deps.autorun(function () {
 		Session.set('sites_completed', true);
 	});
 	//music links
-	Meteor.subscribe('links', Session.get("filter_date"), Session.get("filter_status"), Session.get("filter_term"), Session.get("filter_limit"), Session.get("filter_skip"), Session.get("filter_show_already_downloaded"), Session.get("filter_sites"), Session.get("filter_sort"), Session.get("filter_id"), function onReady() {
+	Meteor.subscribe('links', Session.get("filter_date"), Session.get("filter_status"), Session.get("filter_term"), Session.get("filter_limit"), Session.get("filter_skip"), Session.get("filter_show_already_downloaded"), Session.get("filter_sites"), Session.get("filter_sort"), Session.get("filter_mixes"), Session.get("filter_id"), function onReady() {
 		// set a session key to true to indicate that the
 		// subscription is completed.
 		Session.set('links_completed', true);
@@ -153,7 +155,10 @@ Meteor.startup(function () {
 				SCM.volume(Meteor.user().profile.volume);
 			}
 			
+			moment.lang(Meteor.user().profile.locale.substr(0,2));
+			
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+			Session.set("filter_mixes", Meteor.user().profile.hidemixes);
 			if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
 			else {
 				Session.set("filter_status", ["on"]);
@@ -565,7 +570,10 @@ Template.user_loggedout.events({
 					SCM.volume(Meteor.user().profile.volume);
 				}
 				
+				moment.lang(Meteor.user().profile.locale.substr(0,2));
+				
 				Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+				if (Meteor.user().profile.hidemixes === true) Session.set("filter_mixes", true);
 				if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
 				else {
 					Session.set("filter_status", ["on"]);
@@ -680,6 +688,7 @@ Template.navigation.rendered = function () {
 			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
 			Session.set("filter_skip", 0);
 			Session.set("filter_sites", []);
+			Session.set("filter_mixes",false);
 			Meteor.Router.to("/");
 			return name;
 		},
@@ -991,7 +1000,11 @@ Template.navigation.events({
 		Session.set("filter_id", undefined);
 		var sitefilter = Session.get("filter_sites");
 		if (Meteor.user() && Meteor.user().profile)
+		{
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+			Session.set("filter_mixes", Meteor.user().profile.hidemixes);
+		}
+			
 		Session.set("filter_sites", _.without(sitefilter, Meteor.user().id));
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
@@ -1022,6 +1035,7 @@ Template.navigation.events({
 			Session.set("prev_filter_skip", prev_filter_skip);
 			Session.set("prev_filter_date", prev_filter_date);
 			Session.set("filter_sites", []);
+			Session.set("filter_mixes", false);
 			Session.set("filter_show_already_downloaded", true);
 			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
@@ -1029,6 +1043,7 @@ Template.navigation.events({
 		} else {
 			if (Meteor.user() && Meteor.user().profile)
 				Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+				Session.set("filter_mixes", Meteor.user().profile.hidemixes);
 			Session.set("filter_term", ".*");
 			if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.filteredsites) {
 				Session.set("filter_sites", Meteor.user().profile.filteredsites);
@@ -2348,6 +2363,7 @@ Template.accountSettingsDialog.events({
 		var aupdateip = template.find("#autoupdate").checked;
 		var ashowtooltips = template.find("#showtooltips").checked;
 		var ashowdownloadedlinks = template.find("#showdownloadedlinks").checked;
+		var ahidemixes = template.find("#hidemixes").checked;
 		var searchzippysharemusic = template.find("#searchzippysharemusic").checked;
 		var searchmuzon = template.find("#searchmuzon").checked;
 		var searchsoundcloud = template.find("#searchsoundcloud").checked;
@@ -2362,6 +2378,8 @@ Template.accountSettingsDialog.events({
 		if (searchexfm) searchproviders.push("ex.fm");
 		if (searchvk && VK.Auth.getSession()) searchproviders.push("vk.com");
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
+		Session.set("filter_mixes", ahidemixes);
+		
 		if (aupdateip === true) {
 			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
@@ -2405,6 +2423,7 @@ Template.accountSettingsDialog.events({
 				'profile.autoupdateip': aupdateip,
 				'profile.showtooltips': ashowtooltips,
 				'profile.showdownloadedlinks': ashowdownloadedlinks,
+				'profile.hidemixes': ahidemixes,
 				'profile.searchproviders': searchproviders
 			}
 		});

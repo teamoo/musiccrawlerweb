@@ -60,6 +60,7 @@ Accounts.onCreateUser(function (options, user) {
 	user.profile.showtooltips = true;
 	user.profile.showdownloadedlinks = false;
 	user.profile.showunknownlinks = false;
+	user.profile.hidemixes = false;
 	user.profile.filteredsites = [];
 	user.profile.searchproviders = ["zippysharemusic", "muzon", "soundcloud"];
 	user.profile.ip = "";

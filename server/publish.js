@@ -124,8 +124,8 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites) {
 	*/
 });
 // Publish filtered list to all clients
-Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites, filter_sort, filter_id) {
-	//XXX wenn Meteor projections kann, downloaders nicht komplett zurückgeben, sondern mit uns drin oder komplett leer
+Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites, filter_sort, filter_mixes, filter_id) {
+	//XXX wenn Meteor (oder Mongo Driver??) projections kann, downloaders nicht komplett zurückgeben, sondern mit uns drin oder komplett leer
 	if (filter_id) {
 		var aid;
 		try {
@@ -154,27 +154,53 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 		searchterms[i] = new RegExp(searchterms[i], "i");
 	}
 	if (filter_already_downloaded === false) thedownloaders = this.userId;
-	if (this.userId) 
-	{
-		if (filter_sort && (filter_sort == "likes"))
-		return Links.find({
-				date_published: {
-					$gte: filter_date
-				},
-				status: {
-					$in: filter_status
-				},
-				source: {
-					$nin: filter_sites
-				},
-				downloaders: {
-					$ne: thedownloaders
-				},
-				name: {
-					$all: searchterms
-				},
-			}, {
-				fields: {
+	
+	if (filter_mixes && filter_mixes === true)
+		query = {
+			$and:[{
+					name: {
+						$regex: "(?=^((?!Live at).)*$)(?=^((?!Chart).)*$)(?=^(?!VA).*)" }
+					},{
+					size: {
+						$lt : 80000000
+					}
+				}],
+			date_published: {
+				$gte: filter_date
+			},
+			status: {
+				$in: filter_status
+			},
+			source: {
+				$nin: filter_sites
+			},
+			downloaders: {
+				$ne: thedownloaders
+			},
+			name: {
+				$all: searchterms
+			},
+		}
+	else
+		query = {
+			date_published: {
+				$gte: filter_date
+			},
+			status: {
+				$in: filter_status
+			},
+			source: {
+				$nin: filter_sites
+			},
+			downloaders: {
+				$ne: thedownloaders
+			},
+			name: {
+				$all: searchterms
+			},
+		}
+		
+	fields = {
 					_id: 1,
 					name: 1,
 					size: 1,
@@ -191,59 +217,23 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 					creator: 1,
 					aid: 1,
 					oid: 1
-				},
-				sort: {
+				}
+	
+	if (filter_sort && (filter_sort == "likes"))
+		sort = {
 					likes: -1,
 					_id: -1
-				},
-				limit: thelimit,
-				skip: filter_skip
-			});	
-	
-		else
-		return Links.find({
-				date_published: {
-					$gte: filter_date
-				},
-				status: {
-					$in: filter_status
-				},
-				source: {
-					$nin: filter_sites
-				},
-				downloaders: {
-					$ne: thedownloaders
-				},
-				name: {
-					$all: searchterms
-				},
-			}, {
-				fields: {
-					_id: 1,
-					name: 1,
-					size: 1,
-					likes: 1,
-					likers: 1,
-					downloaders: 1,
-					//comments: 1,
-					url: 1,
-					hoster: 1,
-					source: 1,
-					date_published: 1,
-					stream_url: 1,
-					status: 1,
-					creator: 1,
-					aid: 1,
-					oid: 1
-				},
-				sort: {
+		}
+	else
+		sort = 	{
 					date_published: -1,
 					_id: -1
-				},
-				limit: thelimit,
-				skip: filter_skip
-			});	
-	}
+				}
+	
+	projection = {fields: fields, sort: sort, limit: thelimit, skip: filter_skip}
+	
+	if (this.userId) 
+		return Links.find(query, projection);	
 });
 // Quellen
 // Publish all sites

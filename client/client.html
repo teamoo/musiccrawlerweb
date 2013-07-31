@@ -500,6 +500,14 @@
 		{{/if}}
 		Tooltips anzeigen?
 		</label>
+		<label class="checkbox">
+		{{#if currentUser.profile.hidemixes}}
+			<input id="hidemixes" type="checkbox" checked="checked">
+		{{else}}
+			<input id="hidemixes" type="checkbox">
+		{{/if}}
+		Compilations/Mixes ausblenden?
+		</label>
 		<br/>
 		<label><strong>externe Suchanbieter</strong></label>
 		
