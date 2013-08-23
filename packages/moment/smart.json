@@ -1,0 +1,8 @@
+{
+  "name": "moment-alternative",
+  "description": "Moment.js, a JavaScript date library for parsing, validating, manipulating, and formatting dates, packaged for Meteor. An alternative version because the original hasn't been maintained for a while. See http://momentjs.com.",
+  "homepage": "https://github.com/acreeger/meteor-moment",
+  "author": "Mike Bannister <notimpossiblemike@gmail.com> (http://po.ssibiliti.es)",
+  "version": "2.1.0.3",
+  "git": "https://github.com/acreeger/meteor-moment.git"
+}

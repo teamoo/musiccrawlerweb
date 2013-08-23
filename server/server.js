@@ -75,7 +75,7 @@ Accounts.onCreateUser(function (options, user) {
 		var accessToken = user.services.facebook.accessToken;
 				
 		try {
-			result = Meteor.http.get("https://graph.facebook.com/me/picture?access_token=&redirect=false", {
+			result = HTTP.get("https://graph.facebook.com/me/picture?access_token=&redirect=false", {
 				params: {
 					access_token: accessToken
 				}

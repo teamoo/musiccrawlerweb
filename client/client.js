@@ -230,7 +230,6 @@ Handlebars.registerHelper('dateFormatPretty', function (context) {
 });
 Handlebars.registerHelper('millisecondsFormatPretty', function (context) {
 	if (window.moment) {
-		moment().lang('de');
 		if (context && moment(context).isValid()) return moment(context).format('mm:ss') + " min.";
 		return "unbekannt";
 	}
@@ -600,7 +599,7 @@ Template.user_loggedout.events({
 			// wenn die User-IP geupdate werden soll...
 			if (Meteor.user() && Meteor.user().profile.autoupdateip === true) {
 				// dann rufen wir die neue IP ab und speichern sie im Profil
-				Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error2, result) {
+				HTTP.call("GET", "http://api.hostip.info/get_json.php", function (error2, result) {
 					if (error2) console.log("Fehler beim Ermitteln der Benutzer-IP");
 					if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
 							_id: Meteor.userId()
@@ -1097,7 +1096,7 @@ Template.navigation.events({
 							}
 							Session.set("filter_term_external", filter_term_external);
 							if (_.contains(Meteor.user().profile.searchproviders, "zippysharemusic")) {
-								Meteor.http.get("https://www.googleapis.com/customsearch/v1?key=" + Meteor.settings.public.google.search_api_key + "&cx=partner-pub-9019877854699644%3At1iell5gp8b&alt=json&fields=items(pagemap)&q=" + encodeURIComponent(filter_term_external), function (error, result) {
+								HTTP.get("https://www.googleapis.com/customsearch/v1?key=" + Meteor.settings.public.google.search_api_key + "&cx=partner-pub-9019877854699644%3At1iell5gp8b&alt=json&fields=items(pagemap)&q=" + encodeURIComponent(filter_term_external), function (error, result) {
 									if (result && result.data && result.data.items) {
 										var items = result.data.items;
 										var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i;
@@ -1207,7 +1206,7 @@ Template.navigation.events({
 								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
 									return String(memo + "+" + token);
 								},"");
-								Meteor.http.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json", function (error, result) {
+								HTTP.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json", function (error, result) {
 									if (result && result.data && result.data.feed && result.data.feed.entry) {
 										var entry = result.data.feed.entry;
 										for (var i = 0; i <= entry.length; i++) {
@@ -1228,7 +1227,7 @@ Template.navigation.events({
 								});
 							}
 							if (_.contains(Meteor.user().profile.searchproviders, "ex.fm")) {
-								Meteor.http.get("http://ex.fm/api/v3/song/search/" + filter_term_external, function (error, result) {
+								HTTP.get("http://ex.fm/api/v3/song/search/" + filter_term_external, function (error, result) {
 									if (result && result.data && result.data.status_code === 200) {
 										var songs = result.data.songs;
 										for (var i = 0; i <= songs.length; i++) {
@@ -2279,7 +2278,7 @@ Template.accountSettingsDialog.events({
 			var aport = Meteor.user().profile.port;
 		if (template.find("#autoupdate").checked)
 		{		
-			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
+			HTTP.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
 				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) {
 					Meteor.users.update({
@@ -2381,7 +2380,7 @@ Template.accountSettingsDialog.events({
 		Session.set("filter_mixes", ahidemixes);
 		
 		if (aupdateip === true) {
-			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
+			HTTP.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
 				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) {
 					Meteor.users.update({
@@ -2577,7 +2576,7 @@ function refreshJDOnlineStatus() {
 		var oldip = Meteor.user().profile.ip;
 	
 		if (Meteor.user().profile.autoupdateip === true) {
-			Meteor.http.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
+			HTTP.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
 				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
 				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip)
 					Meteor.users.update({
