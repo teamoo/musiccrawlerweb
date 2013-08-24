@@ -82,7 +82,7 @@ Deps.autorun(function () {
 		Session.set('links_completed', true);
 		Session.set("wait_for_items", false);
 	});
-	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), Session.get("filter_sites"), function onReady() {
+	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), Session.get("filter_sites"), Session.get("filter_mixes"), function onReady() {
 		//Session.set('counts_completed', true);
 		[1, 14, 30, 90, 365].forEach(function (timespan) {
 			var item = Counts.findOne({
@@ -2507,7 +2507,7 @@ Template.bulkDownloadDialog.events({
 		if (VK.Auth.getSession()) include_vk = true;
 		else include_vk = false;
 		
-		Meteor.call("getLinkURLsByDate", untildate, Session.get("filter_sites"), function (error, result) {
+		Meteor.call("getLinkURLsByDate", untildate, Session.get("filter_sites"), Session.get("filter_mixes"), function (error, result) {
 			if (result && result.length) {
 				var selectedurls_raw = result;				
 				var newurls_vk = [];
@@ -2560,7 +2560,7 @@ Template.bulkDownloadDialog.events({
 						}),"");				
 				}
 				
-				Meteor.call("markLinksAsDownloadedByDate", untildate, Session.get("filter_sites"), include_vk ,function (error, result) {
+				Meteor.call("markLinksAsDownloadedByDate", untildate, Session.get("filter_sites"), Session.get("filter_mixes"), include_vk ,function (error, result) {
 					if (result) Session.set("links_count_" + sel_days, 0);
 					if (error) console.log("Error updating Links while copying to clipboard.");
 				});

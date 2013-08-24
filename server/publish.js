@@ -17,7 +17,7 @@ Meteor.publish("allUserData", function () {
 			}
 		});
 });
-Meteor.publish("counts-by-timespan", function (filter_status, filter_sites) {
+Meteor.publish("counts-by-timespan", function (filter_status, filter_sites, filter_mixes) {
 	var self = this;
 	var initializing = true;
 	var thedownloaders = "dummy";
@@ -95,20 +95,45 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites) {
 	initializing = false;
 	*/
 	[1, 14, 30, 90, 365].forEach(function (timespan) {
-		var count = Links.find({
-			date_published: {
-				$gte: new Date(new Date().setDate(new Date().getDate() - timespan))
-			},
-			status: {
-				$in: filter_status
-			},
-			downloaders: {
-				'$ne': thedownloaders
-			},
-			source: {
-				$nin: filter_sites
-			}
-		}).count(false);
+		if (filter_mixes && filter_mixes === true)
+			var count = Links.find({
+				$and:[{
+						name: {
+							$regex: "(?=^((?!Live at).)*$)(?=^((?!Chart).)*$)(?=^(?!VA).*)" }
+						},{
+						size: {
+							$lt : 80000000
+						}
+					}],	
+				date_published: {
+					$gte: new Date(new Date().setDate(new Date().getDate() - timespan))
+				},
+				status: {
+					$in: filter_status
+				},
+				downloaders: {
+					'$ne': thedownloaders
+				},
+				source: {
+					$nin: filter_sites
+				}
+			}).count(false);
+		else
+			var count = Links.find({
+				date_published: {
+					$gte: new Date(new Date().setDate(new Date().getDate() - timespan))
+				},
+				status: {
+					$in: filter_status
+				},
+				downloaders: {
+					'$ne': thedownloaders
+				},
+				source: {
+					$nin: filter_sites
+				}
+			}).count(false);	
+			
 		self.added("counts", timespan, {
 			count: count
 		});
