@@ -402,7 +402,7 @@ Template.link.isPlayable = function () {
 				return true;
 			case "zippyshare.com":
 				return true;
-			case "muzon.ws":
+			case "muzon.ws","beatport.com":
 				if (this.stream_url) return true;
 				return false;
 			case "ex.fm":
@@ -419,6 +419,17 @@ Template.link.isPlayable = function () {
 	}
 	return false;
 };
+Template.link.isDownloadable = function () {
+	if (this.status != 'off') {
+		switch (this.hoster) {
+			case "beatport.com":
+				return false;
+			default:
+				return true;
+		}
+	}
+	return false;
+};
 Template.searchresult.isPlayable = function () {
 	if (this.status != 'off') {
 		switch (this.hoster) {
@@ -427,7 +438,7 @@ Template.searchresult.isPlayable = function () {
 			case "youtube.com":
 				return true;
 			case "muzon.ws":
-			case "zippyshare.com":
+			case "zippyshare.com","beatport.com":
 				if (this.stream_url) return true;
 				return false;
 			case "ex.fm":
@@ -442,6 +453,17 @@ Template.searchresult.isPlayable = function () {
 	}
 	return false;
 };
+Template.searchresult.isDownloadable = function () {
+	if (this.status != 'off') {
+		switch (this.hoster) {
+			case "beatport.com":
+				return false;
+			default:
+				return true;
+		}
+	}
+	return false;
+};
 Template.searchresult.getExternalSourceIcon = function () {
 	if (this.hoster == "zippyshare.com") return "<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='zippyshare.png'></a>";
 	if (this.hoster == "soundcloud.com") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>";
@@ -450,6 +472,7 @@ Template.searchresult.getExternalSourceIcon = function () {
 	if (this.hoster == "youtube.com") return "<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='youtube.png'></a>";
 	if (this.hoster == "ex.fm") return "<a href='http://ex.fm'><img alt='ex.fm Attribution' src='exfm.png'></a>";
 	if (this.hoster == "vk.com") return "<a href='http://vk.com'><img alt='vk.com Attribution' src='vkontakte.png'></a>";
+	if (this.hoster == "beatport.com") return "<a href='http://beatport.com'><img alt='beatport.com Attribution' src='beatport.png'></a>";
 	return undefined;
 };
 // Funktion um alle Seiten ins Template zu geben (die subscription)
@@ -1145,7 +1168,9 @@ Template.navigation.events({
 										  var urlnode = iterurls.iterateNext();
 										  var durationnode = iterdurations.iterateNext();
 										  
-										  while (artistnode && titlenode && stream_urlnode && urlnode && durationnode) {										
+										  var counter = 0;
+										  
+										  while (artistnode && titlenode && stream_urlnode && urlnode && durationnode && counter < 10) {										
 											url = "http://muzon.ws" + urlnode.textContent;
 											stream_url = stream_urlnode.textContent;
 											duration = durationnode.textContent;
@@ -1162,6 +1187,7 @@ Template.navigation.events({
 												duration: moment(duration,"mm:ss")
 											});
 											
+											counter++;
 											
 											artistnode = iterartists.iterateNext();
 											titlenode = itertitles.iterateNext();
@@ -1225,7 +1251,7 @@ Template.navigation.events({
 										Session.set("loading_results", false);
 									}
 								});
-							}
+							}		
 							if (_.contains(Meteor.user().profile.searchproviders, "ex.fm")) {
 								HTTP.get("http://ex.fm/api/v3/song/search/" + filter_term_external, function (error, result) {
 									if (result && result.data && result.data.status_code === 200) {
@@ -1247,7 +1273,29 @@ Template.navigation.events({
 									}
 								});
 							}
-							
+							if (_.contains(Meteor.user().profile.searchproviders, "beatport")) {
+								HTTP.get("http://api.beatport.com/catalog/3/search?query=" + filter_term_external + "&facets[]=fieldType:track&perPage=10&page=1", function(error,result) {
+									if (result && result.data && result.data.results) {
+										var songs = result.data.results;
+										for (var i = 0; i <= songs.length; i++) {
+											if (songs[i]) {
+												if (!SearchResults.findOne({
+													url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id
+												})) SearchResults.insert({
+														hoster: "beatport.com",
+														status: "on",
+														name: _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title,
+														url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id,
+														stream_url: songs[i].sampleUrl,
+														duration: moment(songs[i].lengthMs),
+														date_published: moment(songs[i].releaseDate).toDate()
+													});
+											}
+										}
+										Session.set("loading_results", false);
+									}
+								});
+							}		
 							if (_.contains(Meteor.user().profile.searchproviders, "vk.com")) {
 								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
 									return String(memo + "+" + token);
@@ -1631,7 +1679,7 @@ Template.link.events({
 					}
 					event.target.className = "icon-remove";
 					break;
-				case "muzon.ws":
+				case "muzon.ws","beatport.com":
 					event.target.className = "icon-loader";
 					if (window.SCM && this.stream_url) {
 						SCM.play({
@@ -1885,6 +1933,7 @@ Template.searchresult.events({
 					break;
 				case "muzon.ws":
 				case "zippyshare.com":
+				case "beatport.com":
 					event.target.className = "icon-loader";
 					if (window.SCM && this.stream_url) {
 						SCM.play({
@@ -1968,7 +2017,7 @@ Template.searchresult.events({
 		if (this.aid) aid = this.aid;
 		if (this.oid) oid = this.oid;
 		
-		Meteor.call('createLink', this.url, this.stream_url, this.name, aid, oid, function (error, result) {
+		Meteor.call('createLink', this, this.url, this.stream_url, this.name, aid, oid, function (error, result) {
 			if (error) {
 				console.log("externer Link konnte nicht hinzugefügt werden ( " + error.details + " )");
 				if (event.target.className.indexOf("icon") === -1)
@@ -2369,6 +2418,7 @@ Template.accountSettingsDialog.events({
 		var searchyoutube = template.find("#searchyoutube").checked;
 		var searchexfm = template.find("#searchexfm").checked;
 		var searchvk = template.find("#searchvk").checked;
+		var searchbeatport = template.find("#searchbeatport").checked;
 		var searchproviders = [];
 		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
 		if (searchmuzon) searchproviders.push("muzon");
@@ -2376,6 +2426,7 @@ Template.accountSettingsDialog.events({
 		if (searchyoutube) searchproviders.push("youtube");
 		if (searchexfm) searchproviders.push("ex.fm");
 		if (searchvk && VK.Auth.getSession()) searchproviders.push("vk.com");
+		if (searchbeatport) searchproviders.push("beatport");
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
 		Session.set("filter_mixes", ahidemixes);
 		
