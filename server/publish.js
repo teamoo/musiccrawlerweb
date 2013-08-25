@@ -95,7 +95,7 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites, filt
 	initializing = false;
 	*/
 	[1, 14, 30, 90, 365].forEach(function (timespan) {
-		if (filter_mixes && filter_mixes === true)
+		/*if (filter_mixes && filter_mixes === true)
 			var count = Links.find({
 				$and:[{
 						name: {
@@ -104,7 +104,7 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites, filt
 						size: {
 							$lt : 80000000
 						}
-					}],	
+					}],	*/
 				date_published: {
 					$gte: new Date(new Date().setDate(new Date().getDate() - timespan))
 				},
@@ -118,7 +118,7 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites, filt
 					$nin: filter_sites
 				}
 			}).count(false);
-		else
+		/*else
 			var count = Links.find({
 				date_published: {
 					$gte: new Date(new Date().setDate(new Date().getDate() - timespan))
@@ -133,7 +133,7 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites, filt
 					$nin: filter_sites
 				}
 			}).count(false);	
-			
+		*/	
 		self.added("counts", timespan, {
 			count: count
 		});
