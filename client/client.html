@@ -581,12 +581,21 @@
 		</label>
 		
 		<label class="checkbox">
+		{{#if searchProviderEnabled "myfreemp3.eu"}}
+			<input id="searchmyfreemp3" type="checkbox" checked="checked">
+		{{else}}
+			<input id="searchmyfreemp3" type="checkbox">
+		{{/if}}
+		<a href="http://www.myfreemp3.eu"><img alt='myfreemp3.eu' src='myfreemp3.png'></a>
+		</label>
+		
+		<label class="checkbox">
 		{{#if searchProviderEnabled "beatport"}}
 			<input id="searchbeatport" type="checkbox" checked="checked">
 		{{else}}
 			<input id="searchbeatport" type="checkbox">
 		{{/if}}
-		<a href="http://www.beatport.com"><img alt='beatport.com' src='beatport.png'></a> <small>(Anmeldung erforderlich)</small>
+		<a href="http://www.beatport.com"><img alt='beatport.com' src='beatport.png'></a> <small>(Anmeldung erforderlich) <b>coming soon</b></small>
 		</label>
 	</form>
   </div>

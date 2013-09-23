@@ -400,7 +400,7 @@ Template.link.isPlayable = function () {
 				return true;
 			case "youtube.com":
 				return true;
-			case "zippyshare.com":
+			case "zippyshare.com", "myfreemp3.eu":
 				return true;
 			case "muzon.ws","beatport.com":
 				if (this.stream_url) return true;
@@ -441,7 +441,7 @@ Template.searchresult.isPlayable = function () {
 			case "zippyshare.com","beatport.com":
 				if (this.stream_url) return true;
 				return false;
-			case "ex.fm":
+			case "ex.fm", "myfreemp3.eu":
 				return true;
 			case "vimeo.com":
 				return false;
@@ -473,6 +473,7 @@ Template.searchresult.getExternalSourceIcon = function () {
 	if (this.hoster == "ex.fm") return "<a href='http://ex.fm'><img alt='ex.fm Attribution' src='exfm.png'></a>";
 	if (this.hoster == "vk.com") return "<a href='http://vk.com'><img alt='vk.com Attribution' src='vkontakte.png'></a>";
 	if (this.hoster == "beatport.com") return "<a href='http://beatport.com'><img alt='beatport.com Attribution' src='beatport.png'></a>";
+	if (this.hoster == "myfreemp3.eu") return "<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='myfreemp3.png'></a>";
 	return undefined;
 };
 // Funktion um alle Seiten ins Template zu geben (die subscription)
@@ -1295,6 +1296,60 @@ Template.navigation.events({
 										Session.set("loading_results", false);
 									}
 								});
+							}
+							if (_.contains(Meteor.user().profile.searchproviders, "myfreemp3.eu")) {
+
+								Meteor.call('searchMyFreeMP3', encodeURIComponent(filter_term_external), function (error, result) {
+									if (result) {
+										var doc = document.implementation.createHTMLDocument("myfreemp3");
+										doc.documentElement.innerHTML = result.content;
+										
+										//var iterartists = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'artist\']', doc, null, XPathResult.ANY_TYPE, null );
+										//var itertitles = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
+										var iternames = doc.evaluate( '//a[@class=\'info\']/text()', doc, null, XPathResult.ANY_TYPE, null );
+										var iterids = doc.evaluate( '//a[@class=\'info\']/@data-aid', doc, null, XPathResult.ANY_TYPE, null );
+										var iterdurations = doc.evaluate( '//a[@class=\'info\']/@data-duration', doc, null, XPathResult.ANY_TYPE, null );
+										
+										try {
+										  var namenode = iternames.iterateNext();
+										  var idnode = iterids.iterateNext();
+										  var durationnode = iterdurations.iterateNext();
+										  
+										  
+										   
+										  
+										  var counter = 0;
+										  
+										  while (namenode && idnode && durationnode && counter < 10) {										
+											url = "http://5.254.96.25/dvv.php?q=" + idnode.textContent + "_/";
+											duration = durationnode.textContent;
+											name = namenode.textContent;
+											
+											if (!SearchResults.findOne({
+												url: url
+											})) SearchResults.insert({
+												hoster: "myfreemp3.eu",
+												status: "on",
+												name: name,
+												id: idnode.textContent,
+												url: url,
+												duration: moment(duration * 1000)
+											});
+											
+											counter++;
+											
+											namenode = iternames.iterateNext();
+											idnode = iterids.iterateNext();
+											durationnode = iterdurations.iterateNext();
+										  }	
+										}
+										catch (e) {
+										  console.log( 'Error: Document tree modified during iteration ' + e );
+										}
+										
+										Session.set("loading_results", false);
+									}	
+								});
 							}		
 							if (_.contains(Meteor.user().profile.searchproviders, "vk.com")) {
 								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
@@ -1620,7 +1675,7 @@ Template.link.events({
 					}
 					event.target.className = "icon-remove";
 					break;
-				case "youtube.com":
+				case "youtube.com","myfreemp3.eu":
 					event.target.className = "icon-loader";
 					if (window.SCM) {
 						SCM.play({
@@ -1921,6 +1976,7 @@ Template.searchresult.events({
 				case "soundcloud.com":
 				case "youtube.com":
 				case "vk.com":
+				case "myfreemp3.eu":
 				case "ex.fm":
 					event.target.className = "icon-loader";
 					if (window.SCM) {
@@ -2419,6 +2475,7 @@ Template.accountSettingsDialog.events({
 		var searchexfm = template.find("#searchexfm").checked;
 		var searchvk = template.find("#searchvk").checked;
 		var searchbeatport = template.find("#searchbeatport").checked;
+		var searchmyfreemp3 = template.find("#searchmyfreemp3").checked;
 		var searchproviders = [];
 		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
 		if (searchmuzon) searchproviders.push("muzon");
@@ -2427,6 +2484,7 @@ Template.accountSettingsDialog.events({
 		if (searchexfm) searchproviders.push("ex.fm");
 		if (searchvk && VK.Auth.getSession()) searchproviders.push("vk.com");
 		if (searchbeatport) searchproviders.push("beatport");
+		if (searchmyfreemp3) searchproviders.push("myfreemp3.eu");
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
 		Session.set("filter_mixes", ahidemixes);
 		
