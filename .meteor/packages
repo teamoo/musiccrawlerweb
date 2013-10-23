@@ -9,9 +9,9 @@ bootstrap
 ejson
 email
 appcache
-x-editable-bootstrap-1.4.6.1
+x-editable-bootstrap
 router
 standard-app-packages
 http
 moment
-soundcloud-0.1.1
+soundcloud

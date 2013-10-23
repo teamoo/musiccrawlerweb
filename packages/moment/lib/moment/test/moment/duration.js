@@ -1,7 +1,7 @@
 var moment = require("../../moment");
 
 exports.duration = {
-    "object instantiation" : function(test) {
+    "object instantiation" : function (test) {
         var d = moment.duration({
             years: 2,
             months: 3,
@@ -25,34 +25,58 @@ exports.duration = {
         test.done();
     },
 
-    "milliseconds instantiation" : function(test) {
+    "object instantiation with strings" : function (test) {
+        var d = moment.duration({
+            years: '2',
+            months: '3',
+            weeks: '2',
+            days: '1',
+            hours: '8',
+            minutes: '9',
+            seconds: '20',
+            milliseconds: '12'
+        });
+
+        test.expect(8);
+        test.equal(d.years(),        2,  "years");
+        test.equal(d.months(),       3,  "months");
+        test.equal(d.weeks(),        2,  "weeks");
+        test.equal(d.days(),         15, "days"); // two weeks + 1 day
+        test.equal(d.hours(),        8,  "hours");
+        test.equal(d.minutes(),      9,  "minutes");
+        test.equal(d.seconds(),      20, "seconds");
+        test.equal(d.milliseconds(), 12, "milliseconds");
+        test.done();
+    },
+
+    "milliseconds instantiation" : function (test) {
         test.expect(1);
         test.equal(moment.duration(72).milliseconds(), 72, "milliseconds");
         test.done();
     },
 
-    "instantiation by type" : function(test) {
+    "instantiation by type" : function (test) {
         test.expect(16);
-        test.equal(moment.duration(1, "years").years(),         1, "years");
-        test.equal(moment.duration(1, "y").years(),         1, "y");
-        test.equal(moment.duration(2, "months").months(),        2, "months");
-        test.equal(moment.duration(2, "M").months(),        2, "M");
-        test.equal(moment.duration(3, "weeks").weeks(),         3, "weeks");
-        test.equal(moment.duration(3, "w").weeks(),         3, "weeks");
-        test.equal(moment.duration(4, "days").days(),          4, "days");
-        test.equal(moment.duration(4, "d").days(),          4, "d");
-        test.equal(moment.duration(5, "hours").hours(),         5, "hours");
-        test.equal(moment.duration(5, "h").hours(),         5, "h");
-        test.equal(moment.duration(6, "minutes").minutes(),       6, "minutes");
-        test.equal(moment.duration(6, "m").minutes(),       6, "m");
-        test.equal(moment.duration(7, "seconds").seconds(),       7, "seconds");
-        test.equal(moment.duration(7, "s").seconds(),       7, "s");
-        test.equal(moment.duration(8, "milliseconds").milliseconds(), 8, "milliseconds");
-        test.equal(moment.duration(8, "ms").milliseconds(), 8, "ms");
+        test.equal(moment.duration(1, "years").years(),                 1, "years");
+        test.equal(moment.duration(1, "y").years(),                     1, "y");
+        test.equal(moment.duration(2, "months").months(),               2, "months");
+        test.equal(moment.duration(2, "M").months(),                    2, "M");
+        test.equal(moment.duration(3, "weeks").weeks(),                 3, "weeks");
+        test.equal(moment.duration(3, "w").weeks(),                     3, "weeks");
+        test.equal(moment.duration(4, "days").days(),                   4, "days");
+        test.equal(moment.duration(4, "d").days(),                      4, "d");
+        test.equal(moment.duration(5, "hours").hours(),                 5, "hours");
+        test.equal(moment.duration(5, "h").hours(),                     5, "h");
+        test.equal(moment.duration(6, "minutes").minutes(),             6, "minutes");
+        test.equal(moment.duration(6, "m").minutes(),                   6, "m");
+        test.equal(moment.duration(7, "seconds").seconds(),             7, "seconds");
+        test.equal(moment.duration(7, "s").seconds(),                   7, "s");
+        test.equal(moment.duration(8, "milliseconds").milliseconds(),   8, "milliseconds");
+        test.equal(moment.duration(8, "ms").milliseconds(),             8, "ms");
         test.done();
     },
 
-    "shortcuts" : function(test) {
+    "shortcuts" : function (test) {
         test.expect(8);
         test.equal(moment.duration({y: 1}).years(),         1, "years = y");
         test.equal(moment.duration({M: 2}).months(),        2, "months = M");
@@ -65,7 +89,7 @@ exports.duration = {
         test.done();
     },
 
-    "generic getter" : function(test) {
+    "generic getter" : function (test) {
         test.expect(24);
         test.equal(moment.duration(1, "years").get("years"),                1, "years");
         test.equal(moment.duration(1, "years").get("year"),                 1, "years = year");
@@ -94,7 +118,7 @@ exports.duration = {
         test.done();
     },
 
-    "instantiation from another duration" : function(test) {
+    "instantiation from another duration" : function (test) {
         var simple = moment.duration(1234),
             lengthy = moment.duration(60 * 60 * 24 * 360 * 1e3),
             complicated = moment.duration({
@@ -115,7 +139,7 @@ exports.duration = {
         test.done();
     },
 
-    "instatiation from serialized C# TimeSpan zero" : function(test) {
+    "instatiation from serialized C# TimeSpan zero" : function (test) {
         test.expect(6);
         test.equal(moment.duration("00:00:00").years(), 0, "0 years");
         test.equal(moment.duration("00:00:00").days(), 0, "0 days");
@@ -126,7 +150,7 @@ exports.duration = {
         test.done();
     },
 
-    "instatiation from serialized C# TimeSpan with days" : function(test) {
+    "instatiation from serialized C# TimeSpan with days" : function (test) {
         test.expect(6);
         test.equal(moment.duration("1.02:03:04.9999999").years(), 0, "0 years");
         test.equal(moment.duration("1.02:03:04.9999999").days(), 1, "1 day");
@@ -137,18 +161,24 @@ exports.duration = {
         test.done();
     },
 
-    "instatiation from serialized C# TimeSpan without days" : function(test) {
-        test.expect(6);
+    "instatiation from serialized C# TimeSpan without days" : function (test) {
+        test.expect(10);
         test.equal(moment.duration("01:02:03.9999999").years(), 0, "0 years");
         test.equal(moment.duration("01:02:03.9999999").days(), 0, "0 days");
         test.equal(moment.duration("01:02:03.9999999").hours(), 1, "1 hour");
         test.equal(moment.duration("01:02:03.9999999").minutes(), 2, "2 minutes");
         test.equal(moment.duration("01:02:03.9999999").seconds(), 3, "3 seconds");
         test.equal(moment.duration("01:02:03.9999999").milliseconds(), 999, "999 milliseconds");
+
+        test.equal(moment.duration("23:59:59.9999999").days(), 0, "0 days");
+        test.equal(moment.duration("23:59:59.9999999").hours(), 23, "23 hours");
+
+        test.equal(moment.duration("500:59:59.9999999").days(), 20, "500 hours overflows to 20 days");
+        test.equal(moment.duration("500:59:59.9999999").hours(), 20, "500 hours overflows to 20 hours");
         test.done();
     },
 
-    "instatiation from serialized C# TimeSpan without days or milliseconds" : function(test) {
+    "instatiation from serialized C# TimeSpan without days or milliseconds" : function (test) {
         test.expect(6);
         test.equal(moment.duration("01:02:03").years(), 0, "0 years");
         test.equal(moment.duration("01:02:03").days(), 0, "0 days");
@@ -159,7 +189,7 @@ exports.duration = {
         test.done();
     },
 
-    "instatiation from serialized C# TimeSpan without milliseconds" : function(test) {
+    "instatiation from serialized C# TimeSpan without milliseconds" : function (test) {
         test.expect(6);
         test.equal(moment.duration("1.02:03:04").years(), 0, "0 years");
         test.equal(moment.duration("1.02:03:04").days(), 1, "1 day");
@@ -170,7 +200,7 @@ exports.duration = {
         test.done();
     },
 
-    "instatiation from serialized C# TimeSpan maxValue" : function(test) {
+    "instatiation from serialized C# TimeSpan maxValue" : function (test) {
         test.expect(6);
         test.equal(moment.duration("10675199.02:48:05.4775807").years(), 29653, "29653 years");
         test.equal(moment.duration("10675199.02:48:05.4775807").days(), 29, "29 day");
@@ -181,7 +211,7 @@ exports.duration = {
         test.done();
     },
 
-    "instatiation from serialized C# TimeSpan minValue" : function(test) {
+    "instatiation from serialized C# TimeSpan minValue" : function (test) {
         test.expect(6);
         test.equal(moment.duration("-10675199.02:48:05.4775808").years(), -29653, "29653 years");
         test.equal(moment.duration("-10675199.02:48:05.4775808").days(), -29, "29 day");
@@ -192,7 +222,7 @@ exports.duration = {
         test.done();
     },
 
-    "humanize" : function(test) {
+    "humanize" : function (test) {
         test.expect(32);
         moment.lang('en');
         test.equal(moment.duration({seconds: 44}).humanize(),  "a few seconds", "44 seconds = a few seconds");
@@ -230,7 +260,7 @@ exports.duration = {
         test.done();
     },
 
-    "humanize duration with suffix" : function(test) {
+    "humanize duration with suffix" : function (test) {
         test.expect(2);
         moment.lang('en');
         test.equal(moment.duration({seconds:  44}).humanize(true),  "in a few seconds", "44 seconds = a few seconds");
@@ -238,7 +268,7 @@ exports.duration = {
         test.done();
     },
 
-    "bubble value up" : function(test) {
+    "bubble value up" : function (test) {
         test.expect(5);
         test.equal(moment.duration({milliseconds: 61001}).milliseconds(), 1, "61001 milliseconds has 1 millisecond left over");
         test.equal(moment.duration({milliseconds: 61001}).seconds(),      1, "61001 milliseconds has 1 second left over");
@@ -249,7 +279,7 @@ exports.duration = {
         test.done();
     },
 
-    "clipping" : function(test) {
+    "clipping" : function (test) {
         test.expect(18);
         test.equal(moment.duration({months: 11}).months(), 11, "11 months is 11 months");
         test.equal(moment.duration({months: 11}).years(),  0,  "11 months makes no year");
@@ -274,7 +304,7 @@ exports.duration = {
         test.done();
     },
 
-    "effective equivalency" : function(test) {
+    "effective equivalency" : function (test) {
         test.expect(7);
         test.deepEqual(moment.duration({seconds: 1})._data,  moment.duration({milliseconds: 1000})._data, "1 second is the same as 1000 milliseconds");
         test.deepEqual(moment.duration({seconds: 60})._data, moment.duration({minutes: 1})._data,         "1 minute is the same as 60 seconds");
@@ -286,7 +316,7 @@ exports.duration = {
         test.done();
     },
 
-    "asGetters" : function(test) {
+    "asGetters" : function (test) {
         var d = moment.duration({
             years: 2,
             months: 3,
@@ -310,7 +340,7 @@ exports.duration = {
         test.done();
     },
 
-    "generic as getter" : function(test) {
+    "generic as getter" : function (test) {
         var d = moment.duration({
             years: 2,
             months: 3,
@@ -350,7 +380,7 @@ exports.duration = {
         test.done();
     },
 
-    "isDuration" : function(test) {
+    "isDuration" : function (test) {
         test.expect(3);
         test.ok(moment.isDuration(moment.duration(12345678)), "correctly says true");
         test.ok(!moment.isDuration(moment()), "moment object is not a duration");
@@ -358,7 +388,7 @@ exports.duration = {
         test.done();
     },
 
-    "add" : function(test) {
+    "add" : function (test) {
         test.expect(4);
 
         var d = moment.duration({months: 4, weeks: 3, days: 2});
@@ -366,12 +396,12 @@ exports.duration = {
         test.equal(d.add(1, 'month')._months, 5, 'Add months');
         test.equal(d.add(5, 'days')._days, 28, 'Add days');
         test.equal(d.add(10000)._milliseconds, 10000, 'Add milliseconds');
-        test.equal(d.add({h: 23, m: 59})._milliseconds, 23*60*60*1000 + 59*60*1000 + 10000, 'Add hour:minute');
+        test.equal(d.add({h: 23, m: 59})._milliseconds, 23 * 60 * 60 * 1000 + 59 * 60 * 1000 + 10000, 'Add hour:minute');
 
         test.done();
     },
 
-    "add and bubble" : function(test) {
+    "add and bubble" : function (test) {
         test.expect(4);
 
         test.equal(moment.duration(1, 'second').add(1000, 'milliseconds').seconds(), 2, 'Adding milliseconds should bubble up to seconds');
@@ -382,7 +412,7 @@ exports.duration = {
         test.done();
     },
 
-    "subtract and bubble" : function(test) {
+    "subtract and bubble" : function (test) {
         test.expect(4);
 
         test.equal(moment.duration(2, 'second').subtract(1000, 'milliseconds').seconds(), 1, 'Subtracting milliseconds should bubble up to seconds');
@@ -393,15 +423,15 @@ exports.duration = {
         test.done();
     },
 
-    "subtract" : function(test) {
+    "subtract" : function (test) {
         test.expect(4);
 
         var d = moment.duration({months: 2, weeks: 2, days: 0, hours: 5});
         // for some reason, d._data._months does not get updated; use d._months instead.
         test.equal(d.subtract(1, 'months')._months, 1, 'Subtract months');
         test.equal(d.subtract(14, 'days')._days, 0, 'Subtract days');
-        test.equal(d.subtract(10000)._milliseconds, 5*60*60*1000 - 10000, 'Subtract milliseconds');
-        test.equal(d.subtract({h: 1, m: 59})._milliseconds, 3*60*60*1000 + 1*60*1000 - 10000, 'Subtract hour:minute');
+        test.equal(d.subtract(10000)._milliseconds, 5 * 60 * 60 * 1000 - 10000, 'Subtract milliseconds');
+        test.equal(d.subtract({h: 1, m: 59})._milliseconds, 3 * 60 * 60 * 1000 + 1 * 60 * 1000 - 10000, 'Subtract hour:minute');
 
         test.done();
     }
