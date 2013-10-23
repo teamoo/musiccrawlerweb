@@ -1321,7 +1321,7 @@ Template.navigation.events({
 										  var counter = 0;
 										  
 										  while (namenode && idnode && durationnode && counter < 10) {										
-											url = "http://5.254.96.25/dvv.php?q=" + idnode.textContent + "_/";
+											url = "http://myfreemp3.eu/dvv.php?q=" + idnode.textContent + "_/";
 											duration = durationnode.textContent;
 											name = namenode.textContent;
 											
