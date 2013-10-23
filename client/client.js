@@ -1,5 +1,4 @@
-﻿
-moment.lang('de');
+﻿moment.lang('de');
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
@@ -2021,9 +2020,16 @@ Template.searchresult.events({
 			event.target.className = "icon-loader";
 
 		if (Session.equals("JDOnlineStatus", true)) {
+			if (this.hoster === "myfreemp3.eu")
+			{
+				window.open(this.url,'_blank');
+				return;
+			}
+			
 			var grabberoption;
 			if (this.url.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 			else grabberoption = "grabber0";
+			
 			if (Meteor.user() && Meteor.user().profile)
 				var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + this.url;
 			requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
