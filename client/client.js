@@ -1172,7 +1172,7 @@ Template.navigation.events({
 										  var counter = 0;
 										  
 										  while (artistnode && titlenode && stream_urlnode && urlnode && durationnode && counter < 10) {										
-											url = "http://muzon.ws" + urlnode.textContent;
+											url = urlnode.textContent.replace("http//","http://");
 											stream_url = stream_urlnode.textContent;
 											duration = durationnode.textContent;
 											name = artistnode.textContent + " - " + titlenode.textContent;
