@@ -4,20 +4,25 @@ Accounts.config({
 	forbidClientAccountCreation: false
 });
 Meteor.AppCache.config({
-	chrome: true,
-	firefox: true,
-	ie: true,
-	android: true,
-	mobileSafari: true,
-	safari: true
+	 onlineOnly: [
+	    '/online/'
+	  ],
+	chrome: false,
+	chromium : false,
+	firefox: false,
+	ie: false,
+	android: false,
+	mobileSafari: false,
+	safari: false,
+	chromeMobileIOS : false
 });
 // Facebook-Konfiguration entfernen
-//Accounts.loginServiceConfiguration.remove({
-//    service : "facebook"
-//});
+Accounts.loginServiceConfiguration.remove({
+    service : "facebook"
+});
 // Facebook-Konfiguration anlegen
-//Accounts.loginServiceConfiguration.insert({
-//    service : "facebook",
-//    appId : Meteor.settings.facebook.appId,
-//    secret : Meteor.settings.facebook.secret
-//});
+Accounts.loginServiceConfiguration.insert({
+    service : "facebook",
+    appId : Meteor.settings.facebook.appId,
+    secret : Meteor.settings.facebook.secret
+});

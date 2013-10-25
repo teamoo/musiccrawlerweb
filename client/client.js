@@ -1947,7 +1947,7 @@ Template.addLinkDialog.events({
 		event.preventDefault();
 		Session.set("status", '<p class="pull-left statustext"><small><i class="icon-loader">' + " " + '</i>Link wird überprüft</small></p>');
 		var newlinkurl = template.find("#newlinkurl").value;
-		Meteor.call('createLink', newlinkurl, undefined, undefined, undefined, undefined, function (error, result) {
+		Meteor.call('createLink', undefined, newlinkurl, undefined, undefined, undefined, undefined, function (error, result) {
 			if (error) switch (error.error) {
 					case 409:
 						Session.set("status", '<p class="pull-left statustext"><i class="icon-warning-sign"></i><small>' + " " + error.details + "</small></p>");
