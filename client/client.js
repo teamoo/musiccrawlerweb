@@ -465,15 +465,15 @@ Template.searchresult.isDownloadable = function () {
 	return false;
 };
 Template.searchresult.getExternalSourceIcon = function () {
-	if (this.hoster == "zippyshare.com") return "<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='zippyshare.png'></a>";
-	if (this.hoster == "soundcloud.com") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='soundcloud.png'></a>";
-	if (this.hoster == "muzon.ws") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='muzon.png'></a>";
-	if (this.hoster == "muzofon.com") return "<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='muzofon.png'></a>";
-	if (this.hoster == "youtube.com") return "<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='youtube.png'></a>";
-	if (this.hoster == "ex.fm") return "<a href='http://ex.fm'><img alt='ex.fm Attribution' src='exfm.png'></a>";
-	if (this.hoster == "vk.com") return "<a href='http://vk.com'><img alt='vk.com Attribution' src='vkontakte.png'></a>";
-	if (this.hoster == "beatport.com") return "<a href='http://beatport.com'><img alt='beatport.com Attribution' src='beatport.png'></a>";
-	if (this.hoster == "myfreemp3.eu") return "<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='myfreemp3.png'></a>";
+	if (this.hoster == "zippyshare.com") return "<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='/online/zippyshare.png'></a>";
+	if (this.hoster == "soundcloud.com") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='/online/soundcloud.png'></a>";
+	if (this.hoster == "muzon.ws") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='/online/muzon.png'></a>";
+	if (this.hoster == "muzofon.com") return "<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='/online/muzofon.png'></a>";
+	if (this.hoster == "youtube.com") return "<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='/online/youtube.png'></a>";
+	if (this.hoster == "ex.fm") return "<a href='http://ex.fm'><img alt='ex.fm Attribution' src='/online/exfm.png'></a>";
+	if (this.hoster == "vk.com") return "<a href='http://vk.com'><img alt='vk.com Attribution' src='/online/vkontakte.png'></a>";
+	if (this.hoster == "beatport.com") return "<a href='http://beatport.com'><img alt='beatport.com Attribution' src='/online/beatport.png'></a>";
+	if (this.hoster == "myfreemp3.eu") return "<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='/online/myfreemp3.png'></a>";
 	return undefined;
 };
 // Funktion um alle Seiten ins Template zu geben (die subscription)
@@ -1280,8 +1280,10 @@ Template.navigation.events({
 										var songs = result.data.results;
 										for (var i = 0; i <= songs.length; i++) {
 											if (songs[i]) {
+												thename = _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title
+											
 												if (!SearchResults.findOne({
-													url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id
+													name: thename
 												})) SearchResults.insert({
 														hoster: "beatport.com",
 														status: "on",
