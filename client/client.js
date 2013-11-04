@@ -1,4 +1,5 @@
-﻿moment.lang('de');
+﻿
+moment.lang('de');
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
