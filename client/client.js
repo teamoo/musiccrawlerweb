@@ -1276,7 +1276,7 @@ Template.navigation.events({
 								});
 							}
 							if (_.contains(Meteor.user().profile.searchproviders, "beatport")) {
-								HTTP.get("http://api.beatport.com/catalog/search?v=2.0&query=" + filter_term_external + "&facets[]=fieldType:track&perPage=10&page=1&format=json", function(error,result) {
+								HTTP.get("http://api.beatport.com/catalog/search?v=2.0&query=" + filter_term_external + "&facets[]=fieldType:track&perPage=17&page=1&format=json", function(error,result) {
 									if (result && result.data && result.data.results) {
 										var songs = result.data.results;
 										for (var i = 0; i <= songs.length; i++) {
