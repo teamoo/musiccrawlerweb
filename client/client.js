@@ -1291,7 +1291,7 @@ Template.navigation.events({
 														name: _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title,
 														url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id,
 														stream_url: songs[i].sampleUrl,
-														duration: moment(songs[i].lengthMs),
+														duration: moment(songs[i].length),
 														date_published: moment(songs[i].releaseDate).toDate()
 													});
 											}
