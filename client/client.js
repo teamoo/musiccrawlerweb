@@ -1141,8 +1141,7 @@ Template.navigation.events({
 															status: "unknown",
 															name: unescape(items[i].pagemap.metatags[0]["og:title"].replace("null").replace("undefined").trim()),
 															url: items[i].pagemap.metatags[0]["og:url"].replace("\\").replace('"').replace('"'),
-															stream_url: stream_url.replace('"'),
-															duration: moment(0)
+															stream_url: stream_url.replace('"')
 														});
 												}
 											}
@@ -1291,7 +1290,7 @@ Template.navigation.events({
 														name: _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title,
 														url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id,
 														stream_url: songs[i].sampleUrl,
-														duration: songs[i].length + "min.",
+														duration: moment.duration(songs[i]),
 														date_published: moment(songs[i].releaseDate).toDate()
 													});
 											}
@@ -1729,7 +1728,7 @@ Template.link.events({
 							var stream_url = match1 + "/downloadMusic?key=" + match2;
 							SCM.play({
 								title: this.name,
-								url: stream_url
+								url: stream_url,
 							});
 							event.target.className = "icon-list";
 						} else event.target.className = "icon-remove";

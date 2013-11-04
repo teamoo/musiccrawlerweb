@@ -37,23 +37,28 @@ exports["lang:ru"] = {
         test.done();
     },
 
+    "parse exceptional case" : function (test) {
+        test.equal(moment('11 мая 1989', ['DD MMMM YYYY']).format('DD-MM-YYYY'), '11-05-1989');
+        test.done();
+    },
+
     "format" : function (test) {
         test.expect(22);
 
         var a = [
                 ['dddd, Do MMMM YYYY, HH:mm:ss',       'воскресенье, 14-го февраля 2010, 15:25:50'],
-                ['ddd, hA',                            'вск, 3PM'],
+                ['ddd, h A',                           'вс, 3 дня'],
                 ['M Mo MM MMMM MMM',                   '2 2-й 02 февраль фев'],
                 ['YYYY YY',                            '2010 10'],
                 ['D Do DD',                            '14 14-го 14'],
-                ['d do dddd ddd dd',                   '0 0-й воскресенье вск вс'],
+                ['d do dddd ddd dd',                   '0 0-й воскресенье вс вс'],
                 ['DDD DDDo DDDD',                      '45 45-й 045'],
                 ['w wo ww',                            '7 7-я 07'],
                 ['h hh',                               '3 03'],
                 ['H HH',                               '15 15'],
                 ['m mm',                               '25 25'],
                 ['s ss',                               '50 50'],
-                ['a A',                                'pm PM'],
+                ['a A',                                'дня дня'],
                 ['DDDo [день года]',                   '45-й день года'],
                 ['L',                                  '14.02.2010'],
                 ['LL',                                 '14 февраля 2010 г.'],
@@ -62,13 +67,28 @@ exports["lang:ru"] = {
                 ['l',                                  '14.2.2010'],
                 ['ll',                                 '14 фев 2010 г.'],
                 ['lll',                                '14 фев 2010 г., 15:25'],
-                ['llll',                               'вск, 14 фев 2010 г., 15:25']
+                ['llll',                               'вс, 14 фев 2010 г., 15:25']
             ],
             b = moment(new Date(2010, 1, 14, 15, 25, 50, 125)),
             i;
         for (i = 0; i < a.length; i++) {
             test.equal(b.format(a[i][0]), a[i][1], a[i][0] + ' ---> ' + a[i][1]);
         }
+        test.done();
+    },
+
+    "format meridiem" : function (test) {
+        test.expect(8);
+
+        test.equal(moment([2012, 11, 28, 0, 0]).format("A"), "ночи", "night");
+        test.equal(moment([2012, 11, 28, 3, 59]).format("A"), "ночи", "night");
+        test.equal(moment([2012, 11, 28, 4, 0]).format("A"), "утра", "morning");
+        test.equal(moment([2012, 11, 28, 11, 59]).format("A"), "утра", "morning");
+        test.equal(moment([2012, 11, 28, 12, 0]).format("A"), "дня", "afternoon");
+        test.equal(moment([2012, 11, 28, 16, 59]).format("A"), "дня", "afternoon");
+        test.equal(moment([2012, 11, 28, 17, 0]).format("A"), "вечера", "evening");
+        test.equal(moment([2012, 11, 28, 23, 59]).format("A"), "вечера", "evening");
+
         test.done();
     },
 
@@ -150,10 +170,42 @@ exports["lang:ru"] = {
         test.done();
     },
 
+    "format month case with escaped symbols" : function (test) {
+        test.expect(48);
+
+        var months = {
+            'nominative': 'январь_февраль_март_апрель_май_июнь_июль_август_сентябрь_октябрь_ноябрь_декабрь'.split('_'),
+            'accusative': 'января_февраля_марта_апреля_мая_июня_июля_августа_сентября_октября_ноября_декабря'.split('_')
+        }, i;
+        for (i = 0; i < 12; i++) {
+            test.equal(moment([2013, i, 1]).format('D[] MMMM'), '1 ' + months.accusative[i], '1 ' + months.accusative[i]);
+            test.equal(moment([2013, i, 1]).format('[<i>]D[</i>] [<b>]MMMM[</b>]'), '<i>1</i> <b>' + months.accusative[i] + '</b>', '1 <b>' + months.accusative[i] + '</b>');
+            test.equal(moment([2013, i, 1]).format('D[-й день] MMMM'), '1-й день ' + months.accusative[i], '1-й день ' + months.accusative[i]);
+            test.equal(moment([2013, i, 1]).format('D, MMMM'), '1, ' + months.nominative[i], '1, ' + months.nominative[i]);
+        }
+        test.done();
+    },
+
+    "format month short case with escaped symbols" : function (test) {
+        test.expect(48);
+
+        var monthsShort = {
+            'nominative': 'янв_фев_мар_апр_май_июнь_июль_авг_сен_окт_ноя_дек'.split('_'),
+            'accusative': 'янв_фев_мар_апр_мая_июня_июля_авг_сен_окт_ноя_дек'.split('_')
+        }, i;
+        for (i = 0; i < 12; i++) {
+            test.equal(moment([2013, i, 1]).format('D[] MMM'), '1 ' + monthsShort.accusative[i], '1 ' + monthsShort.accusative[i]);
+            test.equal(moment([2013, i, 1]).format('[<i>]D[</i>] [<b>]MMM[</b>]'), '<i>1</i> <b>' + monthsShort.accusative[i] + '</b>', '1 <b>' + monthsShort.accusative[i] + '</b>');
+            test.equal(moment([2013, i, 1]).format('D[-й день] MMM'), '1-й день ' + monthsShort.accusative[i], '1-й день ' + monthsShort.accusative[i]);
+            test.equal(moment([2013, i, 1]).format('D, MMM'), '1, ' + monthsShort.nominative[i], '1, ' + monthsShort.nominative[i]);
+        }
+        test.done();
+    },
+
     "format week" : function (test) {
         test.expect(7);
 
-        var expected = 'воскресенье вск вс_понедельник пнд пн_вторник втр вт_среда срд ср_четверг чтв чт_пятница птн пт_суббота сбт сб'.split("_"), i;
+        var expected = 'воскресенье вс вс_понедельник пн пн_вторник вт вт_среда ср ср_четверг чт чт_пятница пт пт_суббота сб сб'.split("_"), i;
         for (i = 0; i < expected.length; i++) {
             test.equal(moment([2011, 0, 2 + i]).format('dddd ddd dd'), expected[i], expected[i]);
         }
@@ -395,6 +447,14 @@ exports["lang:ru"] = {
         test.equal(moment([2012,  0,  8]).format('w ww wo'), '2 02 2-я', "Jan  8 2012 should be week 2");
         test.equal(moment([2012,  0,  9]).format('w ww wo'), '3 03 3-я', "Jan  9 2012 should be week 3");
 
+        test.done();
+    },
+    
+    "returns the name of the language" : function (test) {
+        if (typeof module !== 'undefined' && module.exports) {
+            test.equal(require('../../lang/ru'), 'ru', "module should export ru");
+        }
+        
         test.done();
     }
 };

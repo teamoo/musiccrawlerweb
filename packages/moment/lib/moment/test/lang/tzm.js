@@ -342,6 +342,13 @@ exports["lang:tzm"] = {
         test.equal(moment([2012,  0, 14]).format('w ww wo'), '3 03 3', "Jan 14 2012 should be week 3");
 
         test.done();
+    },
+
+    "returns the name of the language" : function (test) {
+        if (typeof module !== 'undefined' && module.exports) {
+            test.equal(require('../../lang/tzm'), 'tzm', "module should export tzm");
+        }
+        test.done();
     }
 };
 
