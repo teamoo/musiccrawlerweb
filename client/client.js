@@ -151,6 +151,7 @@ Meteor.startup(function () {
 		// if user profile is already available, set session varibles for filtering links just for specific sites
 		// and showing already downloaded items. They are not reactive because we need to change them when searching
 		if (Meteor.user() && Meteor.user().profile) {
+			Meteor.logoutOtherClients();
 			if (window.SCM && Meteor.user().profile.volume) {
 				SCM.volume(Meteor.user().profile.volume);
 			}
