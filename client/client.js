@@ -686,17 +686,20 @@ Template.user_loggedin.events({
 		return false;
 	}
 });
-Template.navigation.rendered = function () {	
+Template.navigation.rendered = function () {
+	var searchTracks = _.debounce(function(query, process) {
+		Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
+			if (result && result.length) {
+				result.unshift(query.trim());
+			}
+			process(result);
+		});
+	}, 300);
 	$('#searchfield').typeahead({
 		items: 11,
 		minLength: 4,
 		source: function (query, process) {
-			Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
-				if (result && result.length) {
-					result.unshift(query.trim());
-				}
-				process(result);
-			});
+			searchTracks(query, process);
 		},
 		updater: function (name) {
 			SearchResults.remove({});
