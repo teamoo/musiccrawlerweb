@@ -1209,6 +1209,52 @@ Template.navigation.events({
 									}	
 								});
 							}
+							if (_.contains(Meteor.user().profile.searchproviders, "muzofon")) {
+								Meteor.call('searchMuzofon', encodeURIComponent(filter_term_external), function (error, result) {
+									
+									if (result && result.content)
+									{
+										var doc = document.implementation.createHTMLDocument("example");
+										doc.documentElement.innerHTML = result.content;
+										
+										var iternames = doc.evaluate( '//div[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
+										
+										var iterlinks = doc.evaluate( '//div[@class=\'controls\']/a[1]/@href', doc, null, XPathResult.ANY_TYPE, null );
+
+										try {
+										  var thisNode1 = iternames.iterateNext();
+										  var thisNode2 = iterlinks.iterateNext();
+										  
+										  while (thisNode1 && thisNode2) {										
+											durationmatch = thisNode1.textContent.replace(/\s+/g,' ').match(/\[.*\]/g)
+											if (durationmatch && durationmatch.length === 1)
+											{
+												duration = durationmatch[0].replace("[","").replace("]","")
+											}
+											
+											theurl = "http://muzofon.com" + thisNode2.textContent
+											
+											if (!SearchResults.findOne({
+												url: theurl
+											})) SearchResults.insert({
+												hoster: "muzofon.com",
+												status: "unknown",
+												name: thisNode1.textContent.replace(/\s+/g,' ').replace(/\[.*\]/g,"").trim(),
+												url: theurl,
+												duration: moment(duration,"mm:ss")
+											});
+											
+											
+											thisNode1 = iternames.iterateNext();
+											thisNode2 = iterlinks.iterateNext();
+										  }	
+										}
+										catch (e) {
+										  dump( 'Error: Document tree modified during iteration ' + e );
+										}
+									}				
+								});
+							}
 							if (_.contains(Meteor.user().profile.searchproviders, "soundcloud")) {
 								SC.get('/tracks', {
 									filter: 'public',
@@ -1278,31 +1324,7 @@ Template.navigation.events({
 									}
 								});
 							}
-							if (_.contains(Meteor.user().profile.searchproviders, "beatport")) {
-								HTTP.get("http://api.beatport.com/catalog/search?v=2.0&query=" + filter_term_external + "&facets[]=fieldType:track&perPage=17&page=1&format=json", function(error,result) {
-									if (result && result.data && result.data.results) {
-										var songs = result.data.results;
-										for (var i = 0; i <= songs.length; i++) {
-											if (songs[i]) {
-												thename = _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title
-											
-												if (!SearchResults.findOne({
-													name: thename
-												})) SearchResults.insert({
-														hoster: "beatport.com",
-														status: "on",
-														name: _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title,
-														url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id,
-														stream_url: songs[i].sampleUrl,
-														duration: moment.duration(songs[i]),
-														date_published: moment(songs[i].releaseDate).toDate()
-													});
-											}
-										}
-										Session.set("loading_results", false);
-									}
-								});
-							}
+
 							if (_.contains(Meteor.user().profile.searchproviders, "myfreemp3.eu")) {
 
 								Meteor.call('searchMyFreeMP3', encodeURIComponent(filter_term_external), function (error, result) {
@@ -1385,6 +1407,31 @@ Template.navigation.events({
 									}
 									else
 										console.log("Error getting results from vk.com: " + result.error["error_msg"]);
+								});
+							}
+							if (_.contains(Meteor.user().profile.searchproviders, "beatport")) {
+								HTTP.get("http://api.beatport.com/catalog/search?v=2.0&query=" + filter_term_external + "&facets[]=fieldType:track&perPage=17&page=1&format=json", function(error,result) {
+									if (result && result.data && result.data.results) {
+										var songs = result.data.results;
+										for (var i = 0; i <= songs.length; i++) {
+											if (songs[i]) {
+												thename = _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title
+											
+												if (!SearchResults.findOne({
+													name: thename
+												})) SearchResults.insert({
+														hoster: "beatport.com",
+														status: "on",
+														name: _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title,
+														url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id,
+														stream_url: songs[i].sampleUrl,
+														duration: moment.duration(songs[i]),
+														date_published: moment(songs[i].releaseDate).toDate()
+													});
+											}
+										}
+										Session.set("loading_results", false);
+									}
 								});
 							}
 						}
@@ -2483,6 +2530,7 @@ Template.accountSettingsDialog.events({
 		var ahidemixes = template.find("#hidemixes").checked;
 		var searchzippysharemusic = template.find("#searchzippysharemusic").checked;
 		var searchmuzon = template.find("#searchmuzon").checked;
+		var searchmuzofon = template.find("#searchmuzofon").checked;
 		var searchsoundcloud = template.find("#searchsoundcloud").checked;
 		var searchyoutube = template.find("#searchyoutube").checked;
 		var searchexfm = template.find("#searchexfm").checked;
@@ -2492,6 +2540,7 @@ Template.accountSettingsDialog.events({
 		var searchproviders = [];
 		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
 		if (searchmuzon) searchproviders.push("muzon");
+		if (searchmuzofon) searchproviders.push("muzofon");
 		if (searchsoundcloud) searchproviders.push("soundcloud");
 		if (searchyoutube) searchproviders.push("youtube");
 		if (searchexfm) searchproviders.push("ex.fm");

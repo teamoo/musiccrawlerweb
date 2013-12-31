@@ -528,13 +528,13 @@
 		
 		<label class="checkbox">
 		{{#if searchProviderEnabled "muzon"}}
-			<input id="searchmuzon" type="checkbox" checked="checked">
+			<input id="searchmuzon" type="checkbox" checked="checked" disabled>
 		{{else}}
-			<input id="searchmuzon" type="checkbox">
+			<input id="searchmuzon" type="checkbox" disabled>
 		{{/if}}
 		<a href="http://www.muzon.ws"><img alt='muzon' src='/online/muzon.png'></a>
+			<small>(momentan offline)</small>
 		</label>
-		<!--
 		<label class="checkbox">
 		{{#if searchProviderEnabled "muzofon"}}
 			<input id="searchmuzofon" type="checkbox" checked="checked">
@@ -543,7 +543,6 @@
 		{{/if}}
 		<a href="http://www.muzofon.com"><img alt='muzofon' src='/online/muzofon.png'></a>
 		</label>
-		-->
 		<label class="checkbox">
 		{{#if searchProviderEnabled "soundcloud"}}
 			<input id="searchsoundcloud" type="checkbox" checked="checked">
