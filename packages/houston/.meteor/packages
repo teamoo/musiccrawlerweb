@@ -4,16 +4,7 @@
 # but you can also edit it by hand.
 
 preserve-inputs
-accounts-facebook
-bootstrap
-ejson
-email
-appcache
-x-editable-bootstrap
 router
-standard-app-packages
-http
-moment
-soundcloud
-appcache
-houston
+coffeescript
+accounts-password
+spin
