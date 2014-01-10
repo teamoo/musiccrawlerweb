@@ -1410,7 +1410,7 @@ Template.navigation.events({
 								});
 							}
 							if (_.contains(Meteor.user().profile.searchproviders, "beatport")) {
-								HTTP.get("http://api.beatport.com/catalog/search?v=2.0&query=" + filter_term_external + "&facets[]=fieldType:track&perPage=17&page=1&format=json", function(error,result) {
+								HTTP.get("http://oauth-api.beatport.com/catalog/3/search/?query=" + filter_term_external + "&facets=fieldType:track&perPage=17&page=1&sortBy=publishDate+ASC", function(error,result) {
 									if (result && result.data && result.data.results) {
 										var songs = result.data.results;
 										for (var i = 0; i <= songs.length; i++) {
@@ -1424,7 +1424,7 @@ Template.navigation.events({
 														status: "on",
 														name: _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title,
 														url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id,
-														stream_url: songs[i].sampleUrl,
+														stream_url: "http://geo-samples.beatport.com/lofi/" + songs[i].id + ".LOFI.mp3",
 														duration: moment.duration(songs[i]),
 														date_published: moment(songs[i].releaseDate).toDate()
 													});

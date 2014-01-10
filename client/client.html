@@ -64,7 +64,7 @@
 				{{#if currentUser}}
 					{{#if session "links_completed"}}
 						{{# if linksFound}}
-							
+							{{> linklist}}
 							{{# if linksFoundLessThanThree}}
 								{{#if session "loading_results"}}
 									<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
