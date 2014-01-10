@@ -2530,7 +2530,7 @@ Template.accountSettingsDialog.events({
 		var ahidemixes = template.find("#hidemixes").checked;
 		var searchzippysharemusic = template.find("#searchzippysharemusic").checked;
 		var searchmuzon = template.find("#searchmuzon").checked;
-		var searchmuzofon = template.find("#searchmuzofon").checked;
+		//var searchmuzofon = template.find("#searchmuzofon").checked;
 		var searchsoundcloud = template.find("#searchsoundcloud").checked;
 		var searchyoutube = template.find("#searchyoutube").checked;
 		var searchexfm = template.find("#searchexfm").checked;
