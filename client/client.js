@@ -2540,7 +2540,7 @@ Template.accountSettingsDialog.events({
 		var searchproviders = [];
 		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
 		if (searchmuzon) searchproviders.push("muzon");
-		if (searchmuzofon) searchproviders.push("muzofon");
+		//if (searchmuzofon) searchproviders.push("muzofon");
 		if (searchsoundcloud) searchproviders.push("soundcloud");
 		if (searchyoutube) searchproviders.push("youtube");
 		if (searchexfm) searchproviders.push("ex.fm");
