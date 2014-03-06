@@ -17,11 +17,11 @@ Meteor.AppCache.config({
 	chromeMobileIOS : true
 });
 // Facebook-Konfiguration entfernen
-Accounts.loginServiceConfiguration.remove({
+ServiceConfiguration.configurations.remove({
     service : "facebook"
 });
 // Facebook-Konfiguration anlegen
-Accounts.loginServiceConfiguration.insert({
+ServiceConfiguration.configurations.insert({
     service : "facebook",
     appId : Meteor.settings.facebook.appId,
     secret : Meteor.settings.facebook.secret
