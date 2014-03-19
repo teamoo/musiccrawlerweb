@@ -124,7 +124,9 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites, filt
 	*/
 });
 // Publish filtered list to all clients
-Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_skip, filter_already_downloaded, filter_sites, filter_sort, filter_mixes, filter_id) {
+Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, 
+//filter_skip, 
+filter_already_downloaded, filter_sites, filter_sort, filter_mixes, filter_id) {
 	//XXX wenn Meteor (oder Mongo Driver??) projections kann, downloaders nicht komplett zurückgeben, sondern mit uns drin oder komplett leer
 	if (filter_id) {
 		var aid;
@@ -149,7 +151,8 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 	}
 	var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
 	var thedownloaders = "dummy";
-	var searchterms = filter_term.trim().split(" ");
+	if (filter_term && filter_term.length > 0)
+		searchterms = filter_term.trim().split(" ");
 	for (var i = 0; i < searchterms.length; i++) {
 		searchterms[i] = new RegExp(searchterms[i], "i");
 	}
@@ -230,7 +233,7 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 					_id: -1
 				}
 	
-	projection = {fields: fields, sort: sort, limit: thelimit, skip: filter_skip}
+	projection = {fields: fields, sort: sort, limit: thelimit}//, skip: filter_skip}
 	
 	if (this.userId) 
 		return Links.find(query, projection);	
