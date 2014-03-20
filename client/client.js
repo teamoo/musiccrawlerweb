@@ -36,116 +36,116 @@ Session.setDefault("filter_sort", "date_published");
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
 });
-
-Router.configure({
-  waitOn: function () {
-    return [Meteor.subscribe('userData'), Meteor.subscribe('allUserData'), Meteor.subscribe('sites'), Meteor.subscribe('links')];
-  }
-});
-
-Router.map(function () {
-  /**
-   * The route's name is "home"
-   * The route's template is also "home"
-   * The default action will render the home template
-   */
-  this.route('home', {
-    path: '/'
-  });
-
-  this.route('links', {
-    path: '/links'
-  });
-
-  this.route('link', {
-    path: '/link/:_id',
-    load: function () {
-      // called on first load
-    },
-    // before hooks are run before your action
-    before: [
-      function () {
-			Session.set('filter_id', this.params._id);
-      },
-      function () {
-        // we're done waiting on all subs
-        if (this.ready()) {
-        } else {
-          this.stop(); // stop downstream funcs from running
-        }
-      }
-    ],
-    action: function () {
-    },
-    unload: function () {
-      // before a new route is run
-    }
-  });
-  
-    this.route('set', {
-    path: '/set/:_id',
-    load: function () {
-      // called on first load
-    },
-    // before hooks are run before your action
-    before: [
-      function () {
-			Session.set('filter_id', this.params._id);
-      },
-      function () {
-        // we're done waiting on all subs
-        if (this.ready()) {
-        } else {
-          this.stop(); // stop downstream funcs from running
-        }
-      }
-    ],
-    action: function () {
-    },
-    unload: function () {
-      // before a new route is run
-    }
-  });
-  
-	this.route('search', {
-    path: '/:searchterm',
-    load: function () {
-      // called on first load
-    },
-    // before hooks are run before your action
-    before: [
-      function () {
-		if (this.params.searchterm) {
-			var searchterm = this.params.searchterm;
-			var prev_filter_date = Session.get("filter_date");
-			var prev_filter_skip = Session.get("filter_skip");
-			Session.set("links_completed", false);
-			Session.set("prev_filter_skip", prev_filter_skip);
-			Session.set("prev_filter_date", prev_filter_date);
-			Session.set("hide_mixes",false);
-			Session.set("filter_show_already_downloaded", true);
-			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
-			Session.set("filter_term", ".*" + searchterm.trim().replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace(/\_/g," ") + ".*");
-			
-			//if (searchterm.indexOf(" ") != -1 || searchterm.indexOf("%20") != -1)
-			//	this.route(Router.routes['search'].path({searchterm: searchterm.replace(/\s|\(/g,"_").replace(/\W/g,"")}));
-		}	
-      },
-      function () {
-        // we're done waiting on all subs
-        if (this.ready()) {
-        } else {
-          this.stop(); // stop downstream funcs from running
-        }
-      }
-    ],
-    action: function () {
-    },
-    unload: function () {
-      // before a new route is run
-    }
-  });
-});
+//
+//Router.configure({
+//  waitOn: function () {
+//    return [Meteor.subscribe('userData'), Meteor.subscribe('allUserData'), Meteor.subscribe('sites'), Meteor.subscribe('links')];
+//  }
+//});
+//
+//Router.map(function () {
+//  /**
+//   * The route's name is "home"
+//   * The route's template is also "home"
+//   * The default action will render the home template
+//   */
+//  this.route('home', {
+//    path: '/'
+//  });
+//
+//  this.route('links', {
+//    path: '/links'
+//  });
+//
+//  this.route('link', {
+//    path: '/link/:_id',
+//    load: function () {
+//      // called on first load
+//    },
+//    // before hooks are run before your action
+//    before: [
+//      function () {
+//			Session.set('filter_id', this.params._id);
+//      },
+//      function () {
+//        // we're done waiting on all subs
+//        if (this.ready()) {
+//        } else {
+//          this.stop(); // stop downstream funcs from running
+//        }
+//      }
+//    ],
+//    action: function () {
+//    },
+//    unload: function () {
+//      // before a new route is run
+//    }
+//  });
+//  
+//    this.route('set', {
+//    path: '/set/:_id',
+//    load: function () {
+//      // called on first load
+//    },
+//    // before hooks are run before your action
+//    before: [
+//      function () {
+//			Session.set('filter_id', this.params._id);
+//      },
+//      function () {
+//        // we're done waiting on all subs
+//        if (this.ready()) {
+//        } else {
+//          this.stop(); // stop downstream funcs from running
+//        }
+//      }
+//    ],
+//    action: function () {
+//    },
+//    unload: function () {
+//      // before a new route is run
+//    }
+//  });
+//  
+//	this.route('search', {
+//    path: '/:searchterm',
+//    load: function () {
+//      // called on first load
+//    },
+//    // before hooks are run before your action
+//    before: [
+//      function () {
+//		if (this.params.searchterm) {
+//			var searchterm = this.params.searchterm;
+//			var prev_filter_date = Session.get("filter_date");
+//			var prev_filter_skip = Session.get("filter_skip");
+//			Session.set("links_completed", false);
+//			Session.set("prev_filter_skip", prev_filter_skip);
+//			Session.set("prev_filter_date", prev_filter_date);
+//			Session.set("hide_mixes",false);
+//			Session.set("filter_show_already_downloaded", true);
+//			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
+//			Session.set("filter_term", ".*" + searchterm.trim().replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace(/\_/g," ") + ".*");
+//			
+//			//if (searchterm.indexOf(" ") != -1 || searchterm.indexOf("%20") != -1)
+//			//	this.route(Router.routes['search'].path({searchterm: searchterm.replace(/\s|\(/g,"_").replace(/\W/g,"")}));
+//		}	
+//      },
+//      function () {
+//        // we're done waiting on all subs
+//        if (this.ready()) {
+//        } else {
+//          this.stop(); // stop downstream funcs from running
+//        }
+//      }
+//    ],
+//    action: function () {
+//    },
+//    unload: function () {
+//      // before a new route is run
+//    }
+//  });
+//});
 
 //local Collection for external search results
 SearchResults = new Meteor.Collection(null);

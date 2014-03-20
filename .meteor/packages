@@ -8,7 +8,6 @@ accounts-facebook
 bootstrap
 ejson
 email
-appcache
 standard-app-packages
 http
 appcache
@@ -16,4 +15,3 @@ service-configuration
 x-editable-bootstrap
 moment
 soundcloud
-iron-router
