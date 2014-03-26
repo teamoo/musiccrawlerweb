@@ -236,7 +236,6 @@ Meteor.startup(function () {
 		}
 	}); 
 	
-	Meteor.setTimeout(function () {
 		// if user profile is already available, set session varibles for filtering links just for specific sites
 		// and showing already downloaded items. They are not reactive because we need to change them when searching
 		if (Meteor.user() && Meteor.user().profile) {
@@ -267,7 +266,7 @@ Meteor.startup(function () {
 		Meteor.call('updateFacebookTokensForUser');
 		// Update the number of links and sites the user contributed to the app and save it in his profile
 		Meteor.call('updateLinkContributionCount');
-	}, 2500);
+
 		
 	$.fn.editable.defaults.validate = function (value) {
 		if ($.trim(value) == '') {
