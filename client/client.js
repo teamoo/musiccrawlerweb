@@ -36,116 +36,116 @@ Session.setDefault("filter_sort", "date_published");
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
 });
-//
-//Router.configure({
-//  waitOn: function () {
-//    return [Meteor.subscribe('userData'), Meteor.subscribe('allUserData'), Meteor.subscribe('sites'), Meteor.subscribe('links')];
-//  }
-//});
-//
-//Router.map(function () {
-//  /**
-//   * The route's name is "home"
-//   * The route's template is also "home"
-//   * The default action will render the home template
-//   */
-//  this.route('home', {
-//    path: '/'
-//  });
-//
-//  this.route('links', {
-//    path: '/links'
-//  });
-//
-//  this.route('link', {
-//    path: '/link/:_id',
-//    load: function () {
-//      // called on first load
-//    },
-//    // before hooks are run before your action
-//    before: [
-//      function () {
-//			Session.set('filter_id', this.params._id);
-//      },
-//      function () {
-//        // we're done waiting on all subs
-//        if (this.ready()) {
-//        } else {
-//          this.stop(); // stop downstream funcs from running
-//        }
-//      }
-//    ],
-//    action: function () {
-//    },
-//    unload: function () {
-//      // before a new route is run
-//    }
-//  });
-//  
-//    this.route('set', {
-//    path: '/set/:_id',
-//    load: function () {
-//      // called on first load
-//    },
-//    // before hooks are run before your action
-//    before: [
-//      function () {
-//			Session.set('filter_id', this.params._id);
-//      },
-//      function () {
-//        // we're done waiting on all subs
-//        if (this.ready()) {
-//        } else {
-//          this.stop(); // stop downstream funcs from running
-//        }
-//      }
-//    ],
-//    action: function () {
-//    },
-//    unload: function () {
-//      // before a new route is run
-//    }
-//  });
-//  
-//	this.route('search', {
-//    path: '/:searchterm',
-//    load: function () {
-//      // called on first load
-//    },
-//    // before hooks are run before your action
-//    before: [
-//      function () {
-//		if (this.params.searchterm) {
-//			var searchterm = this.params.searchterm;
-//			var prev_filter_date = Session.get("filter_date");
-//			var prev_filter_skip = Session.get("filter_skip");
-//			Session.set("links_completed", false);
-//			Session.set("prev_filter_skip", prev_filter_skip);
-//			Session.set("prev_filter_date", prev_filter_date);
-//			Session.set("hide_mixes",false);
-//			Session.set("filter_show_already_downloaded", true);
-//			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
-//			Session.set("filter_term", ".*" + searchterm.trim().replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace(/\_/g," ") + ".*");
-//			
-//			//if (searchterm.indexOf(" ") != -1 || searchterm.indexOf("%20") != -1)
-//			//	this.route(Router.routes['search'].path({searchterm: searchterm.replace(/\s|\(/g,"_").replace(/\W/g,"")}));
-//		}	
-//      },
-//      function () {
-//        // we're done waiting on all subs
-//        if (this.ready()) {
-//        } else {
-//          this.stop(); // stop downstream funcs from running
-//        }
-//      }
-//    ],
-//    action: function () {
-//    },
-//    unload: function () {
-//      // before a new route is run
-//    }
-//  });
-//});
+
+// Router.configure({
+ // waitOn: function () {
+   // return [Meteor.subscribe('userData'), Meteor.subscribe('allUserData'), Meteor.subscribe('sites'), Meteor.subscribe('links')];
+ // }
+// });
+
+// Router.map(function () {
+ // /**
+  // * The route's name is "home"
+  // * The route's template is also "home"
+  // * The default action will render the home template
+  // */
+ // this.route('home', {
+   // path: '/'
+ // });
+
+ // this.route('links', {
+   // path: '/links'
+ // });
+
+ // this.route('link', {
+   // path: '/link/:_id',
+   // load: function () {
+     // // called on first load
+   // },
+   // // before hooks are run before your action
+   // before: [
+     // function () {
+			// Session.set('filter_id', this.params._id);
+     // },
+     // function () {
+       // // we're done waiting on all subs
+       // if (this.ready()) {
+       // } else {
+         // this.stop(); // stop downstream funcs from running
+       // }
+     // }
+   // ],
+   // action: function () {
+   // },
+   // unload: function () {
+     // // before a new route is run
+   // }
+ // });
+ 
+   // this.route('set', {
+   // path: '/set/:_id',
+   // load: function () {
+     // // called on first load
+   // },
+   // // before hooks are run before your action
+   // before: [
+     // function () {
+			// Session.set('filter_id', this.params._id);
+     // },
+     // function () {
+       // // we're done waiting on all subs
+       // if (this.ready()) {
+       // } else {
+         // this.stop(); // stop downstream funcs from running
+       // }
+     // }
+   // ],
+   // action: function () {
+   // },
+   // unload: function () {
+     // // before a new route is run
+   // }
+ // });
+ 
+	// this.route('search', {
+   // path: '/:searchterm',
+   // load: function () {
+     // // called on first load
+   // },
+   // // before hooks are run before your action
+   // before: [
+     // function () {
+		// if (this.params.searchterm) {
+			// var searchterm = this.params.searchterm;
+			// var prev_filter_date = Session.get("filter_date");
+			// var prev_filter_skip = Session.get("filter_skip");
+			// Session.set("links_completed", false);
+			// Session.set("prev_filter_skip", prev_filter_skip);
+			// Session.set("prev_filter_date", prev_filter_date);
+			// Session.set("hide_mixes",false);
+			// Session.set("filter_show_already_downloaded", true);
+			// Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
+			// Session.set("filter_term", ".*" + searchterm.trim().replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace(/\_/g," ") + ".*");
+			
+			// //if (searchterm.indexOf(" ") != -1 || searchterm.indexOf("%20") != -1)
+			// //	this.route(Router.routes['search'].path({searchterm: searchterm.replace(/\s|\(/g,"_").replace(/\W/g,"")}));
+		// }	
+     // },
+     // function () {
+       // // we're done waiting on all subs
+       // if (this.ready()) {
+       // } else {
+         // this.stop(); // stop downstream funcs from running
+       // }
+     // }
+   // ],
+   // action: function () {
+   // },
+   // unload: function () {
+     // // before a new route is run
+   // }
+ // });
+// });
 
 //local Collection for external search results
 SearchResults = new Meteor.Collection(null);
@@ -492,7 +492,7 @@ Template.link.isPlayable = function () {
 				return true;
 			case "zippyshare.com", "myfreemp3.eu":
 				return true;
-			case "muzon.ws","beatport.com":
+			case "beatport.com", "mp3monkey":
 				if (this.stream_url) return true;
 				return false;
 			case "ex.fm":
@@ -527,8 +527,7 @@ Template.searchresult.isPlayable = function () {
 				return true;
 			case "youtube.com":
 				return true;
-			case "muzon.ws":
-			case "zippyshare.com","beatport.com":
+			case "zippyshare.com","beatport.com", "mp3monkey":
 				if (this.stream_url) return true;
 				return false;
 			case "ex.fm", "myfreemp3.eu":
@@ -557,13 +556,13 @@ Template.searchresult.isDownloadable = function () {
 Template.searchresult.getExternalSourceIcon = function () {
 	if (this.hoster == "zippyshare.com") return "<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='/online/zippyshare.png'></a>";
 	if (this.hoster == "soundcloud.com") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='/online/soundcloud.png'></a>";
-	if (this.hoster == "muzon.ws") return "<a href='http://www.muzon.ws'><img alt='Muzon Attribution' src='/online/muzon.png'></a>";
 	if (this.hoster == "muzofon.com") return "<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='/online/muzofon.png'></a>";
 	if (this.hoster == "youtube.com") return "<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='/online/youtube.png'></a>";
 	if (this.hoster == "ex.fm") return "<a href='http://ex.fm'><img alt='ex.fm Attribution' src='/online/exfm.png'></a>";
 	if (this.hoster == "vk.com") return "<a href='http://vk.com'><img alt='vk.com Attribution' src='/online/vkontakte.png'></a>";
 	if (this.hoster == "beatport.com") return "<a href='http://beatport.com'><img alt='beatport.com Attribution' src='/online/beatport.png'></a>";
 	if (this.hoster == "myfreemp3.eu") return "<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='/online/myfreemp3.png'></a>";
+	if (this.hoster == "mp3monkey") return "<a href='http://mp3monkey.net'><img alt='mp3monkey.net Attribution' src='/online/mp3monkey.png'></a>";
 	return undefined;
 };
 // Funktion um alle Seiten ins Template zu geben (die subscription)
@@ -1242,41 +1241,42 @@ Template.navigation.events({
 									}
 								});
 							}
-							if (_.contains(Meteor.user().profile.searchproviders, "muzon")) {
-								Meteor.call('searchMuzon', encodeURIComponent(filter_term_external), function (error, result) {
+							if (_.contains(Meteor.user().profile.searchproviders, "mp3monkey")) {
+								Meteor.call('searchMP3Monkey', encodeURIComponent(filter_term_external), function (error, result) {
 									if (result) {
-										var doc = document.implementation.createHTMLDocument("muzon");
+										var doc = document.implementation.createHTMLDocument("mp3monkey");
 										doc.documentElement.innerHTML = result.content;
 										
-										var iterartists = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'artist\']', doc, null, XPathResult.ANY_TYPE, null );
-										var itertitles = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
-										var iterstreamurls = doc.evaluate( '//div[@class=\'items\']//div[@class=\'track clearfix\']/@data-src', doc, null, XPathResult.ANY_TYPE, null );
-										var iterurls = doc.evaluate( '//div[@class=\'items\']//div[@class=\'actions pull-right\']/a/@href', doc, null, XPathResult.ANY_TYPE, null );
-										var iterdurations = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'duration\']', doc, null, XPathResult.ANY_TYPE, null );
+										var iterartists = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/b', doc, null, XPathResult.ANY_TYPE, null );
+										var itertitles = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td[4]/div/text()', doc, null, XPathResult.ANY_TYPE, null );
+										//var iterstreamurls = doc.evaluate( '//div[@class=\'items\']//div[@class=\'track clearfix\']/@data-src', doc, null, XPathResult.ANY_TYPE, null );
+										var iterurls = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/noindex/a/@href', doc, null, XPathResult.ANY_TYPE, null );
+										var iterdurations = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/div/div[@class=\'track_time\']', doc, null, XPathResult.ANY_TYPE, null );
 										
 										try {
 										  var artistnode = iterartists.iterateNext();
 										  var titlenode = itertitles.iterateNext();
-										  var stream_urlnode = iterstreamurls.iterateNext();
+										  //var stream_urlnode = iterstreamurls.iterateNext();
 										  var urlnode = iterurls.iterateNext();
 										  var durationnode = iterdurations.iterateNext();
 										  
 										  var counter = 0;
 										  
-										  while (artistnode && titlenode && stream_urlnode && urlnode && durationnode && counter < 10) {										
+										  while (artistnode && titlenode &&  urlnode && durationnode && counter < 10) {		
+											//stream_urlnode &&
 											url = urlnode.textContent.replace("http//","http://");
-											stream_url = stream_urlnode.textContent;
+											//stream_url = stream_urlnode.textContent;
 											duration = durationnode.textContent;
 											name = artistnode.textContent + " - " + titlenode.textContent;
 											
 											if (!SearchResults.findOne({
 												url: url
 											})) SearchResults.insert({
-												hoster: "muzon.ws",
+												hoster: "mp3monkey.net",
 												status: "on",
 												name: name,
 												url: url,
-												stream_url : url,
+												//stream_url : url,
 												duration: moment(duration,"mm:ss")
 											});
 											
@@ -1284,7 +1284,7 @@ Template.navigation.events({
 											
 											artistnode = iterartists.iterateNext();
 											titlenode = itertitles.iterateNext();
-											stream_urlnode = iterstreamurls.iterateNext();
+											//stream_urlnode = iterstreamurls.iterateNext();
 											urlnode = iterurls.iterateNext();
 											durationnode = iterdurations.iterateNext();
 										  }	
@@ -1412,13 +1412,15 @@ Template.navigation.events({
 									}
 								});
 							}
-
+							
 							if (_.contains(Meteor.user().profile.searchproviders, "myfreemp3.eu")) {
 
-								Meteor.call('searchMyFreeMP3', encodeURIComponent(filter_term_external), function (error, result) {
+								Meteor.call('searchMyfreeMP3', encodeURIComponent(filter_term_external), function (error, result) {
 									if (result) {
-										var doc = document.implementation.createHTMLDocument("myfreemp3");
+										var doc = document.implementation.createHTMLDocument("myfreemp3.eu");
 										doc.documentElement.innerHTML = result.content;
+										
+										console.log(result.content);
 										
 										//var iterartists = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'artist\']', doc, null, XPathResult.ANY_TYPE, null );
 										//var itertitles = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
@@ -1431,8 +1433,6 @@ Template.navigation.events({
 										  var idnode = iterids.iterateNext();
 										  var durationnode = iterdurations.iterateNext();
 										  
-										  
-										   
 										  
 										  var counter = 0;
 										  
@@ -1467,6 +1467,8 @@ Template.navigation.events({
 									}	
 								});
 							}		
+							
+									
 							if (_.contains(Meteor.user().profile.searchproviders, "vk.com")) {
 								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
 									return String(memo + "+" + token);
@@ -1874,7 +1876,7 @@ Template.link.events({
 					}
 					event.target.className = "icon-remove";
 					break;
-				case "muzon.ws","beatport.com":
+				case "beatport.com":
 					event.target.className = "icon-loader";
 					if (window.SCM && this.stream_url) {
 						SCM.play({
@@ -2127,7 +2129,6 @@ Template.searchresult.events({
 						event.target.className = "icon-list";
 					} else event.target.className = "icon-remove";
 					break;
-				case "muzon.ws":
 				case "zippyshare.com":
 				case "beatport.com":
 					event.target.className = "icon-loader";
@@ -2616,24 +2617,24 @@ Template.accountSettingsDialog.events({
 		var ashowdownloadedlinks = template.find("#showdownloadedlinks").checked;
 		var ahidemixes = template.find("#hidemixes").checked;
 		var searchzippysharemusic = template.find("#searchzippysharemusic").checked;
-		var searchmuzon = template.find("#searchmuzon").checked;
-		//var searchmuzofon = template.find("#searchmuzofon").checked;
+		var searchmuzofon = template.find("#searchmuzofon").checked;
 		var searchsoundcloud = template.find("#searchsoundcloud").checked;
 		var searchyoutube = template.find("#searchyoutube").checked;
 		var searchexfm = template.find("#searchexfm").checked;
 		var searchvk = template.find("#searchvk").checked;
 		var searchbeatport = template.find("#searchbeatport").checked;
 		var searchmyfreemp3 = template.find("#searchmyfreemp3").checked;
+		var searchmpmonkey = template.find("#searchmp3monkey").checked;
 		var searchproviders = [];
 		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
-		if (searchmuzon) searchproviders.push("muzon");
-		//if (searchmuzofon) searchproviders.push("muzofon");
+		if (searchmuzofon) searchproviders.push("muzofon");
 		if (searchsoundcloud) searchproviders.push("soundcloud");
 		if (searchyoutube) searchproviders.push("youtube");
 		if (searchexfm) searchproviders.push("ex.fm");
 		if (searchvk && VK.Auth.getSession()) searchproviders.push("vk.com");
 		if (searchbeatport) searchproviders.push("beatport");
 		if (searchmyfreemp3) searchproviders.push("myfreemp3.eu");
+		if (searchmp3monkey) searchproviders.push("mp3monkey");
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
 		Session.set("filter_mixes", ahidemixes);
 		

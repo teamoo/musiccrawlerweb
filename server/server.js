@@ -17,6 +17,10 @@ Meteor.startup(function () {
 	Links._ensureIndex({
 		downloaders: 1
 	});
+	Links._ensureIndex({
+		"date_discovered": 1 }, {
+			expireAfterSeconds: 31556926
+	});
 	Sites._ensureIndex({
 		last_crawled: 1
 	});
@@ -49,6 +53,7 @@ Meteor.startup(function () {
 //		unique: 1, sparse: 1, dropDups: 1
 //	});
 });
+
 Accounts.onCreateUser(function (options, user) {
 	if (options.profile) user.profile = options.profile;
 	
@@ -62,7 +67,7 @@ Accounts.onCreateUser(function (options, user) {
 	user.profile.showunknownlinks = false;
 	user.profile.hidemixes = false;
 	user.profile.filteredsites = [];
-	user.profile.searchproviders = ["zippysharemusic", "muzon", "soundcloud"];
+	user.profile.searchproviders = ["zippysharemusic", "soundcloud"];
 	user.profile.ip = "";
 	user.profile.port = 10025;
 	user.profile.volume = 100;

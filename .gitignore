@@ -185,3 +185,4 @@ smart.lock
 .idea/vcs.xml
 
 .idea/workspace.xml
+*.exe

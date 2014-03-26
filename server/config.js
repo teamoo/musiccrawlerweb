@@ -4,17 +4,14 @@ Accounts.config({
 	forbidClientAccountCreation: false
 });
 Meteor.AppCache.config({
-	 onlineOnly: [
-	    '/online/'
-	  ],
-	chrome: true,
-	chromium : true,
-	firefox: true,
-	ie: true,
-	android: true,
-	mobileSafari: true,
-	safari: true,
-	chromeMobileIOS : true
+	chrome: false,
+	chromium : false,
+	firefox: false,
+	ie: false,
+	android: false,
+	mobileSafari: false,
+	safari: false,
+	chromeMobileIOS : false
 });
 // Facebook-Konfiguration entfernen
 ServiceConfiguration.configurations.remove({
