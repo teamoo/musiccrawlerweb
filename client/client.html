@@ -4,6 +4,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
 	<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':1,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="icon" href="/favicon.ico" type="image/x-icon" />
 </head>
 
 <body>
@@ -41,7 +43,7 @@
 				
 	<div class="container-fluid">
 		<div class="row-fluid">
-			<div class="span12">
+			<div class="span12" style="margin-top:-10px;">
 				{{> navigation}}
 				{{#if session "links_completed"}}
 					{{#if notConnected}}
@@ -50,13 +52,13 @@
 				{{/if}}
 			</div>
 		</div>
+		{{#if session "progress"}}
 		<div class="row-fluid">
 			<div class="span12">
-				{{#if session "progress"}}
 					{{> progressBar}}
-				{{/if}}
 			</div>
 		</div>
+		{{/if}}
 		<div class="row-fluid">
 			<div class="span12">
 				{{#if currentUser}}
@@ -467,119 +469,67 @@
 		<input class="input-mini" id="port" type="number" min="0" max="65536" value={{currentUser.profile.port}}>
 		<label class="checkbox">
 		<br/>
-		{{#if currentUser.profile.autoupdateip}}
-			<input id="autoupdate" type="checkbox" checked="checked">
-		{{else}}
-			<input id="autoupdate" type="checkbox">
-		{{/if}}
+			<input id="autoupdate" type="checkbox" checked={{currentUser.profile.autoupdateip}}>
 		IP-Adresse automatisch updaten?
 		</label>
 		<label class="checkbox">
-		{{#if session "filter_show_already_downloaded"}}
-			<input id="showdownloadedlinks" type="checkbox" checked="checked">
-		{{else}}
-			<input id="showdownloadedlinks" type="checkbox">
-		{{/if}}
+			<input id="showdownloadedlinks" type="checkbox" checked={{session "filter_show_already_downloaded"}}>
 		bereits heruntergeladene/kopierte Links anzeigen?
 		</label>
 		<label class="checkbox">
-		{{#if currentUser.profile.showtooltips}}
-			<input id="showtooltips" type="checkbox" checked="checked">
-		{{else}}
-			<input id="showtooltips" type="checkbox">
-		{{/if}}
+			<input id="showtooltips" type="checkbox" checked={{currentUser.profile.showtooltips}}>
 		Tooltips anzeigen?
 		</label>
 		<label class="checkbox">
-		{{#if currentUser.profile.hidemixes}}
-			<input id="hidemixes" type="checkbox" checked="checked">
-		{{else}}
-			<input id="hidemixes" type="checkbox">
-		{{/if}}
+			<input id="hidemixes" type="checkbox" checked={{currentUser.profile.hidemixes}}>
 		Compilations/Mixes ausblenden?
 		</label>
 		<br/>
 		<label><strong>externe Suchanbieter</strong></label>
 		
 		<label class="checkbox">
-		{{#if searchProviderEnabled "zippysharemusic"}}
-			<input id="searchzippysharemusic" type="checkbox" checked="checked">
-		{{else}}
-			<input id="searchzippysharemusic" type="checkbox">
-		{{/if}}
-		<a href="http://www.zippysharemusic.com"><img alt="zippysharemusic" src="/online/zippysharemusic.png"></a>
+			<input id="searchzippysharemusic" type="checkbox" checked={{searchProviderEnabled "zippysharemusic"}}>
+		<a href="http://www.zippysharemusic.com"><img alt="zippysharemusic" src="/zippysharemusic.png"></a>
 		</label>
 		
 		<label class="checkbox">
-		{{#if searchProviderEnabled "muzofon"}}
-			<input id="searchmuzofon" type="checkbox" checked="checked">
-		{{else}}
-			<input id="searchmuzofon" type="checkbox">
-		{{/if}}
-		<a href="http://www.muzofon.com"><img alt='muzofon' src='/online/muzofon.png'></a>
+			<input id="searchmuzofon" type="checkbox" checked={{searchProviderEnabled "muzofon"}}>
+		<a href="http://www.muzofon.com"><img alt='muzofon' src='/muzofon.png'></a>
 		</label>
 		
 		<label class="checkbox">
-		{{#if searchProviderEnabled "soundcloud"}}
-			<input id="searchsoundcloud" type="checkbox" checked="checked">
-		{{else}}
-			<input id="searchsoundcloud" type="checkbox">
-		{{/if}}
-		<a href="http://www.soundcloud.com"><img alt='soundcloud' src='/online/soundcloud.png'></a>
+			<input id="searchsoundcloud" type="checkbox" checked={{searchProviderEnabled "soundcloud"}}>
+		<a href="http://www.soundcloud.com"><img alt='soundcloud' src='/soundcloud.png'></a>
 		</label>
 		
 		<label class="checkbox">
-		{{#if searchProviderEnabled "youtube"}}
-			<input id="searchyoutube" type="checkbox" checked="checked">
-		{{else}}
-			<input id="searchyoutube" type="checkbox">
-		{{/if}}
-		<a href="http://www.youtube.com"><img alt='youtube' src='/online/youtube.png'></a>
+			<input id="searchyoutube" type="checkbox" checked={{searchProviderEnabled "youtube"}}>
+		<a href="http://www.youtube.com"><img alt='youtube' src='/youtube.png'></a>
 		</label>
 		
 		<label class="checkbox">
-		{{#if searchProviderEnabled "ex.fm"}}
-			<input id="searchexfm" type="checkbox" checked="checked">
-		{{else}}
-			<input id="searchexfm" type="checkbox">
-		{{/if}}
-		<a href="http://www.ex.fm"><img alt='ex.fm' src='/online/exfm.png'></a>
+			<input id="searchexfm" type="checkbox" checked={{searchProviderEnabled "ex.fm"}}>
+		<a href="http://www.ex.fm"><img alt='ex.fm' src='/exfm.png'></a>
 		</label>
 		
 		<label class="checkbox">
-		{{#if searchProviderEnabled "vk.com"}}
-			<input id="searchvk" type="checkbox" checked="checked">
-		{{else}}
-			<input id="searchvk" type="checkbox">
-		{{/if}}
-		<a href="http://www.vk.com"><img alt='vk.com' src='/online/vkontakte.png'></a> <small>(Anmeldung erforderlich)</small>
+			<input id="searchvk" type="checkbox" checked={{searchProviderEnabled "vk.com"}}>
+		<a href="http://www.vk.com"><img alt='vk.com' src='/vkontakte.png'></a> <small>(Anmeldung erforderlich)</small>
 		</label>
 		
 		<label class="checkbox">
-		{{#if searchProviderEnabled "myfreemp3.eu"}}
-			<input id="searchmyfreemp3" type="checkbox" checked="checked">
-		{{else}}
-			<input id="searchmyfreemp3" type="checkbox">
-		{{/if}}
-		<a href="http://www.myfreemp3.eu"><img alt='myfreemp3.eu' src='/online/myfreemp3.png'></a>
+			<input id="searchmyfreemp3" type="checkbox" checked={{searchProviderEnabled "myfreemp3.eu"}}>
+		<a href="http://www.myfreemp3.eu"><img alt='myfreemp3.eu' src='/myfreemp3.png'></a>
 		</label>
 		
 		<label class="checkbox">
-		{{#if searchProviderEnabled "mp3monkey"}}
-			<input id="searchmp3monkey" type="checkbox" checked="checked">
-		{{else}}
-			<input id="searchmp3monkey" type="checkbox">
-		{{/if}}
-		<a href="http://www.mp3monkey.net"><img alt='mp3monkey.net' src='/online/mp3monkey.png'></a>
+			<input id="searchmp3monkey" type="checkbox" checked={{searchProviderEnabled "mp3monkey"}}>
+		<a href="http://www.mp3monkey.net"><img alt='mp3monkey.net' src='/mp3monkey.png'></a>
 		</label>
 			
 		<label class="checkbox">
-		{{#if searchProviderEnabled "beatport"}}
-			<input id="searchbeatport" type="checkbox" checked="checked">
-		{{else}}
-			<input id="searchbeatport" type="checkbox">
-		{{/if}}
-		<a href="http://www.beatport.com"><img alt='beatport.com' src='/online/beatport.png'></a>
+			<input id="searchbeatport" type="checkbox" checked={{searchProviderEnabled "beatport"}}>
+		<a href="http://www.beatport.com"><img alt='beatport.com' src='/beatport.png'></a> <small>(Anmeldung erforderlich)</small>
 		</label>
 	</form>
   </div>
@@ -681,7 +631,7 @@
 					<td>{{url}}</td>
 					<td>{{discovered_links}}</td>
 					<td>{{dateFormatPretty last_crawled}}</td>
-					<td><i class="{{getFeedTypeIcon}}"></i></td>
+					<td>{{> getFeedTypeIcon}}</td>
 					<td class="site_active">
 					{{#if active}}
 						<i class="icon-ok-sign"></i>
@@ -741,7 +691,7 @@
 		<thead>
 			<th>
 				{{#if noSitefiltered}}
-					<input type="checkbox" id="filter_all" checked="checked">
+					<input type="checkbox" id="filter_all" checked={{noSitefiltered}}>
 				{{else}}
 					<input type="checkbox" id="filter_all">
 				{{/if}}
@@ -823,39 +773,39 @@
 </template>
 
 <template name ="zippyshare.comicon">
-	<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='/online/zippyshare.png'></a>
+	<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='/zippyshare.png'></a>
 </template>
 
 <template name ="soundcloud.comicon">
-	<a href='"http://soundcloud.com"'><img alt='Player Attribution' class='playerattribution' src='/online/soundcloud.png'></a>
+	<a href='"http://soundcloud.com"'><img alt='Player Attribution' class='playerattribution' src='/soundcloud.png'></a>
 </template>
 
 <template name ="muzofon.comicon">
-<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='/online/muzofon.png'></a>
+<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='/muzofon.png'></a>
 </template>
 
 <template name ="youtube.comicon">
-<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='/online/youtube.png'></a>
+<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='/youtube.png'></a>
 </template>
 
 <template name ="ex.fmicon">
-<a href='http://ex.fm'><img alt='ex.fm Attribution' src='/online/exfm.png'></a>
+<a href='http://ex.fm'><img alt='ex.fm Attribution' src='/exfm.png'></a>
 </template>
 
 <template name ="vk.comicon">
-<a href='http://vk.com'><img alt='vk.com Attribution' src='/online/vkontakte.png'></a>
+<a href='http://vk.com'><img alt='vk.com Attribution' src='/vkontakte.png'></a>
 </template>
 
 <template name ="beatport.comicon">
-<a href='http://beatport.com'><img alt='beatport.com Attribution' src='/online/beatport.png'></a>
+<a href='http://beatport.com'><img alt='beatport.com Attribution' src='/beatport.png'></a>
 </template>
 
 <template name ="myfreemp3.euicon">
-<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='/online/myfreemp3.png'></a>
+<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='/myfreemp3.png'></a>
 </template>
 
 <template name ="mp3monkey.neticon">
-<a href='http://mp3monkey.net'><img alt='mp3monkey.net Attribution' src='/online/mp3monkey.png'></a>
+<a href='http://mp3monkey.net'><img alt='mp3monkey.net Attribution' src='/mp3monkey.png'></a>
 </template>
 
 <template name ="onicon">
@@ -868,6 +818,26 @@
 
 <template name ="unknownicon">
 <i class="icon-question-sign"></i>
+</template>
+
+<template name ="feedsiteicon">
+<i class="icon-rss"></i>
+</template>
+
+<template name ="facebook-groupsiteicon">
+<i class="icon-facebook"></i>
+</template>
+
+<template name ="vkontaktesiteicon">
+<i class="icon-vk"></i>
+</template>
+
+<template name ="unknownsiteicon">
+<i class="icon-globe"></i>
+</template>
+
+<template name ="specialsiteicon">
+<i class="icon-globe"></i>
 </template>
 
 

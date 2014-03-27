@@ -4,6 +4,7 @@ Accounts.config({
 	forbidClientAccountCreation: false
 });
 Meteor.AppCache.config({
+	onlineOnly: ['/packages/'],
 	chrome: false,
 	chromium : false,
 	firefox: false,

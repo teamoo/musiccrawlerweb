@@ -36,6 +36,7 @@ Session.setDefault("filter_sort", "date_published");
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
 });
+Session.setDefault("init",false);
 
 // Router.configure({
  // waitOn: function () {
@@ -151,6 +152,347 @@ Session.setDefault("filter_sort", "date_published");
 SearchResults = new Meteor.Collection(null);
 //Subscriptions
 Deps.autorun(function () {
+	if (DDP._allSubscriptionsReady() && !Session.equals("filter_term",".*"))  {
+		var timer_start_search = Meteor.setInterval(function(){
+		
+				if (Session.equals('links_completed',true) && Links.find().count() <= 50 && Meteor.user() && Meteor.user().profile.searchproviders.length){
+					Meteor.clearInterval(timer_start_search);
+
+					var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");
+					if (filter_term_external != "" && Links.find().count() < 3) {
+
+						Session.set("filter_term_external", filter_term_external);
+						
+						if (_.contains(Meteor.user().profile.searchproviders, "zippysharemusic")) {
+							HTTP.get("https://www.googleapis.com/customsearch/v1?key=" + Meteor.settings.public.google.search_api_key + "&cx=partner-pub-9019877854699644%3At1iell5gp8b&alt=json&fields=items(pagemap)&q=" + encodeURIComponent(filter_term_external), function (error, result) {
+								if (result && result.data && result.data.items) {
+									var items = result.data.items;
+									var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i;
+									var pattern2 = /\d{3,8}(?=\/file\.html)/i;
+									if (items && items.length) {
+										for (var i = 0; i <= items.length; i++) {
+											if (items[i]) {
+												var theurl = items[i].pagemap.metatags[0]["og:url"].replace("\\");
+												var stream_url = undefined;
+												var match1 = pattern1.exec(theurl);
+												var match2 = pattern2.exec(theurl);
+												if (match1 && match2) stream_url = match1 + "/downloadMusic?key=" + match2;
+												if (!SearchResults.findOne({
+													url: theurl
+												})) SearchResults.insert({
+														hoster: "zippyshare.com",
+														status: "unknown",
+														name: unescape(items[i].pagemap.metatags[0]["og:title"].replace("null").replace("undefined").trim()),
+														url: items[i].pagemap.metatags[0]["og:url"].replace("\\").replace('"').replace('"'),
+														stream_url: stream_url.replace('"')
+													});
+											}
+										}
+										Session.set("loading_results", false);
+									}
+								}
+							});
+						}
+						if (_.contains(Meteor.user().profile.searchproviders, "mp3monkey")) {
+							Meteor.call('searchExternalService', encodeURIComponent(filter_term_external),"mp3monkey", function (error, result) {
+								if (result) {
+
+									var doc = document.implementation.createHTMLDocument("mp3monkey");
+									doc.documentElement.innerHTML = result.content;
+									
+									var iterartists = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/b', doc, null, XPathResult.ANY_TYPE, null );
+									var itertitles = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td[4]/div/text()', doc, null, XPathResult.ANY_TYPE, null );
+									//var iterstreamurls = doc.evaluate( '//div[@class=\'items\']//div[@class=\'track clearfix\']/@data-src', doc, null, XPathResult.ANY_TYPE, null );
+									var iterurls = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/noindex/a/@href', doc, null, XPathResult.ANY_TYPE, null );
+									var iterdurations = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/div/div[@class=\'track_time\']', doc, null, XPathResult.ANY_TYPE, null );
+									
+									try {
+									  var artistnode = iterartists.iterateNext();
+									  var titlenode = itertitles.iterateNext();
+									  //var stream_urlnode = iterstreamurls.iterateNext();
+									  var urlnode = iterurls.iterateNext();
+									  var durationnode = iterdurations.iterateNext();
+									  
+									  var counter = 0;
+									  
+									  while (artistnode && titlenode &&  urlnode && durationnode && counter < 10) {		
+										//stream_urlnode &&
+										url = urlnode.textContent.replace("http//","http://");
+										//stream_url = stream_urlnode.textContent;
+										duration = durationnode.textContent;
+										name = artistnode.textContent + " - " + titlenode.textContent;
+										
+										if (!SearchResults.findOne({
+											url: url
+										})) SearchResults.insert({
+											hoster: "mp3monkey.net",
+											status: "on",
+											name: name,
+											url: url,
+											//stream_url : url,
+											duration: moment(duration,"mm:ss")
+										});
+										
+										counter++;
+										
+										artistnode = iterartists.iterateNext();
+										titlenode = itertitles.iterateNext();
+										//stream_urlnode = iterstreamurls.iterateNext();
+										urlnode = iterurls.iterateNext();
+										durationnode = iterdurations.iterateNext();
+									  }	
+									}
+									catch (e) {
+									  console.log( 'Error: Document tree modified during iteration ' + e );
+									}
+									
+									Session.set("loading_results", false);
+								}	
+							});
+						}
+						if (_.contains(Meteor.user().profile.searchproviders, "muzofon")) {
+							Meteor.call('searchExternalService', encodeURIComponent(filter_term_external),"muzofon", function (error, result) {
+								
+								if (result && result.content)
+								{
+									var doc = document.implementation.createHTMLDocument("example");
+									doc.documentElement.innerHTML = result.content;
+									
+									var iternames = doc.evaluate( '//div[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
+									
+									var iterlinks = doc.evaluate( '//div[@class=\'controls\']/a[1]/@href', doc, null, XPathResult.ANY_TYPE, null );
+
+									try {
+									  var counter = 0;	
+										
+									  var thisNode1 = iternames.iterateNext();
+									  var thisNode2 = iterlinks.iterateNext();
+									  
+									  while (thisNode1 && thisNode2 && counter < 10) {										
+										durationmatch = thisNode1.textContent.replace(/\s+/g,' ').match(/\[.*\]/g)
+										if (durationmatch && durationmatch.length === 1)
+										{
+											duration = durationmatch[0].replace("[","").replace("]","")
+										}
+										
+										theurl = "http://muzofon.com" + thisNode2.textContent
+										
+										if (!SearchResults.findOne({
+											url: theurl
+										})) SearchResults.insert({
+											hoster: "muzofon.com",
+											status: "unknown",
+											name: thisNode1.textContent.replace(/\s+/g,' ').replace(/\[.*\]/g,"").trim(),
+											url: theurl,
+											duration: moment(duration,"mm:ss")
+										});
+										
+										
+										thisNode1 = iternames.iterateNext();
+										thisNode2 = iterlinks.iterateNext();
+										counter++;
+									  }	
+									}
+									catch (e) {
+									  dump( 'Error: Document tree modified during iteration ' + e );
+									}
+								}				
+							});
+						}
+						if (_.contains(Meteor.user().profile.searchproviders, "soundcloud")) {
+							SC.get('/tracks', {
+								filter: 'public',
+								limit: 10,
+								q: filter_term_external
+							}, function (tracks) {
+								if (tracks && tracks.length) {
+									for (var i = 0; i <= tracks.length; i++) {
+										if (tracks[i]) {
+											if (!SearchResults.findOne({
+												url: tracks[i].permalink_url
+											})) SearchResults.insert({
+													hoster: "soundcloud.com",
+													status: "on",
+													name: tracks[i].title,
+													url: tracks[i].permalink_url,
+													duration: moment(tracks[i].duration)
+												});
+										}
+									}
+									Session.set("loading_results", false);
+								}
+							});
+						}
+						if (_.contains(Meteor.user().profile.searchproviders, "youtube")) {
+							var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
+								return String(memo + "+" + token);
+							},"");
+							HTTP.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json", function (error, result) {
+								if (result && result.data && result.data.feed && result.data.feed.entry) {
+									var entry = result.data.feed.entry;
+									for (var i = 0; i <= entry.length; i++) {
+										if (entry[i]) {
+											if (!SearchResults.findOne({
+												url: entry[i].link[0].href
+											})) SearchResults.insert({
+													hoster: "youtube.com",
+													status: "on",
+													name: entry[i].title.$t,
+													url: entry[i].link[0].href,
+													duration: moment(entry[i].media$group.yt$duration.seconds * 1000)
+												});
+										}
+									}
+									Session.set("loading_results", false);
+								}
+							});
+						}		
+						if (_.contains(Meteor.user().profile.searchproviders, "ex.fm")) {
+							HTTP.get("http://ex.fm/api/v3/song/search/" + filter_term_external, function (error, result) {
+								if (result && result.data && result.data.status_code === 200) {
+									var songs = result.data.songs;
+									for (var i = 0; i <= songs.length; i++) {
+										if (songs[i]) {
+											if (!SearchResults.findOne({
+												url: "http://ex.fm/api/v3/song/" + songs[i].id
+											})) SearchResults.insert({
+													hoster: "ex.fm",
+													status: "on",
+													name: unescape((songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim())),
+													url: "http://ex.fm/api/v3/song/" + songs[i].id,
+													duration: moment(0)
+												});
+										}
+									}
+									Session.set("loading_results", false);
+								}
+							});
+						}
+						
+						if (_.contains(Meteor.user().profile.searchproviders, "myfreemp3.eu")) {
+
+							Meteor.call('searchExternalService', encodeURIComponent(filter_term_external),"myfreemp3", function (error, result) {
+								if (result) {
+									var doc = document.implementation.createHTMLDocument("myfreemp3.eu");
+									doc.documentElement.innerHTML = result.content;
+									
+									console.log(result.content);
+									
+									//var iterartists = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'artist\']', doc, null, XPathResult.ANY_TYPE, null );
+									//var itertitles = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
+									var iternames = doc.evaluate( '//a[@class=\'info\']/text()', doc, null, XPathResult.ANY_TYPE, null );
+									var iterids = doc.evaluate( '//a[@class=\'info\']/@data-aid', doc, null, XPathResult.ANY_TYPE, null );
+									var iterdurations = doc.evaluate( '//a[@class=\'info\']/@data-duration', doc, null, XPathResult.ANY_TYPE, null );
+									
+									try {
+									  var namenode = iternames.iterateNext();
+									  var idnode = iterids.iterateNext();
+									  var durationnode = iterdurations.iterateNext();
+									  
+									  
+									  var counter = 0;
+									  
+									  while (namenode && idnode && durationnode && counter < 10) {										
+										url = "http://89.248.172.6/dvv.php?q=" + idnode.textContent + "_/";
+										duration = durationnode.textContent;
+										name = namenode.textContent;
+										
+										if (!SearchResults.findOne({
+											url: url
+										})) SearchResults.insert({
+											hoster: "myfreemp3.eu",
+											status: "on",
+											name: name,
+											id: idnode.textContent,
+											url: url,
+											duration: moment(duration * 1000)
+										});
+										
+										counter++;
+										
+										namenode = iternames.iterateNext();
+										idnode = iterids.iterateNext();
+										durationnode = iterdurations.iterateNext();
+									  }	
+									}
+									catch (e) {
+									  console.log( 'Error: Document tree modified during iteration ' + e );
+									}
+									
+									Session.set("loading_results", false);
+								}	
+							});
+						}		
+						
+								
+						if (_.contains(Meteor.user().profile.searchproviders, "vk.com")) {
+							var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
+								return String(memo + "+" + token);
+							},"");
+							
+							VK.Api.call("audio.search",{q:filter_term_external,auto_complete:1,count:10}, function(result){								
+								if (result && result.response && !result.error) {
+									
+									var entry = result.response;
+									for (var i = 1; i <= entry.length; i++) {
+										if (entry[i]) {																					
+											if (!SearchResults.findOne({
+												url: decodeURI(entry[i].url)
+											})) SearchResults.insert({
+													hoster: "vk.com",
+													status: "on",
+													name: htmlDecode(entry[i].artist) + " " + htmlDecode(entry[i].title),
+													url: decodeURI(entry[i].url),
+													duration: moment(entry[i].duration * 1000),
+													aid : entry[i].aid,
+													oid: entry[i].owner_id
+												});
+										}
+									}
+									Session.set("loading_results", false);
+								}
+								else
+									console.log("Error getting results from vk.com: " + result.error["error_msg"]);
+							});
+						}
+						if (_.contains(Meteor.user().profile.searchproviders, "beatport")) {
+							HTTP.get("http://oauth-api.beatport.com/catalog/3/search/?query=" + filter_term_external + "&facets=fieldType:track&perPage=17&page=1&sortBy=publishDate+ASC", function(error,result) {
+								if (result && result.data && result.data.results) {
+									var songs = result.data.results;
+									for (var i = 0; i <= songs.length; i++) {
+										if (songs[i]) {
+											thename = _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title
+										
+											if (!SearchResults.findOne({
+												name: thename
+											})) SearchResults.insert({
+													hoster: "beatport.com",
+													status: "on",
+													name: _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title,
+													url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id,
+													stream_url: "http://geo-samples.beatport.com/lofi/" + songs[i].id + ".LOFI.mp3",
+													duration: moment.duration(songs[i]),
+													date_published: moment(songs[i].releaseDate).toDate()
+												});
+										}
+									}
+									Session.set("loading_results", false);
+								}
+							});
+						}
+				} else {
+					Session.set("loading_results", false);
+				}
+					
+					
+					
+					
+				}
+			}, 1000);
+	}
+	
+	
+
 	//Admin-Flag
 	Meteor.subscribe('userData');
 	//User-Names and Facebook-IDs for display purposes
@@ -169,7 +511,8 @@ Deps.autorun(function () {
 		// set a session key to true to indicate that the
 		// subscription is completed.
 		Session.set('links_completed', true);
-		Session.set("wait_for_items", false);
+		Session.set("wait_for_items", false);		
+		
 	});
 	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), Session.get("filter_sites"), Session.get("filter_mixes"), function onReady() {
 		//Session.set('counts_completed', true);
@@ -202,79 +545,188 @@ Deps.autorun(function () {
 			}
 		});
 	}
-	*/	
-});
-
-//
-// Startup function
-Meteor.startup(function () {
-	activateInput($('#searchfield'));
+	*/
+	if (Meteor.user() && Meteor.user().profile.showtooltips === false) {
+		$('#downloadbutton').tooltip("disable");
+		$('#filter_links').tooltip("disable");
+		$('#hide_selected_links').tooltip("disable");
+		$('#select_all').tooltip("disable");
+		$('.refreshlink').tooltip("disable");
+		$('#share_links').tooltip("disable");
+		$('.removelinkfromset').tooltip("disable");
+		$('.addlinktoset').tooltip("disable");
+		$('.like').tooltip("disable");
+		$('.icon-comment').tooltip("disable");
+		$('.icon-ok').tooltip("disable");
+		$('.icon-question-sign').tooltip("disable");
+		$('.icon-remove').tooltip("disable");
+		$('.delete_link').tooltip("disable");
+		$('.hide_link').tooltip("disable");
+		$('#sort_like').tooltip("disable");
+		$('#sort_date_published').tooltip("disable");
+		$('#refreship').tooltip("disable");
+		$('#port').tooltip("disable");
+		$('#autoupdate').tooltip("disable");
+		$('#showdownloadedlinks').tooltip("disable");
+		$('#jdon').tooltip("disable");
+		$('#jdoff').tooltip("disable");
+		$('.remove_site').tooltip("disable");
+		$('.icon-facebook').tooltip("disable");
+		$('.icon-rss').tooltip("disable");
+		$('.icon-time').tooltip("disable");
+		$('.icon-ban-circle').tooltip("disable");
+		$('.crawl_single_site').tooltip("disable");
+	}
 	
-	//initialize soundcloud API for external search with app key
-		SC.initialize({
-			client_id: Meteor.settings.public.soundcloud.client_id
+	
+	if (Meteor.user() && Meteor.user().profile.showtooltips === true) {
+		$('#downloadbutton').tooltip("enable");
+		$('#filter_links').tooltip("enable");
+		$('#hide_selected_links').tooltip("enable");
+		$('#select_all').tooltip("enable");
+		$('.refreshlink').tooltip("enable");
+		$('#share_links').tooltip("enable");
+		$('.removelinkfromset').tooltip("enable");
+		$('.addlinktoset').tooltip("enable");
+		$('.like').tooltip("enable");
+		$('.icon-comment').tooltip("enable");
+		$('.icon-ok').tooltip("enable");
+		$('.icon-question-sign').tooltip("enable");
+		$('.icon-remove').tooltip("enable");
+		$('.delete_link').tooltip("enable");
+		$('.hide_link').tooltip("enable");
+		$('#sort_like').tooltip("enable");
+		$('#sort_date_published').tooltip("enable");
+		$('#refreship').tooltip("enable");
+		$('#port').tooltip("enable");
+		$('#autoupdate').tooltip("enable");
+		$('#showdownloadedlinks').tooltip("enable");
+		$('#jdon').tooltip("enable");
+		$('#jdoff').tooltip("enable");
+		$('.remove_site').tooltip("enable");
+		$('.icon-facebook').tooltip("enable");
+		$('.icon-rss').tooltip("enable");
+		$('.icon-time').tooltip("enable");
+		$('.icon-ban-circle').tooltip("enable");
+		$('.crawl_single_site').tooltip("enable");
+	}
+	
+	if (Meteor.user() && Session.equals("init",false)) {
+		Session.set("init",true);
+		// if user profile is already available, set session varibles for filtering links just for specific sites
+		// and showing already downloaded items. They are not reactive because we need to change them when searching
+
+		Meteor.logoutOtherClients(function(error){
+			if (error) console.log("Fehler beim Abmelden anderer Sessions: " + error)
 		});
+		if (window.SCM && Meteor.user().profile.volume) {
+			SCM.volume(Meteor.user().profile.volume);
+		}
 		
-		VK.init({
-			apiId: Meteor.settings.public.vk.apiId
-		});
+		moment.lang(Meteor.user().profile.locale.substr(0,2));
 		
-		VK.Observer.subscribe("auth.statusChange", function f() 
-		{ 
-			if (!VK.Auth.getSession()) {
-				if (Meteor.user() && Meteor.user().profile && _.contains(Meteor.user().profile.searchproviders, "vk.com")) {
-					var newproviders = _.without(Meteor.user().profile.searchproviders,"vk.com");
-					
+		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
+		Session.set("filter_mixes", Meteor.user().profile.hidemixes);
+		if (Meteor.user().profile.hidemixes === true) Session.set("filter_mixes", true);
+		if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
+		else {
+			Session.set("filter_status", ["on"]);
+		}
+		if (Meteor.user().profile.filteredsites !== undefined) {
+			Session.set("filter_sites", Meteor.user().profile.filteredsites);
+			Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
+		}
+		
+		if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
+			VK.Auth.login(undefined,8)
+		
+		// update user IP and check if JD Remote is responding
+		var oldip = Meteor.user().profile.ip;
+	
+		if (Meteor.user().profile.autoupdateip === true) {
+			HTTP.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
+				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
+				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip)
 					Meteor.users.update({
 						_id: Meteor.userId()
 					}, {
 						$set: {
-							'profile.searchproviders': newproviders
+							'profile.ip': result.data.ip,
 						}
 					});
-				}
-			}
-		}); 
-	
-		// if user profile is already available, set session varibles for filtering links just for specific sites
-		// and showing already downloaded items. They are not reactive because we need to change them when searching
-		if (Meteor.user() && Meteor.user().profile) {
-			Meteor.logoutOtherClients();
-			if (window.SCM && Meteor.user().profile.volume) {
-				SCM.volume(Meteor.user().profile.volume);
-			}
-			
-			moment.lang(Meteor.user().profile.locale.substr(0,2));
-			
-			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
-			Session.set("filter_mixes", Meteor.user().profile.hidemixes);
-			if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
-			else {
-				Session.set("filter_status", ["on"]);
-			}
-			if (Meteor.user().profile.filteredsites !== undefined) {
-				Session.set("filter_sites", Meteor.user().profile.filteredsites);
-				Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
-			}
-			
-			if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
-				VK.Auth.login(undefined,8)
+			});
 		}
-		// update user IP and check if JD Remote is responding
-		refreshJDOnlineStatus();
+		// unabhängig von autoupdate schauen wir, ob die gewünschte IP
+		// online ist
+		Meteor.call("checkJDOnlineStatus", {
+			ip: Meteor.user().profile.ip,
+			port: Meteor.user().profile.port
+		}, function (error, isOnline) {
+			if (error) 
+			{
+				if (Meteor.user().profile.autoupdateip === true && (oldip != Meteor.user().profile.ip))
+					Meteor.call("checkJDOnlineStatus", {
+						ip: oldip,
+						port: Meteor.user().profile.port
+					}, function (error2, isOnline2) {
+						if (error2) console.log("Fehler beim Ermitteln des Online-Status");
+						Session.set("JDOnlineStatus", isOnline2);
+					});
+				else console.log("Fehler beim Ermitteln des Online-Status");
+			}
+			Session.set("JDOnlineStatus", isOnline);
+		});
 		
+		// Add user facebook token to groups of the user that should be crawled, so the crawl will work
+		Meteor.call('updateFacebookTokensForUser');
+		// Update the number of links and sites the user contributed to the app and save it in his profile
+		Meteor.call('updateLinkContributionCount');
+	}
+});
+
+//
+// Startup function
+Meteor.startup(function () {	
+	//initialize soundcloud API for external search with app key
+	SC.initialize({
+		client_id: Meteor.settings.public.soundcloud.client_id
+	});
+	
+	VK.init({
+		apiId: Meteor.settings.public.vk.apiId
+	});
+	
+	VK.Observer.subscribe("auth.statusChange", function f() 
+	{ 
+		if (!VK.Auth.getSession()) {
+			if (Meteor.user() && _.contains(Meteor.user().profile.searchproviders, "vk.com")) {
+				var newproviders = _.without(Meteor.user().profile.searchproviders,"vk.com");
+				
+				Meteor.users.update({
+					_id: Meteor.userId()
+				}, {
+					$set: {
+						'profile.searchproviders': newproviders
+					}
+				});
+			}
+		}
+	}); 
+	
 	$.fn.editable.defaults.validate = function (value) {
 		if ($.trim(value) == '') {
 			return 'Name darf nicht leer sein.';
 		}
 	};
-
+	
+	activateInput($('#searchfield'));
+	
 	didScroll = false;
 	
 	$(window).scroll(function () {
 		didScroll = true;
 	});
- 
+
 	Meteor.setInterval(function() {
 		if (didScroll) {
 			didScroll = false;
@@ -307,6 +759,7 @@ Meteor.startup(function () {
 // usage: {{dateFormatPretty creation_date}}
 UI.registerHelper('dateFormatPretty', function (context) {
 	if (window.moment) {
+		moment.lang('de');
 		if (context && moment(context).isValid()) return moment(context).fromNow();
 		return "noch nie";
 	}
@@ -314,13 +767,15 @@ UI.registerHelper('dateFormatPretty', function (context) {
 });
 UI.registerHelper('millisecondsFormatPretty', function (context) {
 	if (window.moment) {
+		moment.lang('de');
+		
 		if (context && moment(context).isValid()) return moment(context).format('mm:ss') + " min.";
 		return "unbekannt";
 	}
 	return context; // moment plugin not available. return data as is.;
 });
 UI.registerHelper('searchProviderEnabled', function (context) {
-	if (Meteor.user() && Meteor.user().profile) {
+	if (Meteor.user()) {
 		return _.contains(Meteor.user().profile.searchproviders, context);
 	}
 	return true;
@@ -352,7 +807,7 @@ Template.page.linksFoundLessThanThree = function () {
 };
 
 Template.page.isExternalSearch = function () {
-	if (Meteor.user() && Meteor.user().profile)
+	if (Meteor.user())
 		return (!(Session.equals("filter_term", ".*")) && Meteor.user().profile.searchproviders.length);
 	return false;
 };
@@ -558,17 +1013,8 @@ Template.filterSitesDialog.noSitefiltered = function () {
 	return true;
 };
 // Funktion, um den Feed-Typ per Icon zu symbolisieren
-Template.sitesDialog.getFeedTypeIcon = function (data) {
-	switch (this.type) {
-		case "feed":
-			return "icon-rss";
-		case "facebook-group":
-			return "icon-facebook";
-		case "vkontakte":
-			return "icon-vk";
-		default:
-			return "icon-globe";
-	}
+Template.sitesDialog.getFeedTypeIcon = function () {
+	return Template[this.type + "siteicon"]
 };
 // Funktion um zu überprüfen, ob eine Seite von einem User erstellt wurde
 Template.sitesDialog.isOwner = function () {
@@ -654,72 +1100,28 @@ Template.user_loggedout.events({
 		Meteor.loginWithFacebook({
 			requestPermissions: ['email']
 		}, function (error) {
-
-			if (Meteor.user() && Meteor.user().profile) {
-				if (window.SCM && Meteor.user().profile.volume) {
-					SCM.volume(Meteor.user().profile.volume);
-				}
-				
-				moment.lang(Meteor.user().profile.locale.substr(0,2));
-				
-				Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
-				if (Meteor.user().profile.hidemixes === true) Session.set("filter_mixes", true);
-				if (Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
-				else {
-					Session.set("filter_status", ["on"]);
-				}
-				if (Meteor.user().profile.filteredsites !== undefined) {
-					Session.set("filter_sites", Meteor.user().profile.filteredsites);
-					Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
-				}
-				
-				if (!VK.Auth.getSession() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
-					VK.Auth.login(undefined,8)
-
-				if (error) {
-					alert("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.");
-					console.log(error);
-				} else {
-					// Add user facebook token to groups of the user that should be crawled, so the crawl will work
-					Meteor.call('updateFacebookTokensForUser');
-					// Update the number of links and sites the user contributed to the app and save it in his profile
-					Meteor.call('updateLinkContributionCount');
-				}
-			}
-
-			// wenn die User-IP geupdate werden soll...
-			if (Meteor.user() && Meteor.user().profile.autoupdateip === true) {
-				// dann rufen wir die neue IP ab und speichern sie im Profil
-				HTTP.call("GET", "http://api.hostip.info/get_json.php", function (error2, result) {
-					if (error2) console.log("Fehler beim Ermitteln der Benutzer-IP");
-					if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip) Meteor.users.update({
-							_id: Meteor.userId()
-						}, {
-							$set: {
-								'profile.ip': result.data.ip
-							}
-						});
-				});
-				// update user IP and check if JD Remote is responding
-				refreshJDOnlineStatus();
-			}
+			if (error) {
+				console.log("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.");
+				console.log(error);
+			}		
 		});
 	}
 });
 // Logout-Eventhandler
 Template.user_loggedin.events({
 	'click #logout': function () {
+		Session.set("init",false);
 		if (VK.Auth.getSession()) VK.Auth.logout();
 		Meteor.logout(function (error) {
 			if (error) {
-				alert("Fehler beim Ausloggen", "Beim Ausloggen ist ein unerwarteter Fehler aufgetreten.");
+				alert("Fehler beim Ausloggen", "Beim Ausloggen ist ein unerwarteter Fehler aufgetreten. \nBitte schließ das Fenster und öffne den MusicCrawler erneut.");
 			}
 		});
 	},
 	//Accounteinstellungen anzeigen
 	'click #showsettings': function (event) {
 		event.preventDefault();
-		if (Meteor.user() && Meteor.user().profile)
+		if (Meteor.user())
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		openAccountSettingsDialog();
 		return false;
@@ -818,18 +1220,18 @@ Template.navigation.rendered = function () {
 				hide: 3000
 			}
 		});
-	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
 		if ($('#downloadbutton').attr("disabled") == "disabled") $('#downloadbutton').tooltip({
 				title: "Dein JDownloader ist nicht erreichbar oder du hast keinen Link ausgewählt. Bitte wähle einen Link aus und überprüfe ggf. dein Profil.",
-				placement: "bottom"
+				placement: "bottom",
+				disabled: true
 			});
 		else {
 			$('#downloadbutton').tooltip({
 				title: "Alle ausgewählten Links an JDownloader zum Download übergeben",
-				placement: "bottom"
+				placement: "bottom",
+				disabled: true
 			});
 		}
-	}
 };
 //Eventhandler für die Navigationsleiste
 Template.navigation.events({
@@ -907,7 +1309,7 @@ Template.navigation.events({
 						var grabberoption;
 						if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 						else grabberoption = "grabber0";
-						if (Meteor.user() && Meteor.user().profile)
+						if (Meteor.user())
 							var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
 						requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
 						Meteor.call("sendLinks", requeststring, function (error, result) {
@@ -958,7 +1360,7 @@ Template.navigation.events({
 					var grabberoption;
 					if (links_chained.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 					else grabberoption = "grabber0";
-					if (Meteor.user() && Meteor.user().profile)
+					if (Meteor.user())
 						var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + links_chained;
 					requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
 					Meteor.call("sendLinks", requeststring, function (error, result) {
@@ -1092,7 +1494,7 @@ Template.navigation.events({
 		Session.set("links_completed", false);
 		Session.set("filter_id", undefined);
 		var sitefilter = Session.get("filter_sites");
-		if (Meteor.user() && Meteor.user().profile)
+		if (Meteor.user())
 		{
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 			Session.set("filter_mixes", Meteor.user().profile.hidemixes);
@@ -1134,11 +1536,11 @@ Template.navigation.events({
 			Session.set("filter_status", ["on", "off", "unknown"]);
 			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
 		} else {
-			if (Meteor.user() && Meteor.user().profile)
+			if (Meteor.user())
 				Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 				Session.set("filter_mixes", Meteor.user().profile.hidemixes);
 			Session.set("filter_term", ".*");
-			if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.filteredsites) {
+			if (Meteor.user() && Meteor.user().profile.filteredsites) {
 				Session.set("filter_sites", Meteor.user().profile.filteredsites);
 				Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
 			}
@@ -1156,361 +1558,38 @@ Template.navigation.events({
 				var activenumber = Session.get("selected_navitem");
 				$('li.linkfilter #' + activenumber).parent().addClass("active");
 			}
-			if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
+			if (Meteor.user() && Meteor.user().profile.showunknownlinks === true) Session.set("filter_status", ["on", "unknown"]);
 			else {
 				Session.set("filter_status", ["on"]);
 			}
 		}
-		if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.searchproviders.length && term && term != undefined && term != "") Session.set("loading_results", true);
-			Meteor.setTimeout(function () {
-				Session.set("loading_results", false);
-			}, 8000);
+		if (Meteor.user() && Meteor.user().profile.searchproviders.length && term && term != undefined && term != "") Session.set("loading_results", true);
 		
-		var waitcount = 0;
+		Meteor.setTimeout(function () {
+			Session.set("loading_results", false);
+		}, 8000);
 		
-		
-		function waitForCompletionOfLinks()
-		{
-			if(Session.equals("links_completed",false) && waitcount <= 16)
-			{
-				waitcount++;
-			}
-			else
-			{	
-				Meteor.clearInterval(timerID); // stop firing the timer
-				
-				Meteor.setTimeout(function() {
-					if (Session.equals("links_completed", true) && (!Links.findOne() || (Links.find().count() < 3))) {
-					
-						var filter_term_external = Session.get("filter_term").replace(/\.\*/gi, "").replace(/\\/gi, "");
-						if (filter_term_external != "" && Meteor.user() && Meteor.user().profile) {
-							if (!Meteor.user().profile.searchproviders.length) {
-								Session.set("loading_results", false);
-								return;
-							}
-							Session.set("filter_term_external", filter_term_external);
-							if (_.contains(Meteor.user().profile.searchproviders, "zippysharemusic")) {
-								HTTP.get("https://www.googleapis.com/customsearch/v1?key=" + Meteor.settings.public.google.search_api_key + "&cx=partner-pub-9019877854699644%3At1iell5gp8b&alt=json&fields=items(pagemap)&q=" + encodeURIComponent(filter_term_external), function (error, result) {
-									if (result && result.data && result.data.items) {
-										var items = result.data.items;
-										var pattern1 = /https?\:\/\/www\d{1,2}\.zippyshare.com/i;
-										var pattern2 = /\d{3,8}(?=\/file\.html)/i;
-										if (items && items.length) {
-											for (var i = 0; i <= items.length; i++) {
-												if (items[i]) {
-													var theurl = items[i].pagemap.metatags[0]["og:url"].replace("\\");
-													var stream_url = undefined;
-													var match1 = pattern1.exec(theurl);
-													var match2 = pattern2.exec(theurl);
-													if (match1 && match2) stream_url = match1 + "/downloadMusic?key=" + match2;
-													if (!SearchResults.findOne({
-														url: theurl
-													})) SearchResults.insert({
-															hoster: "zippyshare.com",
-															status: "unknown",
-															name: unescape(items[i].pagemap.metatags[0]["og:title"].replace("null").replace("undefined").trim()),
-															url: items[i].pagemap.metatags[0]["og:url"].replace("\\").replace('"').replace('"'),
-															stream_url: stream_url.replace('"')
-														});
-												}
-											}
-											Session.set("loading_results", false);
-										}
-									}
-								});
-							}
-							if (_.contains(Meteor.user().profile.searchproviders, "mp3monkey")) {
-								Meteor.call('searchMP3Monkey', encodeURIComponent(filter_term_external), function (error, result) {
-									if (result) {
-										var doc = document.implementation.createHTMLDocument("mp3monkey");
-										doc.documentElement.innerHTML = result.content;
-										
-										var iterartists = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/b', doc, null, XPathResult.ANY_TYPE, null );
-										var itertitles = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td[4]/div/text()', doc, null, XPathResult.ANY_TYPE, null );
-										//var iterstreamurls = doc.evaluate( '//div[@class=\'items\']//div[@class=\'track clearfix\']/@data-src', doc, null, XPathResult.ANY_TYPE, null );
-										var iterurls = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/noindex/a/@href', doc, null, XPathResult.ANY_TYPE, null );
-										var iterdurations = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/div/div[@class=\'track_time\']', doc, null, XPathResult.ANY_TYPE, null );
-										
-										try {
-										  var artistnode = iterartists.iterateNext();
-										  var titlenode = itertitles.iterateNext();
-										  //var stream_urlnode = iterstreamurls.iterateNext();
-										  var urlnode = iterurls.iterateNext();
-										  var durationnode = iterdurations.iterateNext();
-										  
-										  var counter = 0;
-										  
-										  while (artistnode && titlenode &&  urlnode && durationnode && counter < 10) {		
-											//stream_urlnode &&
-											url = urlnode.textContent.replace("http//","http://");
-											//stream_url = stream_urlnode.textContent;
-											duration = durationnode.textContent;
-											name = artistnode.textContent + " - " + titlenode.textContent;
-											
-											if (!SearchResults.findOne({
-												url: url
-											})) SearchResults.insert({
-												hoster: "mp3monkey.net",
-												status: "on",
-												name: name,
-												url: url,
-												//stream_url : url,
-												duration: moment(duration,"mm:ss")
-											});
-											
-											counter++;
-											
-											artistnode = iterartists.iterateNext();
-											titlenode = itertitles.iterateNext();
-											//stream_urlnode = iterstreamurls.iterateNext();
-											urlnode = iterurls.iterateNext();
-											durationnode = iterdurations.iterateNext();
-										  }	
-										}
-										catch (e) {
-										  console.log( 'Error: Document tree modified during iteration ' + e );
-										}
-										
-										Session.set("loading_results", false);
-									}	
-								});
-							}
-							if (_.contains(Meteor.user().profile.searchproviders, "muzofon")) {
-								Meteor.call('searchMuzofon', encodeURIComponent(filter_term_external), function (error, result) {
-									
-									if (result && result.content)
-									{
-										var doc = document.implementation.createHTMLDocument("example");
-										doc.documentElement.innerHTML = result.content;
-										
-										var iternames = doc.evaluate( '//div[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
-										
-										var iterlinks = doc.evaluate( '//div[@class=\'controls\']/a[1]/@href', doc, null, XPathResult.ANY_TYPE, null );
-
-										try {
-										  var thisNode1 = iternames.iterateNext();
-										  var thisNode2 = iterlinks.iterateNext();
-										  
-										  while (thisNode1 && thisNode2) {										
-											durationmatch = thisNode1.textContent.replace(/\s+/g,' ').match(/\[.*\]/g)
-											if (durationmatch && durationmatch.length === 1)
-											{
-												duration = durationmatch[0].replace("[","").replace("]","")
-											}
-											
-											theurl = "http://muzofon.com" + thisNode2.textContent
-											
-											if (!SearchResults.findOne({
-												url: theurl
-											})) SearchResults.insert({
-												hoster: "muzofon.com",
-												status: "unknown",
-												name: thisNode1.textContent.replace(/\s+/g,' ').replace(/\[.*\]/g,"").trim(),
-												url: theurl,
-												duration: moment(duration,"mm:ss")
-											});
-											
-											
-											thisNode1 = iternames.iterateNext();
-											thisNode2 = iterlinks.iterateNext();
-										  }	
-										}
-										catch (e) {
-										  dump( 'Error: Document tree modified during iteration ' + e );
-										}
-									}				
-								});
-							}
-							if (_.contains(Meteor.user().profile.searchproviders, "soundcloud")) {
-								SC.get('/tracks', {
-									filter: 'public',
-									limit: 10,
-									q: filter_term_external
-								}, function (tracks) {
-									if (tracks && tracks.length) {
-										for (var i = 0; i <= tracks.length; i++) {
-											if (tracks[i]) {
-												if (!SearchResults.findOne({
-													url: tracks[i].permalink_url
-												})) SearchResults.insert({
-														hoster: "soundcloud.com",
-														status: "on",
-														name: tracks[i].title,
-														url: tracks[i].permalink_url,
-														duration: moment(tracks[i].duration)
-													});
-											}
-										}
-										Session.set("loading_results", false);
-									}
-								});
-							}
-							if (_.contains(Meteor.user().profile.searchproviders, "youtube")) {
-								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
-									return String(memo + "+" + token);
-								},"");
-								HTTP.get("https://gdata.youtube.com/feeds/api/videos?q=" + youtube_term + "&max-results=10&v=2&alt=json", function (error, result) {
-									if (result && result.data && result.data.feed && result.data.feed.entry) {
-										var entry = result.data.feed.entry;
-										for (var i = 0; i <= entry.length; i++) {
-											if (entry[i]) {
-												if (!SearchResults.findOne({
-													url: entry[i].link[0].href
-												})) SearchResults.insert({
-														hoster: "youtube.com",
-														status: "on",
-														name: entry[i].title.$t,
-														url: entry[i].link[0].href,
-														duration: moment(entry[i].media$group.yt$duration.seconds * 1000)
-													});
-											}
-										}
-										Session.set("loading_results", false);
-									}
-								});
-							}		
-							if (_.contains(Meteor.user().profile.searchproviders, "ex.fm")) {
-								HTTP.get("http://ex.fm/api/v3/song/search/" + filter_term_external, function (error, result) {
-									if (result && result.data && result.data.status_code === 200) {
-										var songs = result.data.songs;
-										for (var i = 0; i <= songs.length; i++) {
-											if (songs[i]) {
-												if (!SearchResults.findOne({
-													url: "http://ex.fm/api/v3/song/" + songs[i].id
-												})) SearchResults.insert({
-														hoster: "ex.fm",
-														status: "on",
-														name: unescape((songs[i].artist + " " + songs[i].title.replace("null").replace("undefined").trim())),
-														url: "http://ex.fm/api/v3/song/" + songs[i].id,
-														duration: moment(0)
-													});
-											}
-										}
-										Session.set("loading_results", false);
-									}
-								});
-							}
-							
-							if (_.contains(Meteor.user().profile.searchproviders, "myfreemp3.eu")) {
-
-								Meteor.call('searchMyfreeMP3', encodeURIComponent(filter_term_external), function (error, result) {
-									if (result) {
-										var doc = document.implementation.createHTMLDocument("myfreemp3.eu");
-										doc.documentElement.innerHTML = result.content;
-										
-										console.log(result.content);
-										
-										//var iterartists = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'artist\']', doc, null, XPathResult.ANY_TYPE, null );
-										//var itertitles = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
-										var iternames = doc.evaluate( '//a[@class=\'info\']/text()', doc, null, XPathResult.ANY_TYPE, null );
-										var iterids = doc.evaluate( '//a[@class=\'info\']/@data-aid', doc, null, XPathResult.ANY_TYPE, null );
-										var iterdurations = doc.evaluate( '//a[@class=\'info\']/@data-duration', doc, null, XPathResult.ANY_TYPE, null );
-										
-										try {
-										  var namenode = iternames.iterateNext();
-										  var idnode = iterids.iterateNext();
-										  var durationnode = iterdurations.iterateNext();
-										  
-										  
-										  var counter = 0;
-										  
-										  while (namenode && idnode && durationnode && counter < 10) {										
-											url = "http://89.248.172.6/dvv.php?q=" + idnode.textContent + "_/";
-											duration = durationnode.textContent;
-											name = namenode.textContent;
-											
-											if (!SearchResults.findOne({
-												url: url
-											})) SearchResults.insert({
-												hoster: "myfreemp3.eu",
-												status: "on",
-												name: name,
-												id: idnode.textContent,
-												url: url,
-												duration: moment(duration * 1000)
-											});
-											
-											counter++;
-											
-											namenode = iternames.iterateNext();
-											idnode = iterids.iterateNext();
-											durationnode = iterdurations.iterateNext();
-										  }	
-										}
-										catch (e) {
-										  console.log( 'Error: Document tree modified during iteration ' + e );
-										}
-										
-										Session.set("loading_results", false);
-									}	
-								});
-							}		
-							
-									
-							if (_.contains(Meteor.user().profile.searchproviders, "vk.com")) {
-								var youtube_term = _.reduce(filter_term_external.split(" "), function (memo, token) {
-									return String(memo + "+" + token);
-								},"");
-								
-								VK.Api.call("audio.search",{q:filter_term_external,auto_complete:1,count:10}, function(result){								
-									if (result && result.response && !result.error) {
-										
-										var entry = result.response;
-										for (var i = 1; i <= entry.length; i++) {
-											if (entry[i]) {																					
-												if (!SearchResults.findOne({
-													url: decodeURI(entry[i].url)
-												})) SearchResults.insert({
-														hoster: "vk.com",
-														status: "on",
-														name: htmlDecode(entry[i].artist) + " " + htmlDecode(entry[i].title),
-														url: decodeURI(entry[i].url),
-														duration: moment(entry[i].duration * 1000),
-														aid : entry[i].aid,
-														oid: entry[i].owner_id
-													});
-											}
-										}
-										Session.set("loading_results", false);
-									}
-									else
-										console.log("Error getting results from vk.com: " + result.error["error_msg"]);
-								});
-							}
-							if (_.contains(Meteor.user().profile.searchproviders, "beatport")) {
-								HTTP.get("http://oauth-api.beatport.com/catalog/3/search/?query=" + filter_term_external + "&facets=fieldType:track&perPage=17&page=1&sortBy=publishDate+ASC", function(error,result) {
-									if (result && result.data && result.data.results) {
-										var songs = result.data.results;
-										for (var i = 0; i <= songs.length; i++) {
-											if (songs[i]) {
-												thename = _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title
-											
-												if (!SearchResults.findOne({
-													name: thename
-												})) SearchResults.insert({
-														hoster: "beatport.com",
-														status: "on",
-														name: _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title,
-														url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id,
-														stream_url: "http://geo-samples.beatport.com/lofi/" + songs[i].id + ".LOFI.mp3",
-														duration: moment.duration(songs[i]),
-														date_published: moment(songs[i].releaseDate).toDate()
-													});
-											}
-										}
-										Session.set("loading_results", false);
-									}
-								});
-							}
-						}
-					} else {
-						Session.set("loading_results", false);
-					}
-				},500);
-			}
-		}
-
-		var timerID = Meteor.setInterval(waitForCompletionOfLinks, 250, waitcount);
+//		var waitcount = 0;
+//		
+//		
+//		function waitForCompletionOfLinks()
+//		{
+//			if(Session.equals("links_completed",false) && waitcount <= 16)
+//			{
+//				waitcount++;
+//			}
+//			else
+//			{	
+//				Meteor.clearInterval(timerID); // stop firing the timer
+//				
+//				Meteor.setTimeout(function() {
+//					if (Session.equals("links_completed", true) && (!Links.findOne() || (Links.find().count() < 3))) {
+//					
+//				},500);
+//			}
+//		}
+//
+//		var timerID = Meteor.setInterval(waitForCompletionOfLinks, 250, waitcount);
 
 		return false;
 	}
@@ -1633,104 +1712,122 @@ Template.link.rendered = function () {
 */
 Template.linklist.rendered = function () {
 	$('.linkname').editable();
-	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
-		$('#filter_links').tooltip({
-			title: "nur Links mit Status (online) oder alle Links anzeigen",
-			placement: "left"
-		});
-		$('#hide_selected_links').tooltip({
-			title: "ausgewählte Links verbergen",
-			placement: "left"
-		});
-		$('#select_all').tooltip({
-			title: "alle Links zum Download auswählen",
-			placement: "right"
-		});
-		$('.refreshlink').tooltip({
-			title: "Linkinformationen aktualisieren",
-			placement: "right"
-		});
-		$('#share_links').tooltip({
-			title: "Set (ausgewählte Links) teilen",
-			placement: "right"
-		});
-		$('.removelinkfromset').tooltip({
-			title: "Link aus dem aktuellen Set entfernen",
-			placement: "right"
-		});
-		$('.addlinktoset').tooltip({
-			title: "Link zum aktuellen Set hinzufügen",
-			placement: "right"
-		});
-		$('.like').tooltip({
-			title: "Gefällt mir",
-			placement: "left"
-		});
-		$('.icon-comment').tooltip({
-			title: "Kommentar(e) anzeigen/hinzufügen",
-			placement: "left"
-		});
-		$('.icon-ok').tooltip({
-			title: "verfügbar",
-			placement: "left"
-		});
-		$('.icon-question-sign').tooltip({
-			title: "unbekannt",
-			placement: "left"
-		});
-		$('.icon-remove').tooltip({
-			title: "nicht verfügbar",
-			placement: "left"
-		});
-		$('.delete_link').tooltip({
-			title: "Link aus der Datenbank löschen",
-			placement: "left"
-		});
-		$('.hide_link').tooltip({
-			title: "Link ausblenden",
-			placement: "left"
-		});
-		$('#sort_like').tooltip({
-			title: "nach 'Gefällt mir' Angaben sortieren",
-			placement: "left"
-		});
-		$('#sort_date_published').tooltip({
-			title: "nach Datum der Veröffentlichung sortieren",
-			placement: "left"
-		});
-	}
+	$('#filter_links').tooltip({
+		title: "nur Links mit Status (online) oder alle Links anzeigen",
+		placement: "left",
+		disabled: true
+	});
+	$('#hide_selected_links').tooltip({
+		title: "ausgewählte Links verbergen",
+		placement: "left",
+		disabled: true
+	});
+	$('#select_all').tooltip({
+		title: "alle Links zum Download auswählen",
+		placement: "right",
+		disabled: true
+	});
+	$('.refreshlink').tooltip({
+		title: "Linkinformationen aktualisieren",
+		placement: "right",
+		disabled: true
+	});
+	$('#share_links').tooltip({
+		title: "Set (ausgewählte Links) teilen",
+		placement: "right",
+		disabled: true
+	});
+	$('.removelinkfromset').tooltip({
+		title: "Link aus dem aktuellen Set entfernen",
+		placement: "right",
+		disabled: true
+	});
+	$('.addlinktoset').tooltip({
+		title: "Link zum aktuellen Set hinzufügen",
+		placement: "right",
+		disabled: true
+	});
+	$('.like').tooltip({
+		title: "Gefällt mir",
+		placement: "left",
+		disabled: true
+	});
+	$('.icon-comment').tooltip({
+		title: "Kommentar(e) anzeigen/hinzufügen",
+		placement: "left",
+		disabled: true
+	});
+	$('.icon-ok').tooltip({
+		title: "verfügbar",
+		placement: "left",
+		disabled: true
+	});
+	$('.icon-question-sign').tooltip({
+		title: "unbekannt",
+		placement: "left",
+		disabled: true
+	});
+	$('.icon-remove').tooltip({
+		title: "nicht verfügbar",
+		placement: "left",
+		disabled: true
+	});
+	$('.delete_link').tooltip({
+		title: "Link aus der Datenbank löschen",
+		placement: "left",
+		disabled: true
+	});
+	$('.hide_link').tooltip({
+		title: "Link ausblenden",
+		placement: "left",
+		disabled: true
+	});
+	$('#sort_like').tooltip({
+		title: "nach 'Gefällt mir' Angaben sortieren",
+		placement: "left",
+		disabled: true
+	});
+	$('#sort_date_published').tooltip({
+		title: "nach Datum der Veröffentlichung sortieren",
+		placement: "left",
+		disabled: true
+	});
 };
 Template.accountSettingsDialog.rendered = function () {
 	//XXX seit Bootstrap 2.3 sind die Tooltips abgeschnitten...
-	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
-		$('#refreship').tooltip({
-			title: "Wenn du auf 'Aktualisieren' klickst, wird die IP-Adresse des Rechners ermittelt, an dem du gerade bist und gespeichert. Du kannst dann Links auf diesem Rechner empfangen, wenn JDownloader läuft hast und der Port offen ist.",
-			placement: "right"
-		});
-		$('#port').tooltip({
-			title: "Bitte gebe den Port an, über den JDownloader Remote aus dem Internet erreichbar ist. (Standard: 10025)",
-			placement: "bottom"
-		});
-		$('#autoupdate').tooltip({
-			title: "Wenn du diese Option aktivierst, wird beim Starten dieser App automatisch deine IP-Adresse aktualisiert. Setz diese Option, wenn du keine feste IP-Adresse hast oder JDownloader immer auf dem Rechner nutzt, auf dem du auch diese App aufrufst.",
-			placement: "right"
-		});
-		$('#showdownloadedlinks').tooltip({
-			title: "Wenn du diese Option aktivierst, werden auch Links angezeigt, die du bereits heruntergeladen, kopiert oder ausgeblendet hast.",
-			placement: "right"
-		});
-		$('#jdon').tooltip({
-			title: "Dein JDownloader kann Links empfangen.",
-			placement: "bottom"
-		});
-		$('#jdoff').tooltip({
-			title: "Dein JDownloader kann keine Links empfangen. Bitte überprüfe, ob der angebene Port aus dem Internet erreichbar ist. Wenn du einen Proxy-Server nutzt, musst du die IP-Adresse ggf. manuell eintragen.",
-			placement: "bottom"
-		});
-	}
+	$('#refreship').tooltip({
+		title: "Wenn du auf 'Aktualisieren' klickst, wird die IP-Adresse des Rechners ermittelt, an dem du gerade bist und gespeichert. Du kannst dann Links auf diesem Rechner empfangen, wenn JDownloader läuft hast und der Port offen ist.",
+		placement: "right",
+		disabled: true
+	});
+	$('#port').tooltip({
+		title: "Bitte gebe den Port an, über den JDownloader Remote aus dem Internet erreichbar ist. (Standard: 10025)",
+		placement: "bottom",
+		disabled: true
+	});
+	$('#autoupdate').tooltip({
+		title: "Wenn du diese Option aktivierst, wird beim Starten dieser App automatisch deine IP-Adresse aktualisiert. Setz diese Option, wenn du keine feste IP-Adresse hast oder JDownloader immer auf dem Rechner nutzt, auf dem du auch diese App aufrufst.",
+		placement: "right",
+		disabled: true
+	});
+	$('#showdownloadedlinks').tooltip({
+		title: "Wenn du diese Option aktivierst, werden auch Links angezeigt, die du bereits heruntergeladen, kopiert oder ausgeblendet hast.",
+		placement: "right",
+		disabled: true
+	});
+	$('#jdon').tooltip({
+		title: "Dein JDownloader kann Links empfangen.",
+		placement: "bottom",
+		disabled: true
+	});
+	$('#jdoff').tooltip({
+		title: "Dein JDownloader kann keine Links empfangen. Bitte überprüfe, ob der angebene Port aus dem Internet erreichbar ist. Wenn du einen Proxy-Server nutzt, musst du die IP-Adresse ggf. manuell eintragen.",
+		placement: "bottom",
+		disabled: true
+	});
 };
 Template.user_loggedin.rendered = function () {
-	if (Meteor.userId() && Meteor.user() && Meteor.user().profile) {
+	if (Meteor.user()) {
 		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small><b>   " + Meteor.user().username + "</b></li><li><br/></li><li><b>Dein JDownloader</b></li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li><b>Dein Beitrag</b></li><li>Seiten: " + Sites.find({
 			creator: Meteor.user().id
 		}).count() + "</li><li>Links: " + Meteor.user().profile.linkcontributioncount + "</li></small>";
@@ -2147,7 +2244,7 @@ Template.searchresult.events({
 			if (this.url.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 			else grabberoption = "grabber0";
 			
-			if (Meteor.user() && Meteor.user().profile)
+			if (Meteor.user())
 				var requeststring = "http://" + Meteor.user().profile.ip + ":" + Meteor.user().profile.port + "/action/add/links/" + grabberoption + "/start1/" + this.url;
 			requeststring = requeststring.replace("?", "%3F").replace("=", "%3D");
 			Meteor.call("sendLinks", requeststring, function (error, result) {
@@ -2298,32 +2395,37 @@ Template.addSiteDialog.events({
 //Wenn der Seitendialog gerendered wurde, UI Widgets aktivieen
 Template.sitesDialog.rendered = function () {
 	$('.sitename').editable();
-	if (Meteor.user() && Meteor.user().profile && Meteor.user().profile.showtooltips === true) {
-		$('.remove_site').tooltip({
-			title: "Seite aus der Datenbank löschen",
-			placement: "top"
-		});
-		$('.icon-facebook').tooltip({
-			title: "Facebook-Gruppe",
-			placement: "left"
-		});
-		$('.icon-rss').tooltip({
-			title: "RSS-Feed",
-			placement: "left"
-		});
-		$('.icon-time').tooltip({
-			title: "Durchsuchen der Seite ist eingeplant",
-			placement: "left"
-		});
-		$('.icon-ban-circle').tooltip({
-			title: "Seite wurde innerhalb der letzten 24h durchsucht und kann noch nicht wieder durchsucht werden.",
-			placement: "left"
-		});
-		$('.crawl_single_site').tooltip({
-			title: "Seite erneut durchsuchen",
-			placement: "left"
-		});
-	}
+
+	$('.remove_site').tooltip({
+		title: "Seite aus der Datenbank löschen",
+		placement: "top",
+		disabled: true
+	});
+	$('.icon-facebook').tooltip({
+		title: "Facebook-Gruppe",
+		placement: "left",
+		disabled: true
+	});
+	$('.icon-rss').tooltip({
+		title: "RSS-Feed",
+		placement: "left",
+		disabled: true
+	});
+	$('.icon-time').tooltip({
+		title: "Durchsuchen der Seite ist eingeplant",
+		placement: "left",
+		disabled: true
+	});
+	$('.icon-ban-circle').tooltip({
+		title: "Seite wurde innerhalb der letzten 24h durchsucht und kann noch nicht wieder durchsucht werden.",
+		placement: "left",
+		disabled: true
+	});
+	$('.crawl_single_site').tooltip({
+		title: "Seite erneut durchsuchen",
+		placement: "left",
+		disabled: true
+	});
 };
 Template.shareLinkDialog.rendered = function () {
 	$('#sharelinkaddress').typeahead({
@@ -2503,7 +2605,7 @@ Template.accountSettingsDialog.events({
 	'click #refreship': function (event, template) {		
 		Session.set("status", '<p class="pull-left" style="margin:0px"><i class="icon-loader" style="margin-top:5px"></i></p>');
 
-		if (Meteor.user() && Meteor.user().profile)
+		if (Meteor.user())
 			var aport = Meteor.user().profile.port;
 		if (template.find("#autoupdate").checked)
 		{		
@@ -2804,47 +2906,6 @@ Template.bulkDownloadDialog.events({
 		});
 	}
 });
-
-
-function refreshJDOnlineStatus() {
-	if (Meteor.user() && Meteor.user().profile) {
-		var oldip = Meteor.user().profile.ip;
-	
-		if (Meteor.user().profile.autoupdateip === true) {
-			HTTP.call("GET", "http://api.hostip.info/get_json.php", function (error, result) {
-				if (error) console.log("Fehler beim Ermitteln der Benutzer-IP");
-				if (result && result.statusCode && result.statusCode === 200 && result.data && result.data.ip)
-					Meteor.users.update({
-						_id: Meteor.userId()
-					}, {
-						$set: {
-							'profile.ip': result.data.ip,
-						}
-					});
-			});
-		}
-		// unabhängig von autoupdate schauen wir, ob die gewünschte IP
-		// online ist
-		Meteor.call("checkJDOnlineStatus", {
-			ip: Meteor.user().profile.ip,
-			port: Meteor.user().profile.port
-		}, function (error, isOnline) {
-			if (error) 
-			{
-				if (Meteor.user().profile.autoupdateip === true && (oldip != Meteor.user().profile.ip))
-					Meteor.call("checkJDOnlineStatus", {
-						ip: oldip,
-						port: Meteor.user().profile.port
-					}, function (error2, isOnline2) {
-						if (error2) console.log("Fehler beim Ermitteln des Online-Status");
-						Session.set("JDOnlineStatus", isOnline2);
-					});
-				else console.log("Fehler beim Ermitteln des Online-Status");
-			}
-			Session.set("JDOnlineStatus", isOnline);
-		});
-	}
-}
 //Hilfsfunktion für die Kopierenfunktion von Links - alle Link URLs in einem neuen Fenster anzeigen
 
 function writeConsole(content) {
