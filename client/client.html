@@ -332,7 +332,7 @@
 				{{#if likes}}{{likes}}{{else}}0{{/if}}
 			</td>
 			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px;text-align:center">
-				<i class="{{getStatusIcon}}"></i>
+				{{> getStatusIcon}}
 			</td>
 			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
 			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
@@ -423,44 +423,6 @@
 		{{/each}}
 		</table>
 </template>
-
-
-<template name ="zippyshare.comicon">
-	<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='/online/zippyshare.png'></a>
-</template>
-
-<template name ="soundcloud.comicon">
-	<a href='"http://soundcloud.com"'><img alt='Player Attribution' class='playerattribution' src='/online/soundcloud.png'></a>
-</template>
-
-<template name ="muzofon.comicon">
-<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='/online/muzofon.png'></a>
-</template>
-
-<template name ="youtube.comicon">
-<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='/online/youtube.png'></a>
-</template>
-
-<template name ="ex.fmicon">
-<a href='http://ex.fm'><img alt='ex.fm Attribution' src='/online/exfm.png'></a>
-</template>
-
-<template name ="vk.comicon">
-<a href='http://vk.com'><img alt='vk.com Attribution' src='/online/vkontakte.png'></a>
-</template>
-
-<template name ="beatport.comicon">
-<a href='http://beatport.com'><img alt='beatport.com Attribution' src='/online/beatport.png'></a>
-</template>
-
-<template name ="myfreemp3.euicon">
-<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='/online/myfreemp3.png'></a>
-</template>
-
-<template name ="mp3monkey.neticon">
-<a href='http://mp3monkey.net'><img alt='mp3monkey.net Attribution' src='/online/mp3monkey.png'></a>
-</template>
-
 
 <template name="searchresult">
   <tr>
@@ -859,3 +821,53 @@
   </div>      
 </div>
 </template>
+
+<template name ="zippyshare.comicon">
+	<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='/online/zippyshare.png'></a>
+</template>
+
+<template name ="soundcloud.comicon">
+	<a href='"http://soundcloud.com"'><img alt='Player Attribution' class='playerattribution' src='/online/soundcloud.png'></a>
+</template>
+
+<template name ="muzofon.comicon">
+<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='/online/muzofon.png'></a>
+</template>
+
+<template name ="youtube.comicon">
+<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='/online/youtube.png'></a>
+</template>
+
+<template name ="ex.fmicon">
+<a href='http://ex.fm'><img alt='ex.fm Attribution' src='/online/exfm.png'></a>
+</template>
+
+<template name ="vk.comicon">
+<a href='http://vk.com'><img alt='vk.com Attribution' src='/online/vkontakte.png'></a>
+</template>
+
+<template name ="beatport.comicon">
+<a href='http://beatport.com'><img alt='beatport.com Attribution' src='/online/beatport.png'></a>
+</template>
+
+<template name ="myfreemp3.euicon">
+<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='/online/myfreemp3.png'></a>
+</template>
+
+<template name ="mp3monkey.neticon">
+<a href='http://mp3monkey.net'><img alt='mp3monkey.net Attribution' src='/online/mp3monkey.png'></a>
+</template>
+
+<template name ="onicon">
+<i class="icon-ok"></i>
+</template>
+
+<template name ="officon">
+<i class="icon-remove"></i>
+</template>
+
+<template name ="unknownicon">
+<i class="icon-question-sign"></i>
+</template>
+
+

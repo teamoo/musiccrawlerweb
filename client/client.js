@@ -429,14 +429,7 @@ Template.link.getSizeinMB = function () {
 };
 // Status-Icon auswählen je nach Status des Links
 Template.link.getStatusIcon = function () {
-	switch (this.status) {
-		case 'on':
-			return "icon-ok";
-		case 'off':
-			return "icon-remove";
-		case 'unknown':
-			return "icon-question-sign";
-	}
+	return Template[this.status + "icon"];
 };
 // Funktion um zu bestimmen, ob ein Link ausgewählt ist
 Template.link.isLinkSelected = function () {
