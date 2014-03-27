@@ -211,30 +211,30 @@ Meteor.startup(function () {
 	activateInput($('#searchfield'));
 	
 	//initialize soundcloud API for external search with app key
-	SC.initialize({
-		client_id: Meteor.settings.public.soundcloud.client_id
-	});
-	
-	VK.init({
-		apiId: Meteor.settings.public.vk.apiId
-	});
-	
-	VK.Observer.subscribe("auth.statusChange", function f() 
-	{ 
-		if (!VK.Auth.getSession()) {
-			if (Meteor.user() && Meteor.user().profile && _.contains(Meteor.user().profile.searchproviders, "vk.com")) {
-				var newproviders = _.without(Meteor.user().profile.searchproviders,"vk.com");
-				
-				Meteor.users.update({
-					_id: Meteor.userId()
-				}, {
-					$set: {
-						'profile.searchproviders': newproviders
-					}
-				});
+		SC.initialize({
+			client_id: Meteor.settings.public.soundcloud.client_id
+		});
+		
+		VK.init({
+			apiId: Meteor.settings.public.vk.apiId
+		});
+		
+		VK.Observer.subscribe("auth.statusChange", function f() 
+		{ 
+			if (!VK.Auth.getSession()) {
+				if (Meteor.user() && Meteor.user().profile && _.contains(Meteor.user().profile.searchproviders, "vk.com")) {
+					var newproviders = _.without(Meteor.user().profile.searchproviders,"vk.com");
+					
+					Meteor.users.update({
+						_id: Meteor.userId()
+					}, {
+						$set: {
+							'profile.searchproviders': newproviders
+						}
+					});
+				}
 			}
-		}
-	}); 
+		}); 
 	
 		// if user profile is already available, set session varibles for filtering links just for specific sites
 		// and showing already downloaded items. They are not reactive because we need to change them when searching
@@ -262,11 +262,6 @@ Meteor.startup(function () {
 		}
 		// update user IP and check if JD Remote is responding
 		refreshJDOnlineStatus();
-		// Add user facebook token to groups of the user that should be crawled, so the crawl will work
-		Meteor.call('updateFacebookTokensForUser');
-		// Update the number of links and sites the user contributed to the app and save it in his profile
-		Meteor.call('updateLinkContributionCount');
-
 		
 	$.fn.editable.defaults.validate = function (value) {
 		if ($.trim(value) == '') {
@@ -310,21 +305,21 @@ Meteor.startup(function () {
 // Template-Helper für handlebars
 // represent ISO Date as String from now (e.g. 3 minute before, in 1 hour)
 // usage: {{dateFormatPretty creation_date}}
-Handlebars.registerHelper('dateFormatPretty', function (context) {
+UI.registerHelper('dateFormatPretty', function (context) {
 	if (window.moment) {
 		if (context && moment(context).isValid()) return moment(context).fromNow();
 		return "noch nie";
 	}
 	return context; // moment plugin not available. return data as is.;
 });
-Handlebars.registerHelper('millisecondsFormatPretty', function (context) {
+UI.registerHelper('millisecondsFormatPretty', function (context) {
 	if (window.moment) {
 		if (context && moment(context).isValid()) return moment(context).format('mm:ss') + " min.";
 		return "unbekannt";
 	}
 	return context; // moment plugin not available. return data as is.;
 });
-Handlebars.registerHelper('searchProviderEnabled', function (context) {
+UI.registerHelper('searchProviderEnabled', function (context) {
 	if (Meteor.user() && Meteor.user().profile) {
 		return _.contains(Meteor.user().profile.searchproviders, context);
 	}
@@ -332,7 +327,7 @@ Handlebars.registerHelper('searchProviderEnabled', function (context) {
 });
 // Template-Helper für handlebars
 // Session Objekt in Handlebars direkt nutzen
-Handlebars.registerHelper('session', function (input) {
+UI.registerHelper('session', function (input) {
 	return Session.get(input);
 });
 //
@@ -553,16 +548,7 @@ Template.searchresult.isDownloadable = function () {
 	return false;
 };
 Template.searchresult.getExternalSourceIcon = function () {
-	if (this.hoster == "zippyshare.com") return "<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='/online/zippyshare.png'></a>";
-	if (this.hoster == "soundcloud.com") return "<a href='" + this.url + "'><img alt='Player Attribution' class='playerattribution' src='/online/soundcloud.png'></a>";
-	if (this.hoster == "muzofon.com") return "<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='/online/muzofon.png'></a>";
-	if (this.hoster == "youtube.com") return "<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='/online/youtube.png'></a>";
-	if (this.hoster == "ex.fm") return "<a href='http://ex.fm'><img alt='ex.fm Attribution' src='/online/exfm.png'></a>";
-	if (this.hoster == "vk.com") return "<a href='http://vk.com'><img alt='vk.com Attribution' src='/online/vkontakte.png'></a>";
-	if (this.hoster == "beatport.com") return "<a href='http://beatport.com'><img alt='beatport.com Attribution' src='/online/beatport.png'></a>";
-	if (this.hoster == "myfreemp3.eu") return "<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='/online/myfreemp3.png'></a>";
-	if (this.hoster == "mp3monkey") return "<a href='http://mp3monkey.net'><img alt='mp3monkey.net Attribution' src='/online/mp3monkey.png'></a>";
-	return undefined;
+	return Template[this.hoster + "icon"];
 };
 // Funktion um alle Seiten ins Template zu geben (die subscription)
 Template.sitesDialog.sites = function () {
@@ -637,16 +623,16 @@ var openBulkDownloadDialog = function () {
 //
 // Eventhandler
 //
-Template.page.events({
-	'click': function (event, template) {
+UI.body.events({
+	'click': function (event, target) {
 		if (event.target.className.indexOf("icon-user") === -1) $('#accountbtn').popover('hide');
-		/*
+		
 		if (!(event.target.form && event.target.form.className == "newcommentform")) {
 			if (event.target.id.indexOf("comment") === -1) if (event.target.className.indexOf("popover") === -1) if (event.target.className.indexOf("comment") === -1) if (event.target.outerHTML.indexOf("comment") === -1) {
 							$('.icon-comment').popover('hide');
 						}
 		}
-		*/
+		
 	}
 });
 // Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
@@ -2108,8 +2094,6 @@ Template.addLinkDialog.events({
 		return false;
 	}
 });
-Template.searchresult.preserve([".add_external_link"]);
-Template.searchresult.preserve([".download_external_link"]);
 Template.searchresult.events({
 	'click .player': function (event, template) {
 		if (this.status != 'off') {

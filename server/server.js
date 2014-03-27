@@ -54,6 +54,13 @@ Meteor.startup(function () {
 //	});
 });
 
+Accounts.onLogin(function() {
+	// Add user facebook token to groups of the user that should be crawled, so the crawl will work
+	Meteor.call('updateFacebookTokensForUser');
+	// Update the number of links and sites the user contributed to the app and save it in his profile
+	Meteor.call('updateLinkContributionCount');
+});
+
 Accounts.onCreateUser(function (options, user) {
 	if (options.profile) user.profile = options.profile;
 	

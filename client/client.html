@@ -173,7 +173,7 @@
 						<a class="btn btn-primary" id="downloadbutton" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
 					{{/if}}
 					<li class="divider-vertical hidden-phone"></li>
-					<a class="btn" id="bulkdownloadbutton" class="hidden-phone"><i class="icon-hdd"></i> Massendownload</a>
+					<a class="btn hidden-phone" id="bulkdownloadbutton"><i class="icon-hdd"></i> Massendownload</a>
 				</ul>
 				<ul class="nav pull-right">
 					<li class="hidden-phone">
@@ -241,16 +241,14 @@
 			</th>
 			<th class="hidden-phone">
 				{{#if isAnyLinkSelectedSet}}
-					<i class="icon-share hand" id="share_links"><i>
+					<i class="icon-share hand" id="share_links"></i>	
 				{{/if}}
 			</th>
 			<th class="hidden-phone"></th>
-			{{#constant}}
 			<th class="hidden-phone"><i class="icon-volume-up"></i></th>
 			<th>Name</th>
 			<th class="hidden-phone">URL</th>
 			<!--<th></th>-->
-			{{/constant}}
 			<th>
 				<i class="icon-thumbs-up hand" id="sort_like"></i>{{#if sortLikes}} <i class="icon-chevron-down" id="filter_links"></i>{{/if}}
 			</th>
@@ -261,10 +259,8 @@
 					<i class="icon-filter hand" id="filter_links"></i>
 				{{/if}}	
 			</th>
-			{{#constant}}
 			<th class="hidden-phone">Quelle</th>
 			<th class="hidden-phone">Größe</th>
-			{{/constant}}
 			<th class="hidden-phone hand" style="text-align:right" id="sort_date_published">Veröffentlicht{{#if sortPublished}} <i class="icon-chevron-down" id="filter_links"></i>{{else}}&nbsp;&nbsp;&nbsp;&nbsp;{{/if}}</th>
 			{{#if session "filter_show_already_downloaded"}}
 			{{else}}
@@ -307,22 +303,18 @@
 			</td>
 			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#if isLinkSelectedSet}}
-					<i class="icon-minus hand removelinkfromset"><i>
+					<i class="icon-minus hand removelinkfromset"></i>
 				{{else}}
-					<i class="icon-plus hand addlinktoset"><i>
+					<i class="icon-plus hand addlinktoset"></i>
 				{{/if}}
 			</td>
 			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
-				{{#constant}}
 				<i class="icon-refresh hand refreshlink"></i>
-				{{/constant}}
 			</td>
 			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
-				{{#constant}}
 				{{#if isPlayable}}
 					<i class="icon-play player hand"></i>
 				{{/if}}
-				{{/constant}}
 			</td>
 		  <td style="max-width: 400px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
 		  <td class="hidden-phone" style="max-width: 200px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
@@ -375,22 +367,18 @@
 			</td>
 			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#if isLinkSelectedSet}}
-					<i class="icon-minus hand removelinkfromset"><i>
+					<i class="icon-minus hand removelinkfromset"></i>
 				{{else}}
-					<i class="icon-plus hand addlinktoset"><i>
+					<i class="icon-plus hand addlinktoset"></i>
 				{{/if}}
 			</td>
 			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
-				{{#constant}}
 				<i class="icon-refresh hand refreshlink"></i>
-				{{/constant}}
 			</td>
 			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
-				{{#constant}}
 				{{#if isPlayable}}
 					<i class="icon-play player hand"></i>
 				{{/if}}
-				{{/constant}}
 			</td>
 			<td style="max-width: 400px;color: gray;"><a style="color: gray;" class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
 			<td class="hidden-phone" style="max-width: 200px;color: gray;"><a style="color: gray;" href="{{url}}" target="_blank">{{url}}</a></td>
@@ -436,27 +424,63 @@
 		</table>
 </template>
 
+
+<template name ="zippyshare.comicon">
+	<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='/online/zippyshare.png'></a>
+</template>
+
+<template name ="soundcloud.comicon">
+	<a href='"http://soundcloud.com"'><img alt='Player Attribution' class='playerattribution' src='/online/soundcloud.png'></a>
+</template>
+
+<template name ="muzofon.comicon">
+<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='/online/muzofon.png'></a>
+</template>
+
+<template name ="youtube.comicon">
+<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='/online/youtube.png'></a>
+</template>
+
+<template name ="ex.fmicon">
+<a href='http://ex.fm'><img alt='ex.fm Attribution' src='/online/exfm.png'></a>
+</template>
+
+<template name ="vk.comicon">
+<a href='http://vk.com'><img alt='vk.com Attribution' src='/online/vkontakte.png'></a>
+</template>
+
+<template name ="beatport.comicon">
+<a href='http://beatport.com'><img alt='beatport.com Attribution' src='/online/beatport.png'></a>
+</template>
+
+<template name ="myfreemp3.euicon">
+<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='/online/myfreemp3.png'></a>
+</template>
+
+<template name ="mp3monkey.neticon">
+<a href='http://mp3monkey.net'><img alt='mp3monkey.net Attribution' src='/online/mp3monkey.png'></a>
+</template>
+
+
 <template name="searchresult">
   <tr>
 	<td style="width:142px;min-width:142px;max-width:142px;text-align:center">
-		{{{getExternalSourceIcon}}}
+		{{> getExternalSourceIcon}}
 	</td>
 	<td style="width:14px;min-width:14px;max-width:14px">
-		{{#constant}}
 		{{#if isPlayable}}
 			<i class="icon-play player hand"></i>
 		{{/if}}
-		{{/constant}}
 	</td>
     <td style="min-width:400px;max-width: 400px;"><a href="{{url}}" target="_blank">{{name}}</a></td>
 	<td style="width:71px;min-width:71px;max-width:71px">{{millisecondsFormatPretty duration}}</td>	
 	<td style="width:34px;min-width:34px;max-width:34px">
 		{{#if isDownloadable}}
-			{{#constant}}<button class="btn btn-small download_external_link"><i class="icon-circle-arrow-down"></i>{{/constant}}</button>
+			<button class="btn btn-small download_external_link"><i class="icon-circle-arrow-down"></i></button>
 		{{/if}}
 	</td>
 	<td style="width:209px;min-width:209px;max-width:209px">
-		{{#constant}}<button class="btn btn-small add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen{{/constant}}</button>
+		<button class="btn btn-small add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</button>
 	</td>
   </tr>
 </template>
