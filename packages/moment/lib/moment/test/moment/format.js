@@ -28,6 +28,24 @@ exports.format = {
         test.done();
     },
 
+    "handle negative years" : function (test) {
+        test.expect(10);
+
+        moment.lang('en');
+        test.equal(moment.utc().year(-1).format('YY'), '-01', 'YY with negative year');
+        test.equal(moment.utc().year(-1).format('YYYY'), '-0001', 'YYYY with negative year');
+        test.equal(moment.utc().year(-12).format('YY'), '-12', 'YY with negative year');
+        test.equal(moment.utc().year(-12).format('YYYY'), '-0012', 'YYYY with negative year');
+        test.equal(moment.utc().year(-123).format('YY'), '-23', 'YY with negative year');
+        test.equal(moment.utc().year(-123).format('YYYY'), '-0123', 'YYYY with negative year');
+        test.equal(moment.utc().year(-1234).format('YY'), '-34', 'YY with negative year');
+        test.equal(moment.utc().year(-1234).format('YYYY'), '-1234', 'YYYY with negative year');
+        test.equal(moment.utc().year(-12345).format('YY'), '-45', 'YY with negative year');
+        test.equal(moment.utc().year(-12345).format('YYYY'), '-12345', 'YYYY with negative year');
+
+        test.done();
+    },
+
     "format milliseconds" : function (test) {
         test.expect(6);
         var b = moment(new Date(2009, 1, 14, 15, 25, 50, 123));
@@ -160,13 +178,38 @@ exports.format = {
     },
 
     "toISOString" : function (test) {
+        test.expect(4);
         var date = moment.utc("2012-10-09T20:30:40.678");
 
         test.equal(date.toISOString(), "2012-10-09T20:30:40.678Z", "should output ISO8601 on moment.fn.toISOString");
+
+        // big years
+        date = moment.utc("+020123-10-09T20:30:40.678");
+        test.equal(date.toISOString(), "+020123-10-09T20:30:40.678Z", "ISO8601 format on big positive year");
+        // negative years
+        date = moment.utc("-000001-10-09T20:30:40.678");
+        test.equal(date.toISOString(), "-000001-10-09T20:30:40.678Z", "ISO8601 format on negative year");
+        // big negative years
+        date = moment.utc("-020123-10-09T20:30:40.678");
+        test.equal(date.toISOString(), "-020123-10-09T20:30:40.678Z", "ISO8601 format on big negative year");
+
         test.done();
     },
 
-    "weeks format" : function (test) {
+    "long years" : function (test) {
+        test.expect(6);
+        test.equal(moment.utc().year(2).format('YYYYYY'), '+000002', 'small year with YYYYYY');
+        test.equal(moment.utc().year(2012).format('YYYYYY'), '+002012', 'regular year with YYYYYY');
+        test.equal(moment.utc().year(20123).format('YYYYYY'), '+020123', 'big year with YYYYYY');
+
+        test.equal(moment.utc().year(-1).format('YYYYYY'), '-000001', 'small negative year with YYYYYY');
+        test.equal(moment.utc().year(-2012).format('YYYYYY'), '-002012', 'negative year with YYYYYY');
+        test.equal(moment.utc().year(-20123).format('YYYYYY'), '-020123', 'big negative year with YYYYYY');
+
+        test.done();
+    },
+
+    "iso week formats" : function (test) {
 
         // http://en.wikipedia.org/wiki/ISO_week_date
         var cases = {
@@ -184,13 +227,18 @@ exports.format = {
             "2009-12-31": "2009-53",
             "2010-01-01": "2009-53",
             "2010-01-02": "2009-53",
-            "2010-01-03": "2009-53"
-        }, i, iso, the;
+            "2010-01-03": "2009-53",
+            "404-12-31": "0404-53",
+            "405-12-31": "0405-52"
+        }, i, isoWeek, formatted2, formatted1;
 
         for (i in cases) {
-            iso = cases[i].split('-').pop();
-            the = moment(i).format('WW');
-            test.equal(iso, the, i + ": should be " + iso + ", but " + the);
+            isoWeek = cases[i].split('-').pop();
+            formatted2 = moment(i, 'YYYY-MM-DD').format('WW');
+            test.equal(isoWeek, formatted2, i + ": WW should be " + isoWeek + ", but " + formatted2);
+            isoWeek = isoWeek.replace(/^0+/, '');
+            formatted1 = moment(i, 'YYYY-MM-DD').format('W');
+            test.equal(isoWeek, formatted1, i + ": W should be " + isoWeek + ", but " + formatted1);
         }
 
         test.done();
@@ -198,7 +246,7 @@ exports.format = {
 
     "iso week year formats" : function (test) {
 
-        // http://en.wikipedia.org/wiki/ISO_week
+        // http://en.wikipedia.org/wiki/ISO_week_date
         var cases = {
             "2005-01-02": "2004-53",
             "2005-12-31": "2005-52",
@@ -214,17 +262,19 @@ exports.format = {
             "2009-12-31": "2009-53",
             "2010-01-01": "2009-53",
             "2010-01-02": "2009-53",
-            "2010-01-03": "2009-53"
+            "2010-01-03": "2009-53",
+            "404-12-31": "0404-53",
+            "405-12-31": "0405-52"
         }, i, isoWeekYear, formatted5, formatted4, formatted2;
 
         for (i in cases) {
             isoWeekYear = cases[i].split('-')[0];
-            formatted5 = moment(i).format('GGGGG');
-            test.equal('0' + isoWeekYear, formatted5, i + ": should be " + isoWeekYear + ", but " + formatted4);
-            formatted4 = moment(i).format('GGGG');
-            test.equal(isoWeekYear, formatted4, i + ": should be " + isoWeekYear + ", but " + formatted4);
-            formatted2 = moment(i).format('GG');
-            test.equal(isoWeekYear.slice(2, 4), formatted2, i + ": should be " + isoWeekYear + ", but " + formatted2);
+            formatted5 = moment(i, 'YYYY-MM-DD').format('GGGGG');
+            test.equal('0' + isoWeekYear, formatted5, i + ": GGGGG should be " + isoWeekYear + ", but " + formatted5);
+            formatted4 = moment(i, 'YYYY-MM-DD').format('GGGG');
+            test.equal(isoWeekYear, formatted4, i + ": GGGG should be " + isoWeekYear + ", but " + formatted4);
+            formatted2 = moment(i, 'YYYY-MM-DD').format('GG');
+            test.equal(isoWeekYear.slice(2, 4), formatted2, i + ": GG should be " + isoWeekYear + ", but " + formatted2);
         }
 
         test.done();
@@ -232,7 +282,7 @@ exports.format = {
 
     "week year formats" : function (test) {
 
-        // http://en.wikipedia.org/wiki/ISO_week
+        // http://en.wikipedia.org/wiki/ISO_week_date
         var cases = {
             "2005-01-02": "2004-53",
             "2005-12-31": "2005-52",
@@ -248,18 +298,20 @@ exports.format = {
             "2009-12-31": "2009-53",
             "2010-01-01": "2009-53",
             "2010-01-02": "2009-53",
-            "2010-01-03": "2009-53"
-        }, i, formatted5, formatted4, formatted2, isoWeekYear;
+            "2010-01-03": "2009-53",
+            "404-12-31": "0404-53",
+            "405-12-31": "0405-52"
+        }, i, isoWeekYear, formatted5, formatted4, formatted2;
 
         moment.lang('en-gb'); // 1, 4
         for (i in cases) {
             isoWeekYear = cases[i].split('-')[0];
-            formatted5 = moment(i).format('ggggg');
-            test.equal('0' + isoWeekYear, formatted5, i + ": should be " + isoWeekYear + ", but " + formatted4);
-            formatted4 = moment(i).format('gggg');
-            test.equal(isoWeekYear, formatted4, i + ": should be " + isoWeekYear + ", but " + formatted4);
-            formatted2 = moment(i).format('gg');
-            test.equal(isoWeekYear.slice(2, 4), formatted2, i + ": should be " + isoWeekYear + ", but " + formatted2);
+            formatted5 = moment(i, 'YYYY-MM-DD').format('ggggg');
+            test.equal('0' + isoWeekYear, formatted5, i + ": ggggg should be " + isoWeekYear + ", but " + formatted5);
+            formatted4 = moment(i, 'YYYY-MM-DD').format('gggg');
+            test.equal(isoWeekYear, formatted4, i + ": gggg should be " + isoWeekYear + ", but " + formatted4);
+            formatted2 = moment(i, 'YYYY-MM-DD').format('gg');
+            test.equal(isoWeekYear.slice(2, 4), formatted2, i + ": gg should be " + isoWeekYear + ", but " + formatted2);
         }
 
         test.done();
@@ -337,6 +389,20 @@ exports.format = {
 
         test.equal(moment.invalid().format(), "Invalid date");
         test.equal(moment.invalid().format('YYYY-MM-DD'), "Invalid date");
+
+        test.done();
+    },
+
+    "quarter formats" : function (test) {
+        test.expect(7);
+
+        test.equal(moment([1985, 1,  4]).format('Q'), '1', "Feb  4 1985 is Q1");
+        test.equal(moment([2029, 8, 18]).format('Q'), '3', "Sep 18 2029 is Q3");
+        test.equal(moment([2013, 3, 24]).format('Q'), '2', "Apr 24 2013 is Q2");
+        test.equal(moment([2015, 2,  5]).format('Q'), '1', "Mar  5 2015 is Q1");
+        test.equal(moment([1970, 0,  2]).format('Q'), '1', "Jan  2 1970 is Q1");
+        test.equal(moment([2001, 11, 12]).format('Q'), '4', "Dec 12 2001 is Q4");
+        test.equal(moment([2000, 0,  2]).format('[Q]Q-YYYY'), 'Q1-2000', "Jan  2 2000 is Q1");
 
         test.done();
     }

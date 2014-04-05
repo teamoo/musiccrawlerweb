@@ -36,6 +36,46 @@ exports["lang:kr"] = {
         }
         test.done();
     },
+
+    "parse meridiem" : function (test) {
+        var elements = [{
+            expression : "1981년 9월 8일 오후 2시 30분",
+            inputFormat : "YYYY[년] M[월] D[일] A h[시] m[분]",
+            outputFormat : "A",
+            expected : "오후"
+        }, {
+            expression : "1981년 9월 8일 오전 2시 30분",
+            inputFormat : "YYYY[년] M[월] D[일] A h[시] m[분]",
+            outputFormat : "A h시",
+            expected : "오전 2시"
+        }, {
+            expression : "14시 30분",
+            inputFormat : "H[시] m[분]",
+            outputFormat : "A",
+            expected : "오후"
+        }, {
+            expression : "오후 4시",
+            inputFormat : "A h[시]",
+            outputFormat : "H",
+            expected : "16"
+        }], i, l, it, actual;
+
+        test.expect(elements.length);
+
+        for (i = 0, l = elements.length; i < l; ++i) {
+            it = elements[i];
+            actual = moment(it.expression, it.inputFormat).format(it.outputFormat);
+
+            test.equal(
+                actual,
+                it.expected,
+                "'" + it.outputFormat + "' of '" + it.expression + "' must be '" + it.expected + "' but was '" + actual + "'."
+            );
+        }
+
+        test.done();
+    },
+
     "format" : function (test) {
         test.expect(22);
 
@@ -360,12 +400,12 @@ exports["lang:kr"] = {
 
         test.done();
     },
-    
+
     "returns the name of the language" : function (test) {
         if (typeof module !== 'undefined' && module.exports) {
             test.equal(require('../../lang/ko'), 'ko', "module should export ko");
         }
-        
+
         test.done();
     }
 };

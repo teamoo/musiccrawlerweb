@@ -124,9 +124,7 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites, filt
 	*/
 });
 // Publish filtered list to all clients
-Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, 
-//filter_skip, 
-filter_already_downloaded, filter_sites, filter_sort, filter_mixes, filter_id) {
+Meteor.publish('links', function (filter_date, filter_status, filter_term, filter_limit, filter_already_downloaded, filter_sites, filter_sort, filter_mixes, filter_id) {
 	//XXX wenn Meteor (oder Mongo Driver??) projections kann, downloaders nicht komplett zurückgeben, sondern mit uns drin oder komplett leer
 	if (filter_id) {
 		var aid;
@@ -149,60 +147,12 @@ filter_already_downloaded, filter_sites, filter_sort, filter_mixes, filter_id) {
 			_id: aid
 		});
 	}
-	var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
-	var thedownloaders = "dummy";
-	if (filter_term && filter_term.length > 0)
-		searchterms = filter_term.trim().split(" ");
-	for (var i = 0; i < searchterms.length; i++) {
-		searchterms[i] = new RegExp(searchterms[i], "i");
-	}
-	if (filter_already_downloaded === false) thedownloaders = this.userId;
 	
-	if (filter_mixes && filter_mixes === true)
-		query = {
-			$and:[{
-					name: {
-						$regex: "(?=^((?!Live at).)*$)(?=^((?!Chart).)*$)(?=^(?!VA).*)" }
-					},{
-					size: {
-						$lt : 80000000
-					}
-				}],
-			date_published: {
-				$gte: filter_date
-			},
-			status: {
-				$in: filter_status
-			},
-			source: {
-				$nin: filter_sites
-			},
-			downloaders: {
-				$ne: thedownloaders
-			},
-			name: {
-				$all: searchterms
-			},
-		}
-	else
-		query = {
-			date_published: {
-				$gte: filter_date
-			},
-			status: {
-				$in: filter_status
-			},
-			source: {
-				$nin: filter_sites
-			},
-			downloaders: {
-				$ne: thedownloaders
-			},
-			name: {
-				$all: searchterms
-			},
-		}
-		
+	var thelimit = Meteor.settings.public.itembadgesize * filter_limit;
+	
+	if (filter_already_downloaded === false) var thedownloaders = this.userId;
+	else var thedownloaders = "dummy";
+	
 	fields = {
 					_id: 1,
 					name: 1,
@@ -231,9 +181,69 @@ filter_already_downloaded, filter_sites, filter_sort, filter_mixes, filter_id) {
 		sort = 	{
 					date_published: -1,
 					_id: -1
-				}
+				}			
+				
+	projection = {fields: fields, sort: sort, limit: thelimit}
 	
-	projection = {fields: fields, sort: sort, limit: thelimit}//, skip: filter_skip}
+	if (filter_term && filter_term.length > 0 && filter_term != ".*") {
+			searchterms = filter_term.trim().split(" ");
+
+		for (var i = 0; i < searchterms.length; i++) {
+			console.log(searchterms[i] instanceof String);
+			if (typeof searchterms[i] == "string")
+				searchterms[i] = new RegExp(".*" + searchterms[i] + ".*", "i");
+		}
+		
+		query = {
+			name: {
+				$all: searchterms
+			}
+		}
+		
+		if (this.userId) 
+			return Links.find(query, projection);	
+	}
+	
+
+	
+	if (filter_mixes && filter_mixes === true)
+		query = {
+			$and:[{
+					name: {
+						$regex: "(?=^((?!Live at).)*$)(?=^((?!Chart).)*$)(?=^(?!VA).*)" }
+					},{
+					size: {
+						$lt : 80000000
+					}
+				}],
+			date_published: {
+				$gte: filter_date
+			},
+			status: {
+				$in: filter_status
+			},
+			source: {
+				$nin: filter_sites
+			},
+			downloaders: {
+				$ne: thedownloaders
+			}
+		}
+	else
+		query = {
+			date_published: {
+				$gte: filter_date
+			},
+			status: {
+				$in: filter_status
+			},
+			source: {
+				$nin: filter_sites
+			},
+			downloaders: {
+				$ne: thedownloaders
+			}
+		}
 	
 	if (this.userId) 
 		return Links.find(query, projection);	

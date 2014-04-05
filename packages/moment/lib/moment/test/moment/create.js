@@ -105,6 +105,23 @@ exports.create = {
         test.done();
     },
 
+    "cloning moment works with weird clones" : function (test) {
+        var extend = function (a, b) {
+                var i;
+                for (i in b) {
+                    a[i] = b[i];
+                }
+                return a;
+            },
+            now = moment(),
+            nowu = moment.utc();
+
+        test.expect(2);
+        test.equal(+extend({}, now).clone(), +now, "cloning extend-ed now is now");
+        test.equal(+extend({}, nowu).clone(), +nowu, "cloning extend-ed utc now is utc now");
+        test.done();
+    },
+
     "undefined" : function (test) {
         test.expect(1);
         test.ok(moment().toDate() instanceof Date, "undefined");
@@ -425,6 +442,7 @@ exports.create = {
             minOffset = offset - (hourOffset * 60),
             tz = (offset > 0) ? '-' + pad(hourOffset) + ':' + pad(minOffset) : '+' + pad(-hourOffset) + ':' + pad(-minOffset),
             tz2 = tz.replace(':', ''),
+            tz3 = tz2.slice(0, 3),
             formats = [
                 ['2011-10-08',                    '2011-10-08T00:00:00.000' + tz],
                 ['2011-10-08T18',                 '2011-10-08T18:00:00.000' + tz],
@@ -434,6 +452,8 @@ exports.create = {
                 ['2011-10-08T18:04:20' + tz,      '2011-10-08T18:04:20.000' + tz],
                 ['2011-10-08T18:04' + tz2,        '2011-10-08T18:04:00.000' + tz],
                 ['2011-10-08T18:04:20' + tz2,     '2011-10-08T18:04:20.000' + tz],
+                ['2011-10-08T18:04' + tz3,        '2011-10-08T18:04:00.000' + tz],
+                ['2011-10-08T18:04:20' + tz3,     '2011-10-08T18:04:20.000' + tz],
                 ['2011-10-08T18:04:20.1' + tz2,   '2011-10-08T18:04:20.100' + tz],
                 ['2011-10-08T18:04:20.11' + tz2,  '2011-10-08T18:04:20.110' + tz],
                 ['2011-10-08T18:04:20.111' + tz2, '2011-10-08T18:04:20.111' + tz],
@@ -444,6 +464,8 @@ exports.create = {
                 ['2011-10-08 18:04:20' + tz,      '2011-10-08T18:04:20.000' + tz],
                 ['2011-10-08 18:04' + tz2,        '2011-10-08T18:04:00.000' + tz],
                 ['2011-10-08 18:04:20' + tz2,     '2011-10-08T18:04:20.000' + tz],
+                ['2011-10-08 18:04' + tz3,        '2011-10-08T18:04:00.000' + tz],
+                ['2011-10-08 18:04:20' + tz3,     '2011-10-08T18:04:20.000' + tz],
                 ['2011-10-08 18:04:20.1' + tz2,   '2011-10-08T18:04:20.100' + tz],
                 ['2011-10-08 18:04:20.11' + tz2,  '2011-10-08T18:04:20.110' + tz],
                 ['2011-10-08 18:04:20.111' + tz2, '2011-10-08T18:04:20.111' + tz],
@@ -456,6 +478,8 @@ exports.create = {
                 ['2011-W40-6T18:04:20' + tz,      '2011-10-08T18:04:20.000' + tz],
                 ['2011-W40-6T18:04' + tz2,        '2011-10-08T18:04:00.000' + tz],
                 ['2011-W40-6T18:04:20' + tz2,     '2011-10-08T18:04:20.000' + tz],
+                ['2011-W40-6T18:04' + tz3,        '2011-10-08T18:04:00.000' + tz],
+                ['2011-W40-6T18:04:20' + tz3,     '2011-10-08T18:04:20.000' + tz],
                 ['2011-W40-6T18:04:20.1' + tz2,   '2011-10-08T18:04:20.100' + tz],
                 ['2011-W40-6T18:04:20.11' + tz2,  '2011-10-08T18:04:20.110' + tz],
                 ['2011-W40-6T18:04:20.111' + tz2, '2011-10-08T18:04:20.111' + tz],
@@ -466,6 +490,8 @@ exports.create = {
                 ['2011-W40-6 18:04:20' + tz,      '2011-10-08T18:04:20.000' + tz],
                 ['2011-W40-6 18:04' + tz2,        '2011-10-08T18:04:00.000' + tz],
                 ['2011-W40-6 18:04:20' + tz2,     '2011-10-08T18:04:20.000' + tz],
+                ['2011-W40-6 18:04' + tz3,        '2011-10-08T18:04:00.000' + tz],
+                ['2011-W40-6 18:04:20' + tz3,     '2011-10-08T18:04:20.000' + tz],
                 ['2011-W40-6 18:04:20.1' + tz2,   '2011-10-08T18:04:20.100' + tz],
                 ['2011-W40-6 18:04:20.11' + tz2,  '2011-10-08T18:04:20.110' + tz],
                 ['2011-W40-6 18:04:20.111' + tz2, '2011-10-08T18:04:20.111' + tz],
@@ -477,6 +503,8 @@ exports.create = {
                 ['2011-281T18:04:20' + tz,        '2011-10-08T18:04:20.000' + tz],
                 ['2011-281T18:04' + tz2,          '2011-10-08T18:04:00.000' + tz],
                 ['2011-281T18:04:20' + tz2,       '2011-10-08T18:04:20.000' + tz],
+                ['2011-281T18:04' + tz3,          '2011-10-08T18:04:00.000' + tz],
+                ['2011-281T18:04:20' + tz3,       '2011-10-08T18:04:20.000' + tz],
                 ['2011-281T18:04:20.1' + tz2,     '2011-10-08T18:04:20.100' + tz],
                 ['2011-281T18:04:20.11' + tz2,    '2011-10-08T18:04:20.110' + tz],
                 ['2011-281T18:04:20.111' + tz2,   '2011-10-08T18:04:20.111' + tz],
@@ -487,6 +515,8 @@ exports.create = {
                 ['2011-281 18:04:20' + tz,        '2011-10-08T18:04:20.000' + tz],
                 ['2011-281 18:04' + tz2,          '2011-10-08T18:04:00.000' + tz],
                 ['2011-281 18:04:20' + tz2,       '2011-10-08T18:04:20.000' + tz],
+                ['2011-281 18:04' + tz3,          '2011-10-08T18:04:00.000' + tz],
+                ['2011-281 18:04:20' + tz3,       '2011-10-08T18:04:20.000' + tz],
                 ['2011-281 18:04:20.1' + tz2,     '2011-10-08T18:04:20.100' + tz],
                 ['2011-281 18:04:20.11' + tz2,    '2011-10-08T18:04:20.110' + tz],
                 ['2011-281 18:04:20.111' + tz2,   '2011-10-08T18:04:20.111' + tz]
@@ -500,29 +530,32 @@ exports.create = {
 
     "parsing ISO with Z" : function (test) {
         var i, mom, formats = [
-            ['2011-10-08T18:04Z',             '2011-10-08T18:04:00.000'],
-            ['2011-10-08T18:04:20Z',          '2011-10-08T18:04:20.000'],
-            ['2011-10-08T18:04:20.1Z',        '2011-10-08T18:04:20.100'],
-            ['2011-10-08T18:04:20.11Z',       '2011-10-08T18:04:20.110'],
-            ['2011-10-08T18:04:20.111Z',      '2011-10-08T18:04:20.111'],
-            ['2011-W40-6T18Z',                '2011-10-08T18:00:00.000'],
-            ['2011-W40-6T18:04Z',             '2011-10-08T18:04:00.000'],
-            ['2011-W40-6T18:04:20Z',          '2011-10-08T18:04:20.000'],
-            ['2011-W40-6T18:04:20.1Z',        '2011-10-08T18:04:20.100'],
-            ['2011-W40-6T18:04:20.11Z',       '2011-10-08T18:04:20.110'],
-            ['2011-W40-6T18:04:20.111Z',      '2011-10-08T18:04:20.111'],
-            ['2011-281T18Z',                  '2011-10-08T18:00:00.000'],
-            ['2011-281T18:04Z',               '2011-10-08T18:04:00.000'],
-            ['2011-281T18:04:20Z',            '2011-10-08T18:04:20.000'],
-            ['2011-281T18:04:20Z',            '2011-10-08T18:04:20.000'],
-            ['2011-281T18:04:20.1Z',          '2011-10-08T18:04:20.100'],
-            ['2011-281T18:04:20.11Z',         '2011-10-08T18:04:20.110'],
-            ['2011-281T18:04:20.111Z',        '2011-10-08T18:04:20.111']
+            ['2011-10-08T18:04',             '2011-10-08T18:04:00.000'],
+            ['2011-10-08T18:04:20',          '2011-10-08T18:04:20.000'],
+            ['2011-10-08T18:04:20.1',        '2011-10-08T18:04:20.100'],
+            ['2011-10-08T18:04:20.11',       '2011-10-08T18:04:20.110'],
+            ['2011-10-08T18:04:20.111',      '2011-10-08T18:04:20.111'],
+            ['2011-W40-6T18',                '2011-10-08T18:00:00.000'],
+            ['2011-W40-6T18:04',             '2011-10-08T18:04:00.000'],
+            ['2011-W40-6T18:04:20',          '2011-10-08T18:04:20.000'],
+            ['2011-W40-6T18:04:20.1',        '2011-10-08T18:04:20.100'],
+            ['2011-W40-6T18:04:20.11',       '2011-10-08T18:04:20.110'],
+            ['2011-W40-6T18:04:20.111',      '2011-10-08T18:04:20.111'],
+            ['2011-281T18',                  '2011-10-08T18:00:00.000'],
+            ['2011-281T18:04',               '2011-10-08T18:04:00.000'],
+            ['2011-281T18:04:20',            '2011-10-08T18:04:20.000'],
+            ['2011-281T18:04:20',            '2011-10-08T18:04:20.000'],
+            ['2011-281T18:04:20.1',          '2011-10-08T18:04:20.100'],
+            ['2011-281T18:04:20.11',         '2011-10-08T18:04:20.110'],
+            ['2011-281T18:04:20.111',        '2011-10-08T18:04:20.111']
         ];
 
         for (i = 0; i < formats.length; i++) {
-            mom = moment(formats[i][0]).utc();
-            test.equal(mom.format('YYYY-MM-DDTHH:mm:ss.SSS'), formats[i][1], "moment should be able to parse ISO in UTC " + formats[i][0]);
+            mom = moment(formats[i][0] + 'Z').utc();
+            test.equal(mom.format('YYYY-MM-DDTHH:mm:ss.SSS'), formats[i][1], "moment should be able to parse ISO in UTC " + formats[i][0] + 'Z');
+
+            mom = moment(formats[i][0] + ' Z').utc();
+            test.equal(mom.format('YYYY-MM-DDTHH:mm:ss.SSS'), formats[i][1], "moment should be able to parse ISO in UTC " + formats[i][0] + ' Z');
         }
         test.done();
     },
@@ -615,7 +648,6 @@ exports.create = {
     },
 
     "strict parsing" : function (test) {
-        test.expect(11);
         test.equal(moment("2012-05", "YYYY-MM", true).format("YYYY-MM"), "2012-05", "parse correct string");
         test.equal(moment(" 2012-05", "YYYY-MM", true).isValid(), false, "fail on extra whitespace");
         test.equal(moment("foo 2012-05", "[foo] YYYY-MM", true).format('YYYY-MM'), "2012-05", "handle fixed text");
@@ -629,6 +661,48 @@ exports.create = {
         test.equal(moment("2010.*...", "YYYY.*", true).isValid(), false, "invalid format with regex chars");
         test.equal(moment("2010.*", "YYYY.*", true).year(), 2010, "valid format with regex chars");
         test.equal(moment(".*2010.*", ".*YYYY.*", true).year(), 2010, "valid format with regex chars on both sides");
+
+        //strict tokens
+        test.equal(moment("-5-05-25", 'YYYY-MM-DD', true).isValid(), false, "invalid negative year");
+        test.equal(moment("2-05-25", 'YYYY-MM-DD', true).isValid(), false, "invalid one-digit year");
+        test.equal(moment("20-05-25", 'YYYY-MM-DD', true).isValid(), false, "invalid two-digit year");
+        test.equal(moment("201-05-25", 'YYYY-MM-DD', true).isValid(), false, "invalid three-digit year");
+        test.equal(moment("2010-05-25", 'YYYY-MM-DD', true).isValid(), true, "valid four-digit year");
+        test.equal(moment("22010-05-25", 'YYYY-MM-DD', true).isValid(), false, "invalid five-digit year");
+
+        test.equal(moment("12-05-25", 'YY-MM-DD', true).isValid(), true, "valid two-digit year");
+        test.equal(moment("2012-05-25", 'YY-MM-DD', true).isValid(), false, "invalid four-digit year");
+
+        test.equal(moment("-5-05-25", 'Y-MM-DD', true).isValid(), true, "valid negative year");
+        test.equal(moment("2-05-25", 'Y-MM-DD', true).isValid(), true, "valid one-digit year");
+        test.equal(moment("20-05-25", 'Y-MM-DD', true).isValid(), true, "valid two-digit year");
+        test.equal(moment("201-05-25", 'Y-MM-DD', true).isValid(), true, "valid three-digit year");
+
+        test.equal(moment("2012-5-25", 'YYYY-M-DD', true).isValid(), true, "valid one-digit month");
+        test.equal(moment("2012-5-25", 'YYYY-MM-DD', true).isValid(), false, "invalid one-digit month");
+        test.equal(moment("2012-05-25", 'YYYY-M-DD', true).isValid(), true, "valid one-digit month");
+        test.equal(moment("2012-05-25", 'YYYY-MM-DD', true).isValid(), true, "valid one-digit month");
+
+        test.equal(moment("2012-05-2", 'YYYY-MM-D', true).isValid(), true, "valid one-digit day");
+        test.equal(moment("2012-05-2", 'YYYY-MM-DD', true).isValid(), false, "invalid one-digit day");
+        test.equal(moment("2012-05-02", 'YYYY-MM-D', true).isValid(), true, "valid two-digit day");
+        test.equal(moment("2012-05-02", 'YYYY-MM-DD', true).isValid(), true, "valid two-digit day");
+
+        test.equal(moment("+002012-05-25", 'YYYYY-MM-DD', true).isValid(), true, "valid six-digit year");
+        test.equal(moment("+2012-05-25", 'YYYYY-MM-DD', true).isValid(), false, "invalid four-digit year");
+
+        //thse are kinda pointless, but they should work as expected
+        test.equal(moment("1", 'S', true).isValid(), true, "valid one-digit milisecond");
+        test.equal(moment("12", 'S', true).isValid(), false, "invalid two-digit milisecond");
+        test.equal(moment("123", 'S', true).isValid(), false, "invalid three-digit milisecond");
+
+        test.equal(moment("1", 'SS', true).isValid(), false, "invalid one-digit milisecond");
+        test.equal(moment("12", 'SS', true).isValid(), true, "valid two-digit milisecond");
+        test.equal(moment("123", 'SS', true).isValid(), false, "invalid three-digit milisecond");
+
+        test.equal(moment("1", 'SSS', true).isValid(), false, "invalid one-digit milisecond");
+        test.equal(moment("12", 'SSS', true).isValid(), false, "invalid two-digit milisecond");
+        test.equal(moment("123", 'SSS', true).isValid(), true, "valid three-digit milisecond");
 
         test.done();
     },
@@ -702,6 +776,13 @@ exports.create = {
 
         //can parse other stuff too
         test.equal(moment('1999-W37-4 3:30', 'GGGG-[W]WW-E HH:mm').format('YYYY MM DD HH:mm'), '1999 09 16 03:30', "parsing weeks and hours");
+
+        // In safari, all years before 1300 are shifted back with one day.
+        // http://stackoverflow.com/questions/20768975/safari-subtracts-1-day-from-dates-before-1300
+        if (new Date("1300-01-01").getUTCFullYear() === 1300) {
+            // Years less than 100
+            ver('0098-06', 'GGGG-WW', "0098 02 03", "small years work", true);
+        }
 
         test.done();
     },

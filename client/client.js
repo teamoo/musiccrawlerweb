@@ -1,4 +1,5 @@
-﻿
+﻿//url = encodeURIComponent(searchHost) + "/ip" + ipprot_q_current + "%252C" + ipprot_a_current + "/ha" + hash_ + "/cs" + cs_ + "/u" + u_ + "/" + mp3_ + ".mp3?vkid=" + encodeURIComponent(s_vk_id[a] + "&vkoid=" + s_vk_oid[a] + "&us=" + encodeURIComponent(u_us_current))
+
 moment.lang('de');
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
@@ -24,7 +25,7 @@ Session.setDefault("progressState", undefined);
 Session.setDefault("selected_navitem", 90);
 Session.setDefault("filter_date", new Date(new Date().setDate(new Date().getDate() - 90)));
 Session.setDefault("filter_status", ["on"]);
-Session.setDefault("filter_term", ".*");
+Session.setDefault("filter_term", "");
 Session.setDefault("filter_limit", 1);
 Session.setDefault("filter_skip", 0);
 Session.setDefault("filter_sites", []);
@@ -39,120 +40,71 @@ Session.setDefault("filter_sort", "date_published");
 Session.setDefault("init",false);
 
 // Router.configure({
- // waitOn: function () {
-   // return [Meteor.subscribe('userData'), Meteor.subscribe('allUserData'), Meteor.subscribe('sites'), Meteor.subscribe('links')];
- // }
+//  waitOn: function () {
+//    return [Meteor.subscribe('userData'), Meteor.subscribe('allUserData'), Meteor.subscribe('sites'), Meteor.subscribe('links')];
+//  }
 // });
-
+//
 // Router.map(function () {
- // /**
-  // * The route's name is "home"
-  // * The route's template is also "home"
-  // * The default action will render the home template
-  // */
- // this.route('home', {
-   // path: '/'
- // });
-
- // this.route('links', {
-   // path: '/links'
- // });
-
- // this.route('link', {
-   // path: '/link/:_id',
-   // load: function () {
-     // // called on first load
-   // },
-   // // before hooks are run before your action
-   // before: [
-     // function () {
-			// Session.set('filter_id', this.params._id);
-     // },
-     // function () {
-       // // we're done waiting on all subs
-       // if (this.ready()) {
-       // } else {
-         // this.stop(); // stop downstream funcs from running
-       // }
-     // }
-   // ],
-   // action: function () {
-   // },
-   // unload: function () {
-     // // before a new route is run
-   // }
- // });
- 
-   // this.route('set', {
-   // path: '/set/:_id',
-   // load: function () {
-     // // called on first load
-   // },
-   // // before hooks are run before your action
-   // before: [
-     // function () {
-			// Session.set('filter_id', this.params._id);
-     // },
-     // function () {
-       // // we're done waiting on all subs
-       // if (this.ready()) {
-       // } else {
-         // this.stop(); // stop downstream funcs from running
-       // }
-     // }
-   // ],
-   // action: function () {
-   // },
-   // unload: function () {
-     // // before a new route is run
-   // }
- // });
- 
-	// this.route('search', {
-   // path: '/:searchterm',
-   // load: function () {
-     // // called on first load
-   // },
-   // // before hooks are run before your action
-   // before: [
-     // function () {
-		// if (this.params.searchterm) {
-			// var searchterm = this.params.searchterm;
-			// var prev_filter_date = Session.get("filter_date");
-			// var prev_filter_skip = Session.get("filter_skip");
-			// Session.set("links_completed", false);
-			// Session.set("prev_filter_skip", prev_filter_skip);
-			// Session.set("prev_filter_date", prev_filter_date);
-			// Session.set("hide_mixes",false);
-			// Session.set("filter_show_already_downloaded", true);
-			// Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
-			// Session.set("filter_term", ".*" + searchterm.trim().replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").replace(/\_/g," ") + ".*");
-			
-			// //if (searchterm.indexOf(" ") != -1 || searchterm.indexOf("%20") != -1)
-			// //	this.route(Router.routes['search'].path({searchterm: searchterm.replace(/\s|\(/g,"_").replace(/\W/g,"")}));
-		// }	
-     // },
-     // function () {
-       // // we're done waiting on all subs
-       // if (this.ready()) {
-       // } else {
-         // this.stop(); // stop downstream funcs from running
-       // }
-     // }
-   // ],
-   // action: function () {
-   // },
-   // unload: function () {
-     // // before a new route is run
-   // }
- // });
+//  /**
+//   * The route's name is "home"
+//   * The route's template is also "home"
+//   * The default action will render the home template
+//   */
+//  this.route('home', {
+//    path: '/'
+//  });
+//
+//  this.route('links', {
+//    path: '/links'
+//  });
+//
+//  this.route('link', {
+//    path: '/link/:_id',
+//    onRun: function () {
+//      // called on first load
+//    },
+//    // before hooks are run before your action
+//    onBeforeAction: [
+//      function () {
+//			 Session.set('filter_id', this.params._id);
+//      },
+//      function () {
+//        // we're done waiting on all subs
+//        if (this.ready()) {
+//        } else {
+//          this.stop(); // stop downstream funcs from running
+//        }
+//      }
+//    ],
+//  });
+// 
+//    this.route('set', {
+//    path: '/set/:_id',
+//    onRun: function () {
+//      // called on first load
+//    },
+//   // // before hooks are run before your action
+//    onBeforeAction: [
+//      function () {
+//			 Session.set('filter_id', this.params._id);
+//      },
+//      function () {
+//        // we're done waiting on all subs
+//        if (this.ready()) {
+//        } else {
+//          this.stop(); // stop downstream funcs from running
+//        }
+//      }
+//    ],
+//  });
 // });
 
 //local Collection for external search results
 SearchResults = new Meteor.Collection(null);
 //Subscriptions
 Deps.autorun(function () {
-	if (DDP._allSubscriptionsReady() && !Session.equals("filter_term",".*"))  {
+	if (DDP._allSubscriptionsReady() && !Session.equals("filter_term",""))  {
 		var timer_start_search = Meteor.setInterval(function(){
 		
 				if (Session.equals('links_completed',true) && Links.find().count() <= 50 && Meteor.user() && Meteor.user().profile.searchproviders.length){
@@ -200,14 +152,14 @@ Deps.autorun(function () {
 									var doc = document.implementation.createHTMLDocument("mp3monkey");
 									doc.documentElement.innerHTML = result.content;
 									
-									var iterartists = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/b', doc, null, XPathResult.ANY_TYPE, null );
-									var itertitles = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td[4]/div/text()', doc, null, XPathResult.ANY_TYPE, null );
+									//var iterartists = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/b', doc, null, XPathResult.ANY_TYPE, null );
+									var itertitles = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td[4]/div', doc, null, XPathResult.ANY_TYPE, null );
 									//var iterstreamurls = doc.evaluate( '//div[@class=\'items\']//div[@class=\'track clearfix\']/@data-src', doc, null, XPathResult.ANY_TYPE, null );
 									var iterurls = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/noindex/a/@href', doc, null, XPathResult.ANY_TYPE, null );
 									var iterdurations = doc.evaluate( '//*[@id=\'glav_poisk\']/ul/li/table/tbody/tr/td/div/div/div[@class=\'track_time\']', doc, null, XPathResult.ANY_TYPE, null );
 									
 									try {
-									  var artistnode = iterartists.iterateNext();
+									  //var artistnode = iterartists.iterateNext();
 									  var titlenode = itertitles.iterateNext();
 									  //var stream_urlnode = iterstreamurls.iterateNext();
 									  var urlnode = iterurls.iterateNext();
@@ -215,12 +167,12 @@ Deps.autorun(function () {
 									  
 									  var counter = 0;
 									  
-									  while (artistnode && titlenode &&  urlnode && durationnode && counter < 10) {		
+									  while (titlenode &&  urlnode && durationnode && counter < 10) {		
 										//stream_urlnode &&
 										url = urlnode.textContent.replace("http//","http://");
 										//stream_url = stream_urlnode.textContent;
 										duration = durationnode.textContent;
-										name = artistnode.textContent + " - " + titlenode.textContent;
+										name = titlenode.textContent;
 										
 										if (!SearchResults.findOne({
 											url: url
@@ -235,7 +187,7 @@ Deps.autorun(function () {
 										
 										counter++;
 										
-										artistnode = iterartists.iterateNext();
+										//artistnode = iterartists.iterateNext();
 										titlenode = itertitles.iterateNext();
 										//stream_urlnode = iterstreamurls.iterateNext();
 										urlnode = iterurls.iterateNext();
@@ -284,9 +236,11 @@ Deps.autorun(function () {
 											status: "unknown",
 											name: thisNode1.textContent.replace(/\s+/g,' ').replace(/\[.*\]/g,"").trim(),
 											url: theurl,
-											duration: moment(duration,"mm:ss")
+											duration: moment(duration,"mm:ss"),
+											referer: "http://muzofon.com/search/" + encodeURIComponent(filter_term_external)
 										});
 										
+										console.log(SearchResults.find().fetch());
 										
 										thisNode1 = iternames.iterateNext();
 										thisNode2 = iterlinks.iterateNext();
@@ -376,8 +330,6 @@ Deps.autorun(function () {
 									var doc = document.implementation.createHTMLDocument("myfreemp3.eu");
 									doc.documentElement.innerHTML = result.content;
 									
-									console.log(result.content);
-									
 									//var iterartists = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'artist\']', doc, null, XPathResult.ANY_TYPE, null );
 									//var itertitles = doc.evaluate( '//div[@class=\'items\']//div[@class=\'info\']//span[@class=\'title\']', doc, null, XPathResult.ANY_TYPE, null );
 									var iternames = doc.evaluate( '//a[@class=\'info\']/text()', doc, null, XPathResult.ANY_TYPE, null );
@@ -395,7 +347,7 @@ Deps.autorun(function () {
 									  while (namenode && idnode && durationnode && counter < 10) {										
 										url = "http://89.248.172.6/dvv.php?q=" + idnode.textContent + "_/";
 										duration = durationnode.textContent;
-										name = namenode.textContent;
+										name = namenode.textContent.replace("mp3","").trim();
 										
 										if (!SearchResults.findOne({
 											url: url
@@ -456,9 +408,9 @@ Deps.autorun(function () {
 							});
 						}
 						if (_.contains(Meteor.user().profile.searchproviders, "beatport")) {
-							HTTP.get("http://oauth-api.beatport.com/catalog/3/search/?query=" + filter_term_external + "&facets=fieldType:track&perPage=17&page=1&sortBy=publishDate+ASC", function(error,result) {
-								if (result && result.data && result.data.results) {
-									var songs = result.data.results;
+							Meteor.call("searchBeatport", filter_term_external, function(error,result) {
+								if (result && result.results) {
+									var songs = result.results;
 									for (var i = 0; i <= songs.length; i++) {
 										if (songs[i]) {
 											thename = _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title
@@ -468,13 +420,16 @@ Deps.autorun(function () {
 											})) SearchResults.insert({
 													hoster: "beatport.com",
 													status: "on",
+													id: songs[i].id,
 													name: _.reduce(songs[i].artists, function(memo, token) {return memo + ", " + String(token.name)},new String()).substring(1).trim() + " - " + songs[i].title,
 													url: "http://www.beatport.com/track/" + songs[i].slug + "/" + songs[i].id,
 													stream_url: "http://geo-samples.beatport.com/lofi/" + songs[i].id + ".LOFI.mp3",
-													duration: moment.duration(songs[i]),
+													duration: moment(songs[i].lengthMs),
 													date_published: moment(songs[i].releaseDate).toDate()
 												});
 										}
+										
+										console.log(SearchResults.find().fetch());
 									}
 									Session.set("loading_results", false);
 								}
@@ -611,8 +566,12 @@ Deps.autorun(function () {
 		$('.crawl_single_site').tooltip("enable");
 	}
 	
+	
+	
 	if (Meteor.user() && Session.equals("init",false)) {
 		Session.set("init",true);
+		
+		
 		// if user profile is already available, set session varibles for filtering links just for specific sites
 		// and showing already downloaded items. They are not reactive because we need to change them when searching
 
@@ -759,7 +718,6 @@ Meteor.startup(function () {
 // usage: {{dateFormatPretty creation_date}}
 UI.registerHelper('dateFormatPretty', function (context) {
 	if (window.moment) {
-		moment.lang('de');
 		if (context && moment(context).isValid()) return moment(context).fromNow();
 		return "noch nie";
 	}
@@ -767,8 +725,6 @@ UI.registerHelper('dateFormatPretty', function (context) {
 });
 UI.registerHelper('millisecondsFormatPretty', function (context) {
 	if (window.moment) {
-		moment.lang('de');
-		
 		if (context && moment(context).isValid()) return moment(context).format('mm:ss') + " min.";
 		return "unbekannt";
 	}
@@ -808,7 +764,7 @@ Template.page.linksFoundLessThanThree = function () {
 
 Template.page.isExternalSearch = function () {
 	if (Meteor.user())
-		return (!(Session.equals("filter_term", ".*")) && Meteor.user().profile.searchproviders.length);
+		return (!(Session.equals("filter_term", "")) && Meteor.user().profile.searchproviders.length);
 	return false;
 };
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
@@ -846,13 +802,11 @@ Template.linklist.isAnyLinkSelected = function () {
 };
 // Funktion um den letzten Suchbegriff wieder ins Input Feld einzutragen
 Template.navigation.getLastSearchTerm = function () {
-	var lastterm = Session.get("filter_term");
-	if (lastterm != "" && lastterm != ".*") return lastterm.replace(/\.\*/g, "").replace(/\\/g, "");
+	if (!Session.equals("filter_term","")) return Session.get("filter_term").replace(/\.\*/g, "").replace(/\\/g, "");
 	return undefined;
 };
 Template.link.isSearch = function () {
-	var lastterm = Session.get("filter_term");
-	if (lastterm != "" && lastterm != ".*") return true;
+	if (!Session.equals("filter_term","")) return true;
 	return false;
 };
 // Funktion um die Anzahl der Seiten als badge anzuzeigen
@@ -925,21 +879,22 @@ Template.link.getSourceName = function () {
 	}
 	return undefined;
 };
+
 Template.link.isPlayable = function () {
 	if (this.status != 'off') {
 		switch (this.hoster) {
 			case "soundcloud.com":
-				return true;
 			case "youtube.com":
-				return true;
-			case "zippyshare.com", "myfreemp3.eu":
-				return true;
-			case "beatport.com", "mp3monkey":
-				if (this.stream_url) return true;
-				return false;
+			case "myfreemp3.eu":
 			case "ex.fm":
 				return true;
+			case "beatport.com" :
+			case "mp3monkey.net":
+			case "zippyshare.com" :
+				if (this.stream_url) return true;
+				return false;
 			case "vimeo.com":
+			case "muzofon.com":
 				return false;
 			case "vk.com":
 				if (this.aid && this.oid)
@@ -966,18 +921,22 @@ Template.searchresult.isPlayable = function () {
 	if (this.status != 'off') {
 		switch (this.hoster) {
 			case "soundcloud.com":
-				return true;
 			case "youtube.com":
+			case "myfreemp3.eu":
+			case "ex.fm":
 				return true;
-			case "zippyshare.com","beatport.com", "mp3monkey":
+			case "beatport.com" :
+			case "mp3monkey.net":
+			case "zippyshare.com" :
 				if (this.stream_url) return true;
 				return false;
-			case "ex.fm", "myfreemp3.eu":
-				return true;
+			case "muzofon.com":
 			case "vimeo.com":
 				return false;
 			case "vk.com":
-				return true;
+				if (this.aid && this.oid)
+					return true;
+				return false;
 			default:
 				return false;
 		}
@@ -1071,7 +1030,6 @@ UI.body.events({
 							$('.icon-comment').popover('hide');
 						}
 		}
-		
 	}
 });
 // Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
@@ -1083,7 +1041,7 @@ Template.connectionLostWarning.events({
 			window.close();
 		}
 	},
-	'click #waitbutton': function (event) {
+	'click #waitbutton': function (event, template) {
 		event.preventDefault();
 		event.target.disabled = true;
 		event.target.innerHTML = "<i class='icon-loader'></i> Warten";
@@ -1119,19 +1077,19 @@ Template.user_loggedin.events({
 		});
 	},
 	//Accounteinstellungen anzeigen
-	'click #showsettings': function (event) {
+	'click #showsettings': function (event, template) {
 		event.preventDefault();
 		if (Meteor.user())
 			Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		openAccountSettingsDialog();
 		return false;
 	},
-	'click #showsitefilter': function (event) {
+	'click #showsitefilter': function (event, template) {
 		event.preventDefault();
 		openFilterSitesDialog();
 		return false;
 	},
-	'click #accountbtn': function (event) {
+	'click #accountbtn': function (event, template) {
 		event.preventDefault();
 		event.stopPropagation();
 		return false;
@@ -1180,7 +1138,7 @@ Template.navigation.rendered = function () {
 			Session.set("filter_show_already_downloaded", true);
 			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
-			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
+			Session.set("filter_term", term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1"));
 			Session.set("filter_skip", 0);
 			Session.set("filter_sites", []);
 			Session.set("filter_mixes",false);
@@ -1236,7 +1194,7 @@ Template.navigation.rendered = function () {
 //Eventhandler für die Navigationsleiste
 Template.navigation.events({
 	//Seite hinzufügen Dialog öffnen
-	'click #addsitebutton': function (event) {
+	'click #addsitebutton': function (event, template) {
 		event.preventDefault();
 		openAddSiteDialog();
 		Meteor.setTimeout(function () {
@@ -1245,7 +1203,7 @@ Template.navigation.events({
 		return false;
 	},
 	//Seiten anzeigen Dialog öffnen
-	'click #showsitesbutton': function (event) {
+	'click #showsitesbutton': function (event, template) {
 		event.preventDefault();
 		openSitesDialog();
 		return false;
@@ -1481,7 +1439,7 @@ Template.navigation.events({
 		}, 250);
 		return false;
 	},
-	'click #bulkdownloadbutton': function (event) {
+	'click #bulkdownloadbutton': function (event, template) {
 		event.preventDefault();
 		openBulkDownloadDialog();
 		return false;
@@ -1503,7 +1461,7 @@ Template.navigation.events({
 		Session.set("filter_sites", _.without(sitefilter, Meteor.user().id));
 		Session.set("filter_limit", 1);
 		Session.set("filter_skip", 0);
-		Session.set("filter_term", ".*");
+		Session.set("filter_term", "");
 		Session.set("filter_term_external", undefined);
 		Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - event.target.id)));
 		Session.set("selected_navitem", parseInt(event.target.id));
@@ -1534,12 +1492,12 @@ Template.navigation.events({
 			Session.set("filter_show_already_downloaded", true);
 			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
 			Session.set("filter_status", ["on", "off", "unknown"]);
-			Session.set("filter_term", ".*" + term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*");
+			Session.set("filter_term", term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1"));
 		} else {
 			if (Meteor.user())
 				Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 				Session.set("filter_mixes", Meteor.user().profile.hidemixes);
-			Session.set("filter_term", ".*");
+			Session.set("filter_term", "");
 			if (Meteor.user() && Meteor.user().profile.filteredsites) {
 				Session.set("filter_sites", Meteor.user().profile.filteredsites);
 				Session.set("temp_filter_sites", Meteor.user().profile.filteredsites);
@@ -1569,28 +1527,6 @@ Template.navigation.events({
 			Session.set("loading_results", false);
 		}, 8000);
 		
-//		var waitcount = 0;
-//		
-//		
-//		function waitForCompletionOfLinks()
-//		{
-//			if(Session.equals("links_completed",false) && waitcount <= 16)
-//			{
-//				waitcount++;
-//			}
-//			else
-//			{	
-//				Meteor.clearInterval(timerID); // stop firing the timer
-//				
-//				Meteor.setTimeout(function() {
-//					if (Session.equals("links_completed", true) && (!Links.findOne() || (Links.find().count() < 3))) {
-//					
-//				},500);
-//			}
-//		}
-//
-//		var timerID = Meteor.setInterval(waitForCompletionOfLinks, 250, waitcount);
-
 		return false;
 	}
 });
@@ -2099,7 +2035,7 @@ Template.link.events({
 				}
 			});
 	},
-	'click .icon-comment': function (event) {
+	'click .icon-comment': function (event, template) {
 		event.stopPropagation();
 		$('.icon-comment:not(#' + event.target.id + ')').popover('hide');
 		return false;
@@ -2688,7 +2624,7 @@ Template.accountSettingsDialog.events({
 	},
 	
 	'click .cancel': function (event, template) {
-		var aip = template.find("#ip").value;
+		var aip = template.find('#ip').value;
 		var aport = template.find("#port").value;
 		var aupdateip = template.find("#autoupdate").checked;
 		var ashowtooltips = template.find("#showtooltips").checked;
@@ -2701,8 +2637,9 @@ Template.accountSettingsDialog.events({
 		var searchexfm = template.find("#searchexfm").checked;
 		var searchvk = template.find("#searchvk").checked;
 		var searchbeatport = template.find("#searchbeatport").checked;
-		var searchmyfreemp3 = template.find("#searchmyfreemp3").checked;
 		var searchmpmonkey = template.find("#searchmp3monkey").checked;
+		var searchmyfreemp3 = template.find("#searchmyfreemp3").checked;
+		
 		var searchproviders = [];
 		if (searchzippysharemusic) searchproviders.push("zippysharemusic");
 		if (searchmuzofon) searchproviders.push("muzofon");
@@ -2712,7 +2649,7 @@ Template.accountSettingsDialog.events({
 		if (searchvk && VK.Auth.getSession()) searchproviders.push("vk.com");
 		if (searchbeatport) searchproviders.push("beatport");
 		if (searchmyfreemp3) searchproviders.push("myfreemp3.eu");
-		if (searchmp3monkey) searchproviders.push("mp3monkey");
+		if (searchmp3monkey.checked) searchproviders.push("mp3monkey");
 		Session.set("filter_show_already_downloaded", ashowdownloadedlinks);
 		Session.set("filter_mixes", ahidemixes);
 		

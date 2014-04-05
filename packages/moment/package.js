@@ -8,5 +8,6 @@ Package.on_use(function (api, where) {
   }
   where = where || ['client', 'server'];
   api.add_files('lib/moment/moment.js', where);
+  api.add_files('lib/moment/lang/de.js', 'client');
   api.add_files('export-moment.js', where);
 });

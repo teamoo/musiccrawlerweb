@@ -315,7 +315,7 @@
 			</td>
 			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#if isPlayable}}
-					<i class="icon-play player hand"></i>
+					{{> playableicon}}
 				{{/if}}
 			</td>
 		  <td style="max-width: 400px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
@@ -379,7 +379,7 @@
 			</td>
 			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
 				{{#if isPlayable}}
-					<i class="icon-play player hand"></i>
+					{{> playableicon}}
 				{{/if}}
 			</td>
 			<td style="max-width: 400px;color: gray;"><a style="color: gray;" class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
@@ -433,7 +433,7 @@
 	</td>
 	<td style="width:14px;min-width:14px;max-width:14px">
 		{{#if isPlayable}}
-			<i class="icon-play player hand"></i>
+			{{> playableicon}}
 		{{/if}}
 	</td>
     <td style="min-width:400px;max-width: 400px;"><a href="{{url}}" target="_blank">{{name}}</a></td>
@@ -529,7 +529,7 @@
 			
 		<label class="checkbox">
 			<input id="searchbeatport" type="checkbox" checked={{searchProviderEnabled "beatport"}}>
-		<a href="http://www.beatport.com"><img alt='beatport.com' src='/beatport.png'></a> <small>(Anmeldung erforderlich)</small>
+		<a href="http://www.beatport.com"><img alt='beatport.com' src='/beatport.png'></a>
 		</label>
 	</form>
   </div>
@@ -838,6 +838,10 @@
 
 <template name ="specialsiteicon">
 <i class="icon-globe"></i>
+</template>
+
+<template name="playableicon">
+<i class="icon-play player hand"></i>
 </template>
 
 
