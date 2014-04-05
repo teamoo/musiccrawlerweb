@@ -240,8 +240,6 @@ Deps.autorun(function () {
 											referer: "http://muzofon.com/search/" + encodeURIComponent(filter_term_external)
 										});
 										
-										console.log(SearchResults.find().fetch());
-										
 										thisNode1 = iternames.iterateNext();
 										thisNode2 = iterlinks.iterateNext();
 										counter++;
@@ -2169,13 +2167,27 @@ Template.searchresult.events({
 		else 
 			event.target.className = "icon-loader";
 
+		if (this.hoster === "muzofon.com") {
+			Meteor.call('getMuzofonDownloadLink', this.url, this.referer, function (error, result) {
+				if (result) {
+				 	writeConsole(result);
+				 	if (event.target.className.indexOf("icon") === -1)
+				 		event.target.innerHTML = "<i class='icon-ok'></i>";
+				 	else 
+				 		event.target.className = "icon-ok";
+				}
+								
+			});
+			return;
+		}
+	
+		if (this.hoster === "myfreemp3.eu")
+		{
+			window.open(this.url,'_blank');
+			return;
+		}
+		
 		if (Session.equals("JDOnlineStatus", true)) {
-			if (this.hoster === "myfreemp3.eu")
-			{
-				window.open(this.url,'_blank');
-				return;
-			}
-			
 			var grabberoption;
 			if (this.url.match(/youtube|vimeo/i)) grabberoption = "grabber1";
 			else grabberoption = "grabber0";
