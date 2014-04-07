@@ -180,7 +180,7 @@
 				<ul class="nav pull-right">
 					<li class="hidden-phone">
 						<form class="navbar-search pull-right" id="searchform">
-							<input type="search" class="search-query span20" placeholder="Titel, Interpret, Album..." id="searchfield" value="{{getLastSearchTerm}}" autocomplete="off" autocorrect="off" data-provide="typeahead">
+							<input type="search" class="search-query span20" placeholder="Titel, Interpret, Album..." id="searchfield" value="{{getLastSearchTerm}}" autocomplete="off" autocorrect="off" data-provide="typeahead" />
 							<div class="icon-search"></div>
 						</form>
 					</li>
@@ -239,7 +239,7 @@
 	<table class="table table-condensed table-striped">
 		<thead>
 			<th>
-				<input type="checkbox" id="select_all">
+				<input type="checkbox" id="select_all" />
 			</th>
 			<th class="hidden-phone">
 				{{#if isAnyLinkSelectedSet}}
@@ -297,9 +297,9 @@
 			<td style="width:12px;min-width:12px;max-width:12px">
 				{{#if isDownloadable}}
 					{{#if isLinkSelected}}
-						<input type="checkbox" class="link_checkbox" checked="checked">
+						<input type="checkbox" class="link_checkbox" checked="checked" />
 					{{else}}
-						<input type="checkbox" class="link_checkbox">
+						<input type="checkbox" class="link_checkbox" />
 					{{/if}}
 				{{/if}}
 			</td>
@@ -361,9 +361,9 @@
 			<td style="width:12px;min-width:12px;max-width:12px">
 				{{#if isDownloadable}}
 					{{#if isLinkSelected}}
-						<input type="checkbox" class="link_checkbox" checked="checked">
+						<input type="checkbox" class="link_checkbox" checked="checked" />
 					{{else}}
-						<input type="checkbox" class="link_checkbox">
+						<input type="checkbox" class="link_checkbox" />
 					{{/if}}
 				{{/if}}
 			</td>
@@ -460,75 +460,75 @@
 	<form class="form-horizontal" id="settingsform">
 		<span class="help-inline">IP-Adresse:</span>
 			{{#if currentUser.profile.autoupdateip}}
-				<input class="input-medium" id="ip" type="text" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" value={{currentUser.profile.ip}} disabled>
+				<input class="input-medium" id="ip" type="text" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" value={{currentUser.profile.ip}} disabled />
 			{{else}}
-				<input class="input-medium" id="ip" type="text" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" value={{currentUser.profile.ip}}>
+				<input class="input-medium" id="ip" type="text" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" value={{currentUser.profile.ip}} />
 			{{/if}}
 			<button class="btn btn-link" type="button" id="refreship">Aktualisieren</button>
 		<span class="help-inline">Port:</span>
-		<input class="input-mini" id="port" type="number" min="0" max="65536" value={{currentUser.profile.port}}>
+		<input class="input-mini" id="port" type="number" min="0" max="65536" value={{currentUser.profile.port}} />
 		<label class="checkbox">
 		<br/>
-			<input id="autoupdate" type="checkbox" checked={{currentUser.profile.autoupdateip}}>
+			<input id="autoupdate" type="checkbox" checked={{currentUser.profile.autoupdateip}} />
 		IP-Adresse automatisch updaten?
 		</label>
 		<label class="checkbox">
-			<input id="showdownloadedlinks" type="checkbox" checked={{session "filter_show_already_downloaded"}}>
+			<input id="showdownloadedlinks" type="checkbox" checked={{session "filter_show_already_downloaded"}} />
 		bereits heruntergeladene/kopierte Links anzeigen?
 		</label>
 		<label class="checkbox">
-			<input id="showtooltips" type="checkbox" checked={{currentUser.profile.showtooltips}}>
+			<input id="showtooltips" type="checkbox" checked={{currentUser.profile.showtooltips}} />
 		Tooltips anzeigen?
 		</label>
 		<label class="checkbox">
-			<input id="hidemixes" type="checkbox" checked={{currentUser.profile.hidemixes}}>
+			<input id="hidemixes" type="checkbox" checked={{currentUser.profile.hidemixes}} />
 		Compilations/Mixes ausblenden?
 		</label>
 		<br/>
 		<label><strong>externe Suchanbieter</strong></label>
 		
 		<label class="checkbox">
-			<input id="searchzippysharemusic" type="checkbox" checked={{searchProviderEnabled "zippysharemusic"}}>
+			<input id="searchzippysharemusic" type="checkbox" checked={{searchProviderEnabled "zippysharemusic"}} />
 		<a href="http://www.zippysharemusic.com"><img alt="zippysharemusic" src="/zippysharemusic.png"></a>
 		</label>
 		
 		<label class="checkbox">
-			<input id="searchmuzofon" type="checkbox" checked={{searchProviderEnabled "muzofon"}}>
+			<input id="searchmuzofon" type="checkbox" checked={{searchProviderEnabled "muzofon"}} />
 		<a href="http://www.muzofon.com"><img alt='muzofon' src='/muzofon.png'></a>
 		</label>
 		
 		<label class="checkbox">
-			<input id="searchsoundcloud" type="checkbox" checked={{searchProviderEnabled "soundcloud"}}>
+			<input id="searchsoundcloud" type="checkbox" checked={{searchProviderEnabled "soundcloud"}} />
 		<a href="http://www.soundcloud.com"><img alt='soundcloud' src='/soundcloud.png'></a>
 		</label>
 		
 		<label class="checkbox">
-			<input id="searchyoutube" type="checkbox" checked={{searchProviderEnabled "youtube"}}>
+			<input id="searchyoutube" type="checkbox" checked={{searchProviderEnabled "youtube"}} />
 		<a href="http://www.youtube.com"><img alt='youtube' src='/youtube.png'></a>
 		</label>
 		
 		<label class="checkbox">
-			<input id="searchexfm" type="checkbox" checked={{searchProviderEnabled "ex.fm"}}>
+			<input id="searchexfm" type="checkbox" checked={{searchProviderEnabled "ex.fm"}} />
 		<a href="http://www.ex.fm"><img alt='ex.fm' src='/exfm.png'></a>
 		</label>
 		
 		<label class="checkbox">
-			<input id="searchvk" type="checkbox" checked={{searchProviderEnabled "vk.com"}}>
+			<input id="searchvk" type="checkbox" checked={{searchProviderEnabled "vk.com"}} />
 		<a href="http://www.vk.com"><img alt='vk.com' src='/vkontakte.png'></a> <small>(Anmeldung erforderlich)</small>
 		</label>
 		
 		<label class="checkbox">
-			<input id="searchmyfreemp3" type="checkbox" checked={{searchProviderEnabled "myfreemp3.eu"}}>
+			<input id="searchmyfreemp3" type="checkbox" checked={{searchProviderEnabled "myfreemp3.eu"}} />
 		<a href="http://www.myfreemp3.eu"><img alt='myfreemp3.eu' src='/myfreemp3.png'></a>
 		</label>
 		
 		<label class="checkbox">
-			<input id="searchmp3monkey" type="checkbox" checked={{searchProviderEnabled "mp3monkey"}}>
+			<input id="searchmp3monkey" type="checkbox" checked={{searchProviderEnabled "mp3monkey"}} />
 		<a href="http://www.mp3monkey.net"><img alt='mp3monkey.net' src='/mp3monkey.png'></a>
 		</label>
 			
 		<label class="checkbox">
-			<input id="searchbeatport" type="checkbox" checked={{searchProviderEnabled "beatport"}}>
+			<input id="searchbeatport" type="checkbox" checked={{searchProviderEnabled "beatport"}} />
 		<a href="http://www.beatport.com"><img alt='beatport.com' src='/beatport.png'></a>
 		</label>
 	</form>
@@ -554,7 +554,7 @@
   <div class="modal-body">
 	<form class="form-inline" id="addlinkform">
 		<div class="input-append">
-			<input id="newlinkurl" class="input-xlarge linkurl" type="url" pattern="https?://.+" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required>
+			<input id="newlinkurl" class="input-xlarge linkurl" type="url" pattern="https?://.+" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required />
 			<button class="btn addlink" disabled>Hinzufügen</button>
 		</div>
 	</form>
@@ -576,7 +576,7 @@
 	<form class="form-horizontal" id="addsiteform">
 		<div class="input-append">
 			<span class="help-inline">URL der Seite, die wir nach Links durchsuchen sollen</span>
-			<input id="newsiteurl" class="input-xlarge siteurl" type="url" pattern="https?://.+" placeholder="http://www.electrotechnosuperblog.com" required>
+			<input id="newsiteurl" class="input-xlarge siteurl" type="url" pattern="https?://.+" placeholder="http://www.electrotechnosuperblog.com" required />
 			<button class="btn addsite" disabled>Seite hinzufügen</button>
 		</div>
 	</form>
@@ -691,9 +691,9 @@
 		<thead>
 			<th>
 				{{#if noSitefiltered}}
-					<input type="checkbox" id="filter_all" checked={{noSitefiltered}}>
+					<input type="checkbox" id="filter_all" checked={{noSitefiltered}} />
 				{{else}}
-					<input type="checkbox" id="filter_all">
+					<input type="checkbox" id="filter_all" />
 				{{/if}}
 			</th>
 			<th>Name</th>
@@ -703,9 +703,9 @@
 				<tr>
 					<td>
 					{{#if isSiteFiltered}}
-						<input type="checkbox" class="site_checkbox">
+						<input type="checkbox" class="site_checkbox" />
 					{{else}}
-						<input type="checkbox" class="site_checkbox" checked="checked">
+						<input type="checkbox" class="site_checkbox" checked="checked" />
 					{{/if}}	
 					</td>
 					<td>
@@ -730,7 +730,7 @@
 	<form class="form-horizontal" id="sharelinkform">
 		<p>Bitte gib eine eMail-Adresse ein, an die die Links gesendet werden sollen.</p>
         <div class="input-append">
-			<input id="sharelinkaddress" class="input-xlarge siteurl" multiple="multiple" type="email" placeholder="{{getUsereMail}}" required autocomplete="off" data-provide="typeahead">
+			<input id="sharelinkaddress" class="input-xlarge siteurl" multiple="multiple" type="email" placeholder="{{getUsereMail}}" required autocomplete="off" data-provide="typeahead" />
 			<button class="btn btn-primary" id="sharelink" disabled>Links teilen</button>
 		</div>
 		<br/>

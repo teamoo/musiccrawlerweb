@@ -37,68 +37,8 @@ Session.setDefault("filter_sort", "date_published");
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
 });
-Session.setDefault("init",false);
 
-// Router.configure({
-//  waitOn: function () {
-//    return [Meteor.subscribe('userData'), Meteor.subscribe('allUserData'), Meteor.subscribe('sites'), Meteor.subscribe('links')];
-//  }
-// });
-//
-// Router.map(function () {
-//  /**
-//   * The route's name is "home"
-//   * The route's template is also "home"
-//   * The default action will render the home template
-//   */
-//  this.route('home', {
-//    path: '/'
-//  });
-//
-//  this.route('links', {
-//    path: '/links'
-//  });
-//
-//  this.route('link', {
-//    path: '/link/:_id',
-//    onRun: function () {
-//      // called on first load
-//    },
-//    // before hooks are run before your action
-//    onBeforeAction: [
-//      function () {
-//			 Session.set('filter_id', this.params._id);
-//      },
-//      function () {
-//        // we're done waiting on all subs
-//        if (this.ready()) {
-//        } else {
-//          this.stop(); // stop downstream funcs from running
-//        }
-//      }
-//    ],
-//  });
-// 
-//    this.route('set', {
-//    path: '/set/:_id',
-//    onRun: function () {
-//      // called on first load
-//    },
-//   // // before hooks are run before your action
-//    onBeforeAction: [
-//      function () {
-//			 Session.set('filter_id', this.params._id);
-//      },
-//      function () {
-//        // we're done waiting on all subs
-//        if (this.ready()) {
-//        } else {
-//          this.stop(); // stop downstream funcs from running
-//        }
-//      }
-//    ],
-//  });
-// });
+Session.setDefault("init",false);
 
 //local Collection for external search results
 SearchResults = new Meteor.Collection(null);
@@ -231,7 +171,7 @@ Deps.autorun(function () {
 										
 										if (!SearchResults.findOne({
 											url: theurl
-										})) SearchResults.insert({
+										})) var theid = SearchResults.insert({
 											hoster: "muzofon.com",
 											status: "unknown",
 											name: thisNode1.textContent.replace(/\s+/g,' ').replace(/\[.*\]/g,"").trim(),
@@ -239,6 +179,20 @@ Deps.autorun(function () {
 											duration: moment(duration,"mm:ss"),
 											referer: "http://muzofon.com/search/" + encodeURIComponent(filter_term_external)
 										});
+
+										Meteor.call('getMuzofonDownloadLink', theurl, "http://muzofon.com/search/" + encodeURIComponent(filter_term_external), function (error, result) {
+											if (result) {
+											 	SearchResults.update({
+											 		_id: theid
+											 	}, {
+											 		$set: {
+											 			'url': result,
+											 		}
+											 	});
+											}
+															
+										});
+										
 										
 										thisNode1 = iternames.iterateNext();
 										thisNode2 = iterlinks.iterateNext();
@@ -573,9 +527,7 @@ Deps.autorun(function () {
 		// if user profile is already available, set session varibles for filtering links just for specific sites
 		// and showing already downloaded items. They are not reactive because we need to change them when searching
 
-		Meteor.logoutOtherClients(function(error){
-			if (error) console.log("Fehler beim Abmelden anderer Sessions: " + error)
-		});
+
 		if (window.SCM && Meteor.user().profile.volume) {
 			SCM.volume(Meteor.user().profile.volume);
 		}
@@ -633,11 +585,6 @@ Deps.autorun(function () {
 			}
 			Session.set("JDOnlineStatus", isOnline);
 		});
-		
-		// Add user facebook token to groups of the user that should be crawled, so the crawl will work
-		Meteor.call('updateFacebookTokensForUser');
-		// Update the number of links and sites the user contributed to the app and save it in his profile
-		Meteor.call('updateLinkContributionCount');
 	}
 });
 
@@ -1111,6 +1058,7 @@ Template.user_loggedin.events({
 });
 Template.navigation.rendered = function () {
 	var searchTracks = _.debounce(function(query, process) {
+		console.log("search");
 		Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
 			if (result && result.length) {
 				result.unshift(query.trim());
@@ -2168,16 +2116,25 @@ Template.searchresult.events({
 			event.target.className = "icon-loader";
 
 		if (this.hoster === "muzofon.com") {
-			Meteor.call('getMuzofonDownloadLink', this.url, this.referer, function (error, result) {
-				if (result) {
-				 	writeConsole(result);
-				 	if (event.target.className.indexOf("icon") === -1)
-				 		event.target.innerHTML = "<i class='icon-ok'></i>";
-				 	else 
-				 		event.target.className = "icon-ok";
-				}
-								
-			});
+			if (this.url.indexOf("dwl2.php") === -1)
+				Meteor.call('getMuzofonDownloadLink', this.url, this.referer, function (error, result) {
+					if (result) {
+					 	writeConsole(result);
+					 	if (event.target.className.indexOf("icon") === -1)
+					 		event.target.innerHTML = "<i class='icon-ok'></i>";
+					 	else 
+					 		event.target.className = "icon-ok";
+					}
+									
+				});
+			else
+			{
+				writeConsole(this.url);
+				if (event.target.className.indexOf("icon") === -1)
+					event.target.innerHTML = "<i class='icon-ok'></i>";
+				else 
+					event.target.className = "icon-ok";
+			}
 			return;
 		}
 	

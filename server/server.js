@@ -59,6 +59,10 @@ Accounts.onLogin(function() {
 	Meteor.call('updateFacebookTokensForUser');
 	// Update the number of links and sites the user contributed to the app and save it in his profile
 	Meteor.call('updateLinkContributionCount');
+	
+	Meteor.logoutOtherClients(function(error){
+		if (error) console.log("Fehler beim Abmelden anderer Sessions: " + error)
+	});
 });
 
 Accounts.onCreateUser(function (options, user) {
