@@ -59,10 +59,6 @@ Accounts.onLogin(function() {
 	Meteor.call('updateFacebookTokensForUser');
 	// Update the number of links and sites the user contributed to the app and save it in his profile
 	Meteor.call('updateLinkContributionCount');
-	
-	Meteor.logoutOtherClients(function(error){
-		if (error) console.log("Fehler beim Abmelden anderer Sessions: " + error)
-	});
 });
 
 Accounts.onCreateUser(function (options, user) {
@@ -82,6 +78,7 @@ Accounts.onCreateUser(function (options, user) {
 	user.profile.ip = "";
 	user.profile.port = 10025;
 	user.profile.volume = 100;
+	user.profile.linkcontributioncount = 0;
 	
 	// email und username werden direkt im Benutzer gesetzt, daher
 	// loeschen wir diese Attribute auch aus dem Profil-Objekt

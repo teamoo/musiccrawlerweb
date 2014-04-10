@@ -189,7 +189,6 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 			searchterms = filter_term.trim().split(" ");
 
 		for (var i = 0; i < searchterms.length; i++) {
-			console.log(searchterms[i] instanceof String);
 			if (typeof searchterms[i] == "string")
 				searchterms[i] = new RegExp(".*" + searchterms[i] + ".*", "i");
 		}

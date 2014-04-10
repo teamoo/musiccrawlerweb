@@ -523,10 +523,7 @@ Deps.autorun(function () {
 	if (Meteor.user() && Session.equals("init",false)) {
 		Session.set("init",true);
 		
-		
-		// if user profile is already available, set session varibles for filtering links just for specific sites
-		// and showing already downloaded items. They are not reactive because we need to change them when searching
-
+		Meteor.logoutOtherClients();
 
 		if (window.SCM && Meteor.user().profile.volume) {
 			SCM.volume(Meteor.user().profile.volume);
@@ -1057,85 +1054,95 @@ Template.user_loggedin.events({
 	}
 });
 Template.navigation.rendered = function () {
-	var searchTracks = _.debounce(function(query, process) {
-		console.log("search");
-		Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
-			if (result && result.length) {
-				result.unshift(query.trim());
-			}
-			process(result);
-		});
-	}, 300);
-	$('#searchfield').typeahead({
-		items: 11,
-		minLength: 4,
-		source: function (query, process) {
-			searchTracks(query, process);
-		},
-		updater: function (name) {
-			SearchResults.remove({});
-			var term = name.trim();
-			var prev_filter_date = Session.get("filter_date");
-			var prev_filter_skip = Session.get("filter_skip");
-			Session.set("links_completed", false);
-			Session.set("filter_id", undefined);
-			Session.set("prev_filter_skip", prev_filter_skip);
-			Session.set("prev_filter_date", prev_filter_date);
-			Session.set("filter_show_already_downloaded", true);
-			Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
-			Session.set("filter_status", ["on", "off", "unknown"]);
-			Session.set("filter_term", term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1"));
-			Session.set("filter_skip", 0);
-			Session.set("filter_sites", []);
-			Session.set("filter_mixes",false);
-
-			return name;
-		},
-		matcher: function (item) {
-			return true;
-		},
-		highlighter: function (item) {
-			var badtag = /^s$|^t$|^r$|^o$|^n$|^g$|^s$|^s$|^st$|^str$|^stro$|^stron$|^strong$/gi
-		
-			var searchterms = this.query.trim().split(" ");
-			var newitem = item;
-			for (var i = 0; i < searchterms.length; i++) {
-				var regex = new RegExp('(' + searchterms[i] + ')', 'i');
-				if (!badtag.test(searchterms[i]))
-					newitem = newitem.replace(regex, "<strong>$1</strong>");
-			}
-			return newitem;
-		},
-	});
-	$('li.linkfilter').removeClass("active");
+	this.$('li.linkfilter').removeClass("active");
 	var activenumber = parseInt(Session.get("selected_navitem"));
-	$('li.linkfilter #' + activenumber).parent().addClass("active");
-	straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>";
-	strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
-	if (Meteor.userId()) $('#brand').popover({
-			animation: true,
+	this.$('li.linkfilter #' + activenumber).parent().addClass("active");
+	
+	if (this.$('#downloadbutton').attr("disabled") == "disabled") 
+		this.$('#downloadbutton').tooltip({
+			title: "Dein JDownloader ist nicht erreichbar oder du hast keinen Link ausgewählt. Bitte wähle einen Link aus und überprüfe ggf. dein Profil.",
 			placement: "bottom",
-			trigger: "hover",
-			title: "Impressum",
-			html: true,
-			content: straddress + strdonatebutton,
-			delay: {
-				show: 1000,
-				hide: 3000
-			}
+			disabled: true
+	});
+	else {
+		this.$('#downloadbutton').tooltip({
+			title: "Alle ausgewählten Links an JDownloader zum Download übergeben",
+			placement: "bottom",
+			disabled: true
 		});
-		if ($('#downloadbutton').attr("disabled") == "disabled") $('#downloadbutton').tooltip({
-				title: "Dein JDownloader ist nicht erreichbar oder du hast keinen Link ausgewählt. Bitte wähle einen Link aus und überprüfe ggf. dein Profil.",
+	}
+	
+	var intrender = Meteor.setInterval(function() {
+		straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>";
+		strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
+		if (Meteor.user()) {
+			Meteor.clearInterval(intrender);
+			
+			this.$('#brand').popover({
+				animation: true,
 				placement: "bottom",
-				disabled: true
+				trigger: "hover",
+				title: "Impressum",
+				html: true,
+				content: straddress + strdonatebutton,
+				delay: {
+					show: 1000,
+					hide: 3000
+				}
 			});
-		else {
-			$('#downloadbutton').tooltip({
-				title: "Alle ausgewählten Links an JDownloader zum Download übergeben",
-				placement: "bottom",
-				disabled: true
+		
+			var searchTracks = _.debounce(function(query, process) {
+				Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
+					if (result && result.length) {
+						result.unshift(query.trim());
+					}
+					process(result);
+				});
+			}, 300);
+			
+			$('#searchfield').typeahead({
+				items: 11,
+				minLength: 4,
+				source: function (query, process) {
+					searchTracks(query, process);
+				},
+				updater: function (name) {
+					SearchResults.remove({});
+					var term = name.trim();
+					var prev_filter_date = Session.get("filter_date");
+					var prev_filter_skip = Session.get("filter_skip");
+					Session.set("links_completed", false);
+					Session.set("filter_id", undefined);
+					Session.set("prev_filter_skip", prev_filter_skip);
+					Session.set("prev_filter_date", prev_filter_date);
+					Session.set("filter_show_already_downloaded", true);
+					Session.set("filter_date", new Date(new Date().setDate(new Date().getDate() - 365)));
+					Session.set("filter_status", ["on", "off", "unknown"]);
+					Session.set("filter_term", term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1"));
+					Session.set("filter_skip", 0);
+					Session.set("filter_sites", []);
+					Session.set("filter_mixes",false);
+
+					return name;
+				},
+				matcher: function (item) {
+					return true;
+				},
+				highlighter: function (item) {
+					var badtag = /^s$|^t$|^r$|^o$|^n$|^g$|^s$|^s$|^st$|^str$|^stro$|^stron$|^strong$/gi
+				
+					var searchterms = this.query.trim().split(" ");
+					var newitem = item;
+					for (var i = 0; i < searchterms.length; i++) {
+						var regex = new RegExp('(' + searchterms[i] + ')', 'i');
+						if (!badtag.test(searchterms[i]))
+							newitem = newitem.replace(regex, "<strong>$1</strong>");
+					}
+					return newitem;
+				},
 			});
 		}
+	},1000);
 };
 //Eventhandler für die Navigationsleiste
 Template.navigation.events({
@@ -1144,7 +1151,7 @@ Template.navigation.events({
 		event.preventDefault();
 		openAddSiteDialog();
 		Meteor.setTimeout(function () {
-			activateInput($("#newsiteurl"));
+			activateInput($('#newsiteurl'));
 		}, 250);
 		return false;
 	},
@@ -1381,7 +1388,7 @@ Template.navigation.events({
 		event.preventDefault();
 		openAddLinkDialog();
 		Meteor.setTimeout(function () {
-			activateInput($("#newlinkurl"));
+			activateInput($('#newlinkurl'));
 		}, 250);
 		return false;
 	},
@@ -1483,7 +1490,7 @@ Template.linklist.events = ({
 		event.preventDefault();
 		openShareLinkDialog();
 		Meteor.setTimeout(function () {
-			activateInput($("#sharelinkaddress"));
+			activateInput($('#sharelinkaddress'));
 		}, 250);
 		return false;
 	},
@@ -1593,83 +1600,83 @@ Template.link.rendered = function () {
 };
 */
 Template.linklist.rendered = function () {
-	$('.linkname').editable();
-	$('#filter_links').tooltip({
+	this.$('.linkname').editable();
+	this.$('#filter_links').tooltip({
 		title: "nur Links mit Status (online) oder alle Links anzeigen",
 		placement: "left",
 		disabled: true
 	});
-	$('#hide_selected_links').tooltip({
+	this.$('#hide_selected_links').tooltip({
 		title: "ausgewählte Links verbergen",
 		placement: "left",
 		disabled: true
 	});
-	$('#select_all').tooltip({
+	this.$('#select_all').tooltip({
 		title: "alle Links zum Download auswählen",
 		placement: "right",
 		disabled: true
 	});
-	$('.refreshlink').tooltip({
+	this.$('.refreshlink').tooltip({
 		title: "Linkinformationen aktualisieren",
 		placement: "right",
 		disabled: true
 	});
-	$('#share_links').tooltip({
+	this.$('#share_links').tooltip({
 		title: "Set (ausgewählte Links) teilen",
 		placement: "right",
 		disabled: true
 	});
-	$('.removelinkfromset').tooltip({
+	this.$('.removelinkfromset').tooltip({
 		title: "Link aus dem aktuellen Set entfernen",
 		placement: "right",
 		disabled: true
 	});
-	$('.addlinktoset').tooltip({
+	this.$('.addlinktoset').tooltip({
 		title: "Link zum aktuellen Set hinzufügen",
 		placement: "right",
 		disabled: true
 	});
-	$('.like').tooltip({
+	this.$('.like').tooltip({
 		title: "Gefällt mir",
 		placement: "left",
 		disabled: true
 	});
-	$('.icon-comment').tooltip({
+	this.$('.icon-comment').tooltip({
 		title: "Kommentar(e) anzeigen/hinzufügen",
 		placement: "left",
 		disabled: true
 	});
-	$('.icon-ok').tooltip({
+	this.$('.icon-ok').tooltip({
 		title: "verfügbar",
 		placement: "left",
 		disabled: true
 	});
-	$('.icon-question-sign').tooltip({
+	this.$('.icon-question-sign').tooltip({
 		title: "unbekannt",
 		placement: "left",
 		disabled: true
 	});
-	$('.icon-remove').tooltip({
+	this.$('.icon-remove').tooltip({
 		title: "nicht verfügbar",
 		placement: "left",
 		disabled: true
 	});
-	$('.delete_link').tooltip({
+	this.$('.delete_link').tooltip({
 		title: "Link aus der Datenbank löschen",
 		placement: "left",
 		disabled: true
 	});
-	$('.hide_link').tooltip({
+	this.$('.hide_link').tooltip({
 		title: "Link ausblenden",
 		placement: "left",
 		disabled: true
 	});
-	$('#sort_like').tooltip({
+	this.$('#sort_like').tooltip({
 		title: "nach 'Gefällt mir' Angaben sortieren",
 		placement: "left",
 		disabled: true
 	});
-	$('#sort_date_published').tooltip({
+	this.$('#sort_date_published').tooltip({
 		title: "nach Datum der Veröffentlichung sortieren",
 		placement: "left",
 		disabled: true
@@ -1677,32 +1684,32 @@ Template.linklist.rendered = function () {
 };
 Template.accountSettingsDialog.rendered = function () {
 	//XXX seit Bootstrap 2.3 sind die Tooltips abgeschnitten...
-	$('#refreship').tooltip({
+	this.$('#refreship').tooltip({
 		title: "Wenn du auf 'Aktualisieren' klickst, wird die IP-Adresse des Rechners ermittelt, an dem du gerade bist und gespeichert. Du kannst dann Links auf diesem Rechner empfangen, wenn JDownloader läuft hast und der Port offen ist.",
 		placement: "right",
 		disabled: true
 	});
-	$('#port').tooltip({
+	this.$('#port').tooltip({
 		title: "Bitte gebe den Port an, über den JDownloader Remote aus dem Internet erreichbar ist. (Standard: 10025)",
 		placement: "bottom",
 		disabled: true
 	});
-	$('#autoupdate').tooltip({
+	this.$('#autoupdate').tooltip({
 		title: "Wenn du diese Option aktivierst, wird beim Starten dieser App automatisch deine IP-Adresse aktualisiert. Setz diese Option, wenn du keine feste IP-Adresse hast oder JDownloader immer auf dem Rechner nutzt, auf dem du auch diese App aufrufst.",
 		placement: "right",
 		disabled: true
 	});
-	$('#showdownloadedlinks').tooltip({
+	this.$('#showdownloadedlinks').tooltip({
 		title: "Wenn du diese Option aktivierst, werden auch Links angezeigt, die du bereits heruntergeladen, kopiert oder ausgeblendet hast.",
 		placement: "right",
 		disabled: true
 	});
-	$('#jdon').tooltip({
+	this.$('#jdon').tooltip({
 		title: "Dein JDownloader kann Links empfangen.",
 		placement: "bottom",
 		disabled: true
 	});
-	$('#jdoff').tooltip({
+	this.$('#jdoff').tooltip({
 		title: "Dein JDownloader kann keine Links empfangen. Bitte überprüfe, ob der angebene Port aus dem Internet erreichbar ist. Wenn du einen Proxy-Server nutzt, musst du die IP-Adresse ggf. manuell eintragen.",
 		placement: "bottom",
 		disabled: true
@@ -1710,10 +1717,15 @@ Template.accountSettingsDialog.rendered = function () {
 };
 Template.user_loggedin.rendered = function () {
 	if (Meteor.user()) {
-		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small><b>   " + Meteor.user().username + "</b></li><li><br/></li><li><b>Dein JDownloader</b></li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li><b>Dein Beitrag</b></li><li>Seiten: " + Sites.find({
+		if (isNaN(Meteor.user().profile.linkcontributioncount))
+			var contribcount = 0;
+		else
+			var contribcount = Meteor.user().profile.linkcontributioncount;
+			
+		htmlstr = "<img class='img-polaroid pull-left' src=" + Meteor.user().profile.pictureurl + "></img><br/><br/><br/><ul class='unstyled'><li><i class='icon-facebook'></i><small><b>   " + Meteor.user().username + "</b></li><li><br/></li><li><b>Dein JDownloader</b></li><li>IP: " + Meteor.user().profile.ip + "</li><li>Port: " + Meteor.user().profile.port + "</li><li><b>Dein Beitrag</b></li><li>gemeldete Seiten: " + Sites.find({
 			creator: Meteor.user().id
-		}).count() + "</li><li>Links: " + Meteor.user().profile.linkcontributioncount + "</li></small>";
-		$('#accountbtn').popover({
+		}).count() + "</li><li>gemeldete Links: " + contribcount + "</li></small>";
+		this.$('#accountbtn').popover({
 			animation: true,
 			placement: "bottom",
 			trigger: "click",
@@ -1753,7 +1765,8 @@ Template.link.events({
 										if (tracks[i]) {
 											SCM.queue({
 												title: tracks[i].title,
-												url: tracks[i].permalink_url
+			
+									url: tracks[i].permalink_url
 											});
 										}
 									}
@@ -2299,72 +2312,80 @@ Template.addSiteDialog.events({
 });
 //Wenn der Seitendialog gerendered wurde, UI Widgets aktivieen
 Template.sitesDialog.rendered = function () {
-	$('.sitename').editable();
+	this.$('.sitename').editable();
 
-	$('.remove_site').tooltip({
+	this.$('.remove_site').tooltip({
 		title: "Seite aus der Datenbank löschen",
 		placement: "top",
 		disabled: true
 	});
-	$('.icon-facebook').tooltip({
+	this.$('.icon-facebook').tooltip({
 		title: "Facebook-Gruppe",
 		placement: "left",
 		disabled: true
 	});
-	$('.icon-rss').tooltip({
+	this.$('.icon-rss').tooltip({
 		title: "RSS-Feed",
 		placement: "left",
 		disabled: true
 	});
-	$('.icon-time').tooltip({
+	this.$('.icon-time').tooltip({
 		title: "Durchsuchen der Seite ist eingeplant",
 		placement: "left",
 		disabled: true
 	});
-	$('.icon-ban-circle').tooltip({
+	this.$('.icon-ban-circle').tooltip({
 		title: "Seite wurde innerhalb der letzten 24h durchsucht und kann noch nicht wieder durchsucht werden.",
 		placement: "left",
 		disabled: true
 	});
-	$('.crawl_single_site').tooltip({
+	this.$('.crawl_single_site').tooltip({
 		title: "Seite erneut durchsuchen",
 		placement: "left",
 		disabled: true
 	});
 };
 Template.shareLinkDialog.rendered = function () {
-	$('#sharelinkaddress').typeahead({
-		items: 3,
-		minLength: 3,
-		source: function (aquery, process) {
-			searchterm = aquery.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").split(",");
-			if (searchterm[searchterm.length - 1].trim().length > 2) Meteor.call("getSuggestionsForEmail", ".*" + searchterm[searchterm.length - 1].trim().replace(" ", ".*") + ".*", function (error, result) {
-					process(_.map(result, function (asuggest) {
-						return asuggest.name + " - " + asuggest.email;
-					}));
-				});
-		},
-		updater: function (name) {
-			var previousterms = this.query.substring(0, this.query.lastIndexOf(",") + 1);
-			var term = name.trim().split(" - ")[1];
-			$('#sharelink').prop("disabled", false);
-			if (previousterms != "") return previousterms + term;
-			return term;
-		},
-		matcher: function (item) {
-			return true;
-		},
-		highlighter: function (item) {
-			var searchterms = this.query.trim().split(",");
-			searchterms = searchterms[searchterms.length - 1].split(" ");
-			var newitem1 = item;
-			for (var i = 0; i < searchterms.length; i++) {
-				var regex = new RegExp('(' + searchterms[i] + ')', 'i');
-				newitem1 = newitem1.replace(regex, "<strong>$1</strong>");
-			}
-			return newitem1;
-		},
-	});
+	var intrender = Meteor.setInterval(function(){
+		if (Meteor.user()) {
+			Meteor.clearInterval(intrender);
+			
+			$('#sharelinkaddress').typeahead({
+				items: 3,
+				minLength: 3,
+				source: function (aquery, process) {
+					console.log("search");
+					searchterm = aquery.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").split(",");
+					if (searchterm[searchterm.length - 1].trim().length > 2) Meteor.call("getSuggestionsForEmail", ".*" + searchterm[searchterm.length - 1].trim().replace(" ", ".*") + ".*", function (error, result) {
+							console.log(result);
+							process(_.map(result, function (asuggest) {
+								return asuggest.name + " - " + asuggest.email;
+							}));
+					});
+				},
+				updater: function (name) {
+					var previousterms = this.query.substring(0, this.query.lastIndexOf(",") + 1);
+					var term = name.trim().split(" - ")[1];
+					$('#sharelink').prop("disabled", false);
+					if (previousterms != "") return previousterms + term;
+					return term;
+				},
+				matcher: function (item) {
+					return true;
+				},
+				highlighter: function (item) {
+					var searchterms = this.query.trim().split(",");
+					searchterms = searchterms[searchterms.length - 1].split(" ");
+					var newitem1 = item;
+					for (var i = 0; i < searchterms.length; i++) {
+						var regex = new RegExp('(' + searchterms[i] + ')', 'i');
+						newitem1 = newitem1.replace(regex, "<strong>$1</strong>");
+					}
+					return newitem1;
+				},
+			});
+		}
+	},1000);
 };
 Template.shareLinkDialog.events({
 	'input #sharelinkaddress': function (event, template) {
