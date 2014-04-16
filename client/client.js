@@ -168,13 +168,15 @@ Deps.autorun(function () {
 										}
 										
 										theurl = "http://muzofon.com" + thisNode2.textContent
+										thename = thisNode1.textContent.replace(/\s+/g,' ').replace(/\[.*\]/g,"").trim();
 										
-										if (!SearchResults.findOne({
+										
+										if (thename && thename.length && !SearchResults.findOne({
 											url: theurl
 										})) var theid = SearchResults.insert({
 											hoster: "muzofon.com",
 											status: "unknown",
-											name: thisNode1.textContent.replace(/\s+/g,' ').replace(/\[.*\]/g,"").trim(),
+											name: thename,
 											url: theurl,
 											duration: moment(duration,"mm:ss"),
 											referer: "http://muzofon.com/search/" + encodeURIComponent(filter_term_external)
@@ -1715,7 +1717,7 @@ Template.accountSettingsDialog.rendered = function () {
 		disabled: true
 	});
 };
-Template.user_loggedin.rendered = function () {
+Template.user_loggedin_profile.rendered = function () {
 	if (Meteor.user()) {
 		if (isNaN(Meteor.user().profile.linkcontributioncount))
 			var contribcount = 0;

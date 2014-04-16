@@ -216,19 +216,23 @@
 	{{#if loggingIn}}
 		<a class="btn"><i class="icon-user"></i> Einloggen...</a>
 	{{else}}
-		<a class="btn" id="accountbtn" rel="popover" data-placement="bottom"><i class="icon-user"></i> {{currentUser.profile.first_name}}</a>
-		<a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
-		<ul class="dropdown-menu pull-right">
-			<li class="hand"><a id="showsettings"><i class="icon-wrench"></i> Einstellungen</a></li>
-			<li class="hand hidden-phone"><a id="showsitefilter"><i class="icon-filter"></i> Seitenfilter</a></li>
-			<li class="divider"></li>
-			{{#if currentUser.admin}}	
-			<li class="hand"><a id="cleandatabase"><i class="icon-fire"></i> Datenbank bereinigen</a></li>
-			<li class="divider"></li>
-			{{/if}}
-			<li class="hand"><a id="logout"><i class="icon-off"></i> Abmelden</a></li>
-		</ul>
+		{{> user_loggedin_profile}}
 	{{/if}}
+</template>
+
+<template name="user_loggedin_profile">
+	<a class="btn" id="accountbtn" rel="popover" data-placement="bottom"><i class="icon-user"></i> {{currentUser.profile.first_name}}</a>
+	<a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+	<ul class="dropdown-menu pull-right">
+		<li class="hand"><a id="showsettings"><i class="icon-wrench"></i> Einstellungen</a></li>
+		<li class="hand hidden-phone"><a id="showsitefilter"><i class="icon-filter"></i> Seitenfilter</a></li>
+		<li class="divider"></li>
+		{{#if currentUser.admin}}	
+		<li class="hand"><a id="cleandatabase"><i class="icon-fire"></i> Datenbank bereinigen</a></li>
+		<li class="divider"></li>
+		{{/if}}
+		<li class="hand"><a id="logout"><i class="icon-off"></i> Abmelden</a></li>
+</ul>
 </template>
 
 <template name="user_loggedout">
