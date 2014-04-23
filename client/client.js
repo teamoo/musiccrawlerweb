@@ -1,4 +1,6 @@
 ﻿//url = encodeURIComponent(searchHost) + "/ip" + ipprot_q_current + "%252C" + ipprot_a_current + "/ha" + hash_ + "/cs" + cs_ + "/u" + u_ + "/" + mp3_ + ".mp3?vkid=" + encodeURIComponent(s_vk_id[a] + "&vkoid=" + s_vk_oid[a] + "&us=" + encodeURIComponent(u_us_current))
+  // Add access points for `GET`, `POST`, `PUT`, `DELETE`
+
 
 moment.lang('de');
 //Initialize Session Variables
@@ -33,6 +35,8 @@ Session.setDefault("filter_mixes", false);
 Session.setDefault("temp_filter_sites", []);
 Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("filter_id", undefined);
+Session.setDefault("soundcloud_ready",false);
+Session.setDefault("started",false);
 Session.setDefault("filter_sort", "date_published");
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
@@ -44,7 +48,7 @@ Session.setDefault("init",false);
 SearchResults = new Meteor.Collection(null);
 //Subscriptions
 Deps.autorun(function () {
-	if (DDP._allSubscriptionsReady() && !Session.equals("filter_term",""))  {
+	if (Accounts.loginServicesConfigured() && DDP._allSubscriptionsReady() && !Session.equals("filter_term",""))  {
 		var timer_start_search = Meteor.setInterval(function(){
 		
 				if (Session.equals('links_completed',true) && Links.find().count() <= 50 && Meteor.user() && Meteor.user().profile.searchproviders.length){
@@ -207,7 +211,7 @@ Deps.autorun(function () {
 								}				
 							});
 						}
-						if (_.contains(Meteor.user().profile.searchproviders, "soundcloud")) {
+						if (_.contains(Meteor.user().profile.searchproviders, "soundcloud") && Session.equals("soundcloud_ready",true)) {
 							SC.get('/tracks', {
 								filter: 'public',
 								limit: 10,
@@ -399,8 +403,6 @@ Deps.autorun(function () {
 				}
 			}, 1000);
 	}
-	
-	
 
 	//Admin-Flag
 	Meteor.subscribe('userData');
@@ -455,7 +457,7 @@ Deps.autorun(function () {
 		});
 	}
 	*/
-	if (Meteor.user() && Meteor.user().profile.showtooltips === false) {
+	if (Meteor.user() && Meteor.user().profile.showtooltips === false && Session.equals("started",true)) {
 		$('#downloadbutton').tooltip("disable");
 		$('#filter_links').tooltip("disable");
 		$('#hide_selected_links').tooltip("disable");
@@ -485,10 +487,9 @@ Deps.autorun(function () {
 		$('.icon-time').tooltip("disable");
 		$('.icon-ban-circle').tooltip("disable");
 		$('.crawl_single_site').tooltip("disable");
-	}
+	}	
 	
-	
-	if (Meteor.user() && Meteor.user().profile.showtooltips === true) {
+	if (Meteor.user() && Meteor.user().profile.showtooltips === true && Session.equals("started",true)) {
 		$('#downloadbutton').tooltip("enable");
 		$('#filter_links').tooltip("enable");
 		$('#hide_selected_links').tooltip("enable");
@@ -518,9 +519,7 @@ Deps.autorun(function () {
 		$('.icon-time').tooltip("enable");
 		$('.icon-ban-circle').tooltip("enable");
 		$('.crawl_single_site').tooltip("enable");
-	}
-	
-	
+	}	
 	
 	if (Meteor.user() && Session.equals("init",false)) {
 		Session.set("init",true);
@@ -595,6 +594,8 @@ Meteor.startup(function () {
 		client_id: Meteor.settings.public.soundcloud.client_id
 	});
 	
+	SC.whenStreamingReady(function(){Session.set("soundcloud_ready", true)})
+	
 	VK.init({
 		apiId: Meteor.settings.public.vk.apiId
 	});
@@ -656,6 +657,8 @@ Meteor.startup(function () {
 			}
 		}
 	}, 300);
+	
+	Session.set("started",true);
 });
 // Template-Helper für handlebars
 // represent ISO Date as String from now (e.g. 3 minute before, in 1 hour)
@@ -699,6 +702,10 @@ Template.page.searchresultsFound = function () {
 Template.page.linksFound = function () {
 	if (Links.findOne()) return true;
 	return false;
+};
+
+Template.user_loggedout.loginServicesConfigured = function () {
+	return Accounts.loginServicesConfigured();
 };
 
 Template.page.linksFoundLessThanThree = function () {
@@ -835,13 +842,14 @@ Template.link.isPlayable = function () {
 			case "beatport.com" :
 			case "mp3monkey.net":
 			case "zippyshare.com" :
-				if (this.stream_url) return true;
+				if (this.stream_url)
+					return true;
 				return false;
 			case "vimeo.com":
 			case "muzofon.com":
 				return false;
 			case "vk.com":
-				if (this.aid && this.oid)
+				if (this.aid && this.oid && Meteor.user() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
 					return true;
 				return false;
 			default:
@@ -872,13 +880,14 @@ Template.searchresult.isPlayable = function () {
 			case "beatport.com" :
 			case "mp3monkey.net":
 			case "zippyshare.com" :
-				if (this.stream_url) return true;
+				if (this.stream_url)
+					return true;
 				return false;
 			case "muzofon.com":
 			case "vimeo.com":
 				return false;
 			case "vk.com":
-				if (this.aid && this.oid)
+				if (this.aid && this.oid && Meteor.user() && _.contains(Meteor.user().profile.searchproviders, "vk.com"))
 					return true;
 				return false;
 			default:
@@ -999,14 +1008,15 @@ Template.user_loggedout.events({
 	'click #login': function () {
 		// wir loggen den User mit Facebook ein, erbitten Zugriff auf seine
 		// eMail-Addresse
-		Meteor.loginWithFacebook({
-			requestPermissions: ['email']
-		}, function (error) {
-			if (error) {
-				console.log("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.");
-				console.log(error);
-			}		
-		});
+		if (Accounts.loginServicesConfigured())
+			Meteor.loginWithFacebook({
+				requestPermissions: ['email']
+			}, function (error) {
+				if (error) {
+					console.log("Beim Einloggen ist ein unerwarteter Fehler aufgetreten.");
+					console.log(error);
+				}		
+			});
 	}
 });
 // Logout-Eventhandler
@@ -1074,11 +1084,11 @@ Template.navigation.rendered = function () {
 		});
 	}
 	
-	var intrender = Meteor.setInterval(function() {
+	//var intrender = Meteor.setInterval(function() {
 		straddress = "<address><strong>Thimo Brinkmann</strong><br>Tornberg 28<br>22337 Hamburg<br><a href='mailto:#'>thimo.brinkmann@googlemail.com</a></address>";
 		strdonatebutton = "<small>Entwicklung und Betrieb dieser App kosten Geld und Zeit. Wenn dir die App gefällt, kannst du gerne etwas</small><form action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'><input type='hidden' name='cmd' value='_s-xclick'><input type='hidden' name='hosted_button_id' value='32N6Y5AVXSV8C'><input type='image' src='https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif' border='0' name='submit' alt='Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.'><img alt='' border='0' src='https://www.paypalobjects.com/de_DE/i/scr/pixel.gif' width='1' height='1'></form>";
 		if (Meteor.user()) {
-			Meteor.clearInterval(intrender);
+	//		Meteor.clearInterval(intrender);
 			
 			this.$('#brand').popover({
 				animation: true,
@@ -1144,7 +1154,7 @@ Template.navigation.rendered = function () {
 				},
 			});
 		}
-	},1000);
+	//},1000);
 };
 //Eventhandler für die Navigationsleiste
 Template.navigation.events({
@@ -1749,7 +1759,7 @@ Template.link.events({
 				case "soundcloud.com":
 					event.target.className = "icon-loader";
 					if (window.SCM) {
-						if (this.url.indexOf("/sets") !== -1) {
+						if (this.url.indexOf("/sets") !== -1 && Session.equals("soundcloud_ready",true)) {
 							SC.get('/resolve', {
 								url: this.url
 							}, function (result) {
@@ -2348,15 +2358,14 @@ Template.sitesDialog.rendered = function () {
 	});
 };
 Template.shareLinkDialog.rendered = function () {
-	var intrender = Meteor.setInterval(function(){
+	//var intrender = Meteor.setInterval(function(){
 		if (Meteor.user()) {
-			Meteor.clearInterval(intrender);
+	//		Meteor.clearInterval(intrender);
 			
 			$('#sharelinkaddress').typeahead({
 				items: 3,
 				minLength: 3,
 				source: function (aquery, process) {
-					console.log("search");
 					searchterm = aquery.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1").split(",");
 					if (searchterm[searchterm.length - 1].trim().length > 2) Meteor.call("getSuggestionsForEmail", ".*" + searchterm[searchterm.length - 1].trim().replace(" ", ".*") + ".*", function (error, result) {
 							console.log(result);
@@ -2387,7 +2396,7 @@ Template.shareLinkDialog.rendered = function () {
 				},
 			});
 		}
-	},1000);
+	//},1000);
 };
 Template.shareLinkDialog.events({
 	'input #sharelinkaddress': function (event, template) {

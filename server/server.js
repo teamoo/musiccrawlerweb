@@ -1,4 +1,78 @@
-//Eventhandler User wird erstellt auf dem Server
+// Add access points for `GET`, `POST`, `PUT`, `DELETE`
+HTTP.publish({collection: Links}, function(data) {
+	// this.userId, this.query, this.params
+	 // Read the token from '/hello?token=5'
+    var userToken = this.query.token;
+	
+    // Check the userToken before adding it to the db query
+    // Set the this.userId
+    if (userToken) {
+		var user = Meteor.users.findOne({ 'services.resume.loginTokens.hashedToken': Accounts._hashLoginToken(userToken)});
+		
+		if (user)
+		{
+			if (this.params.id && this.query.live && JSON.parse(this.query.live) === true)
+			{
+				try {
+					var result = Meteor.call("refreshLink", new Meteor.Collection.ObjectID(this.params.id));
+				}
+				catch (exception)
+				{
+					console.log("Error refreshing Link with ID " + this.params.id);
+				}
+			};
+			return Links.find({},{limit:100});
+		}
+    }  
+});
+
+HTTP.publish({collection: Sites}, function(data) {
+	// this.userId, this.query, this.params
+	 // Read the token from '/hello?token=5'
+    var userToken = this.query.token;
+	
+    // Check the userToken before adding it to the db query
+    // Set the this.userId
+    if (userToken) {
+		var user = Meteor.users.findOne({ 'services.resume.loginTokens.hashedToken': Accounts._hashLoginToken(userToken)});
+		
+		if (user)
+			return Sites.find({},{limit:100});
+    }  
+});
+
+HTTP.publish({collection: Sets}, function(data) {
+	// this.userId, this.query, this.params
+	 // Read the token from '/hello?token=5'
+    var userToken = this.query.token;
+	
+    // Check the userToken before adding it to the db query
+    // Set the this.userId
+    if (userToken) {
+		var user = Meteor.users.findOne({ 'services.resume.loginTokens.hashedToken': Accounts._hashLoginToken(userToken)});
+		
+		if (user)
+			return Sets.find({},{limit:100});
+    }  
+});
+
+HTTP.publishFormats({
+    'json': function(result) {
+		// Set the method scope content type to json
+		this.setContentType('application/json');
+		// Return EJSON string
+	
+		if (result.length)
+			result.forEach(function(item) {
+				if (item._id)
+					item._id = item._id.toJSONValue();
+			});
+
+		return EJSON.stringify(result);
+    }
+});
+  
+  
 Meteor.startup(function () {
 	Links._ensureIndex({
 		date_published: 1
@@ -77,7 +151,7 @@ Accounts.onLogin(function(infoObject) {
 			});
 	}
 	catch (e) {
-		console.log("Error receiving user picture from facebook");
+		console.log("Error receiving user picture from facebook: " + e);
 	}
 	
 

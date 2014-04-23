@@ -3,8 +3,8 @@
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-	<!--<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':1,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
-	--><link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':1,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
 	<link rel="icon" href="/favicon.ico" type="image/x-icon" />
 </head>
 
@@ -236,7 +236,11 @@
 </template>
 
 <template name="user_loggedout">
+	{{#if loginServicesConfigured}}
 		<a class="btn hand" id="login"><i class="icon-user"></i> Login</a>
+	{{else}}
+		<a class="btn hand" id="login_waiting"><i class="icon-user"></i> Laden...</a>
+	{{/if}}
 </template>
 
 <template name="linklist">
@@ -280,7 +284,7 @@
 				{{> link}}
 			{{/each}}
 			{{#if session "wait_for_items"}}
-				<tr><td></td><td></td><td></td><td colspan="8"><i class="icon-loader"></i> weitere Links werden geladen...</td></tr>
+				{{> loading}}
 			{{/if}}
 		</tbody>
 	</table>
@@ -293,6 +297,10 @@
 			<p class="lead text-center">{{getCurrentLinksText}}</p>
 		{{/unless}}
 	{{/if}}
+</template>
+
+<template name="loading">
+<tr><td></td><td></td><td></td><td colspan="8"><i class="icon-loader"></i> weitere Links werden geladen...</td></tr>
 </template>
 
 <template name="link">

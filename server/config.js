@@ -1,5 +1,7 @@
 //Meteor Server-Konfiguration
 //Erstellung neuer Accounts zulassen
+Accounts.config({oauthSecretKey: Meteor.settings.oauthSecretKey});
+
 Accounts.config({
 	forbidClientAccountCreation: false
 });
