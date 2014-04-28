@@ -5,14 +5,15 @@
 
 standard-app-packages
 accounts-facebook
-bootstrap
 email
 http
 appcache
 service-configuration
 retry
-x-editable-bootstrap
 moment
 soundcloud
 npm
 http-publish
+iron-router
+bootstrap-3
+x-editable-bootstrap3

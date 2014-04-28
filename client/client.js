@@ -1,7 +1,6 @@
 ﻿//url = encodeURIComponent(searchHost) + "/ip" + ipprot_q_current + "%252C" + ipprot_a_current + "/ha" + hash_ + "/cs" + cs_ + "/u" + u_ + "/" + mp3_ + ".mp3?vkid=" + encodeURIComponent(s_vk_id[a] + "&vkoid=" + s_vk_oid[a] + "&us=" + encodeURIComponent(u_us_current))
   // Add access points for `GET`, `POST`, `PUT`, `DELETE`
 
-
 moment.lang('de');
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
@@ -1581,6 +1580,29 @@ Template.linklist.events = ({
 		}
 	}
 });
+
+Template.home.rendered = function () {
+
+			// triggers the off-canvas panel
+			$(".sidebar-toggle").click(function (e) {
+				e.stopPropagation();
+				$(".st-container").toggleClass("nav-effect");
+			});
+			$(".st-pusher").click(function () {
+				$(".st-container").removeClass("nav-effect");
+			});
+
+			 // parallax header
+			 $('#cover-image').css("background-position", "50% 50%");
+		    $(window).scroll(function() {
+				var scroll = $(window).scrollTop(), 
+					slowScroll = scroll/4,
+					slowBg = 50 - slowScroll;
+					
+				$('#cover-image').css("background-position", "50% " + slowBg + "%");
+			});
+}
+
 /*
 Template.link.rendered = function () {
 	link = this.data;

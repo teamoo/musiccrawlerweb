@@ -1,52 +1,5 @@
-body {
-	padding-top: 20px;
-}
-
-.container-fluid {
-	padding-left:  0px;
-	padding-right: 0px;
-}
-
-.link_checkbox, #select_all {
-    vertical-align:top
-}
-
-.btn-group {
-	padding-right: 10px;
-}
-
-.alert {
-	margin-top: 20px;
-}
-
-.mask {
-    position: absolute;
-    width: 100%;
-    height: 124%;
-    top: 0px;
-    left: 0px;
-    background-color: #000000;
-    opacity: .4;
-    z-index: 1031;
-    overflow: auto;
-}
-
 .hand {
 	cursor: pointer;
-}
-
-.linkurl {
-	width: 420px;
-}
-
-.siteurl {
-	width: 375px;
-}
-
-#showSitesModal {
-    width: 1100px; /* SET THE WIDTH OF THE MODAL */
-    margin: 50px 0 0 -550px; /* CHANGE MARGINS TO ACCOMODATE THE NEW WIDTH (original = margin: -250px 0 0 -280px;) */
-    
 }
 
 .icon-refreshing {
@@ -97,98 +50,14 @@ body {
 	vertical-align: middle;
 }
 
-.status  {
-	padding-top: 0px;
-	padding-bottom: 0px;
-	min-height: 25px;
-	margin: 0px;
-}
-
-.statustext {
-	margin-bottom: 0px;
-}
-
-#addlinkform {
-	margin-bottom: 0px;
-}
-
-#addsiteform {
-	margin-bottom: 0px;
-}
-
-.newcommentform {
-	margin-bottom: 0px;
-}
-
-textarea#new_comment, #postcomment {
-	margin-left: -6px;
-	margin-top: 5px;
-	margin-bottom: 0px;
-}
-
-.jdstatustext {
-	margin-top:5px;
-	margin-bottom: 0px;
-}
-
-.table-condensed tr,td {
-	height: 20px;
-	max-height: 20px;
-	text-overflow:ellipsis;  
-	overflow:hidden;  
-	white-space:nowrap;  
-}
- div .editable-input, div .editable-input > input .input-medium {
-	width:300px;
- }
- 
- div .editable-input > input {
-	width:270px;
- }
- 
- .navbar-search {
-    position: relative;
-}
-  
-.navbar-search .search-query {
-    padding-left: 29px;
-}
-
-.navbar-search .icon-search {
-    position: absolute;
-    top: 7px;
-    left: 11px;
-    background-image: url("/packages/bootstrap/img/glyphicons-halflings.png");
-}
-
-.navbar-search .icon-searching {
-	background-image:url("/ajax-loader2.gif");
-	background-color:transparent;
-    background-position: center center;
-	width: 16px;
-	height: 16px;
-    position: absolute;
-    top: 7px;
-    left: 11px;
-}
-
-#settingsform {
-	margin: 0px;
-}
-
-.modal-footer {
-	padding: 10px;
-}
-
-.dropdown-menu .active > a, .dropdown-menu .active > a:hover {
-	color:white;
-	outline-color:white;
-}
-
-#searchform > .typeahead  {
-	width: 320px;
-}
-
-#sharelinkform > div > .typeahead {
-	width: 385px;
+#searchfield , #searchfieldgroup{
+	background-color: white;
+	border-bottom-color: white;
+	border-left-color: white;
+	border-right-color: white;
+	
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	-webkit-transition: none;
+	transition: none;
 }

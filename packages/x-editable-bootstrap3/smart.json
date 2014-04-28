@@ -1,0 +1,8 @@
+{
+	"name": "x-editable-bootstrap3",
+	"description": "Latest version of X-editable for bootstrap3 w/ wysithtml packaged for meteor",
+	"homepage": "https://github.com/JustinSGray/meteor-x-editable-bootstrap.git",
+	"author": "Justin Gray",
+	"version": "1.5.2",
+	"git": "https://github.com/JustinSGray/meteor-x-editable-bootstrap.git"
+}
