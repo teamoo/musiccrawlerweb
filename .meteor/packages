@@ -10,10 +10,16 @@ http
 appcache
 service-configuration
 retry
+facts
+iron-router
 moment
 soundcloud
 npm
 http-publish
-iron-router
 bootstrap-3
 x-editable-bootstrap3
+connection-banner
+circular-progress
+less
+coffeescript
+iron-router-progress

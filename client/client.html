@@ -12,6 +12,13 @@
 <body>
 </body>
 
+<template name="layout">
+	{{>connectionBanner}}
+  <div>
+    {{> yield}}
+  </div>
+</template>
+
 <template name="notFound">
 	<div id='not-found-alt'>
 	  <div class="info">
@@ -67,7 +74,7 @@
 							<h1 class="hero-text animated fadeIn">Die beste Möglichkeit, gute elektronische Musik zu entdecken.</h1>
 							<div class="cta animated fadeIn">
 								<div class="input-group input-group-lg">
-								  <span id="searchgroup" class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+								  <span id="searchgroup" class="input-group-addon searchgroup"><span class="glyphicon glyphicon-search"></span></span>
 								  <input id="searchfield" type="text" class="form-control" placeholder="Titel, Interpret, Album, Compilation...">
 								</div>
 							</div>
@@ -483,20 +490,8 @@
 		<div class="row-fluid">
 			<div class="span12" style="margin-top:-10px;">
 				{{> navigation}}
-				{{#if session "links_completed"}}
-					{{#if notConnected}}
-						{{> connectionLostWarning}}
-					{{/if}}
-				{{/if}}
 			</div>
 		</div>
-		{{#if session "progress"}}
-		<div class="row-fluid">
-			<div class="span12">
-					{{> progressBar}}
-			</div>
-		</div>
-		{{/if}}
 		<div class="row-fluid">
 			<div class="span12">
 				{{#if currentUser}}
@@ -551,29 +546,6 @@
 		</div>
 	</div>
 </template>  
-
-<template name="connectionLostWarning">
-	<div class="alert alert-error alert-block">
-		<h4 class="error heading">Achtung!</h4>
-		<p>Anscheinend hast du die Verbindung zum Server verloren. Wir versuchen dich automatisch wieder zu verbinden. Sollte dies innerhalb von 1 Minute nicht klappen, schließe bitte diese Seite und öffne sie erneut.</p>
-		<p>
-			<a class="btn btn-danger" id="terminateappbutton">Anwendung beenden</a>
-			<a class="btn" id="waitbutton">Warten</a>
-		</p>
-	</div>
-</template>
-
-<template name="progressBar">
-	{{#if session "progressActive"}}
-		<div class="progress progress-striped active {{session "progressState"}}">
-			<div class="bar" style="width: {{session "progress"}}%;"></div>
-		</div>
-	{{else}}
-		<div class="progress {{session "progressState"}}">
-			<div class="bar" style="width: {{session "progress"}}%;"></div>
-		</div>
-	{{/if}}
-</template>
 
 <template name="navigation">
 	<div class="navbar navbar-fixed-top">

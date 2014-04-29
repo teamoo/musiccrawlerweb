@@ -16,6 +16,14 @@
     background-position: center center;
 }
 
-#searchfield , #searchgroup{
+#searchfield , .searchgroup{
 	height: 39px;
+	box-shadow: none;
+	background-color: rgba(255, 255, 255, 0.7);
+	font-size: 18px;
+}
+
+#iron-router-progress {
+    background-color : #2299DD;
+    box-shadow       : 0 0 5px #2299DD;
 }

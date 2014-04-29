@@ -21,7 +21,7 @@ Session.setDefault("showFilterSitesDialog", false);
 Session.setDefault("showShareLinkDialog", false);
 Session.setDefault("showBulkDownloadDialog", false);
 Session.setDefault("progressActive", false);
-Session.setDefault("progress", undefined);
+Session.setDefault("progressPercent", undefined);
 Session.setDefault("progressState", undefined);
 Session.setDefault("selected_navitem", 90);
 Session.setDefault("filter_date", new Date(new Date().setDate(new Date().getDate() - 90)));
@@ -36,12 +36,15 @@ Session.setDefault("filter_show_already_downloaded", false);
 Session.setDefault("filter_id", undefined);
 Session.setDefault("soundcloud_ready",false);
 Session.setDefault("started",false);
+Session.setDefault("init",false);
 Session.setDefault("filter_sort", "date_published");
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
 });
 
-Session.setDefault("init",false);
+IronRouterProgress.configure({
+	spinner: false
+});
 
 //local Collection for external search results
 SearchResults = new Meteor.Collection(null);
@@ -690,10 +693,6 @@ UI.registerHelper('session', function (input) {
 //
 // Handlebars-Funktionen
 //
-// Connected-Status nutzen für Fehlermeldungsanzeige
-Template.page.notConnected = function () {
-	return !Meteor.status().connected;
-};
 Template.page.searchresultsFound = function () {
 	if (SearchResults.findOne()) return true;
 	return false;
@@ -1177,7 +1176,7 @@ Template.navigation.events({
 		var selected = Session.get("selected_links");
 		if (selected.length && Session.equals("JDOnlineStatus", true)) {
 			Session.set("progressActive", true);
-			Session.set("progress", 5);
+			Session.set("progressPercent", 5);
 			var selectedurls = Links.find({
 				_id: {
 					$in: selected
@@ -1198,8 +1197,8 @@ Template.navigation.events({
 			
 			for (var i = 1; i <= times; i++) {
 				Session.set("progressState", "progress-info");
-				var oldprogress = Session.get("progress");
-				Session.set("progress", parseInt(oldprogress + progressstep));
+				var oldprogress = Session.get("progressPercent");
+				Session.set("progressPercent", parseInt(oldprogress + progressstep));
 				var sel_links_raw = selectedurls.splice(0, urls_per_request);
 
 				var selectedurls_vk = [];
@@ -1239,10 +1238,10 @@ Template.navigation.events({
 								errorcount++;
 								if (errorcount > 2) {
 									Session.set("progressState", "progress-danger");
-									Session.set("progress", 100);
+									Session.set("progressPercent", 100);
 									Session.set("progressActive", false);
 									Meteor.setTimeout(function () {
-										Session.set("progress", undefined);
+										Session.set("progressPercent", undefined);
 										Session.set("progressState", undefined);
 									}, 3500);
 									return;
@@ -1255,15 +1254,15 @@ Template.navigation.events({
 									if (error2) console.log("Error updating Links after Download.");
 								});
 							}
-							var oldprogress = Session.get("progress");
-							Session.set("progress", parseInt(oldprogress + progressstep));
-							if (Session.get("progress") >= 99) {
+							var oldprogress = Session.get("progressPercent");
+							Session.set("progressPercent", parseInt(oldprogress + progressstep));
+							if (Session.get("progressPercent") >= 99) {
 								if (Session.equals("progressState", "progress-warning")) Session.set("progressState", "progress-danger");
 								else Session.set("progressState", "progress-success");
-								Session.set("progress", 100);
+								Session.set("progressPercent", 100);
 								Session.set("progressActive", false);
 								Meteor.setTimeout(function () {
-									Session.set("progress", undefined);
+									Session.set("progressPercent", undefined);
 									Session.set("progressState", undefined);
 								}, 3500);
 								Session.set("selected_links", []);
@@ -1290,10 +1289,10 @@ Template.navigation.events({
 							errorcount++;
 							if (errorcount > 2) {
 								Session.set("progressState", "progress-danger");
-								Session.set("progress", 100);
+								Session.set("progressPercent", 100);
 								Session.set("progressActive", false);
 								Meteor.setTimeout(function () {
-									Session.set("progress", undefined);
+									Session.set("progressPercent", undefined);
 									Session.set("progressState", undefined);
 								}, 3500);
 								return;
@@ -1306,15 +1305,15 @@ Template.navigation.events({
 								if (error2) console.log("Error updating Links after Download.");
 							});
 						}
-						var oldprogress = Session.get("progress");
-						Session.set("progress", parseInt(oldprogress + progressstep));
-						if (Session.get("progress") >= 99) {
+						var oldprogress = Session.get("progressPercent");
+						Session.set("progressPercent", parseInt(oldprogress + progressstep));
+						if (Session.get("progressPercent") >= 99) {
 							if (Session.equals("progressState", "progress-warning")) Session.set("progressState", "progress-danger");
 							else Session.set("progressState", "progress-success");
-							Session.set("progress", 100);
+							Session.set("progressPercent", 100);
 							Session.set("progressActive", false);
 							Meteor.setTimeout(function () {
-								Session.set("progress", undefined);
+								Session.set("progressPercent", undefined);
 								Session.set("progressState", undefined);
 							}, 3500);
 							Session.set("selected_links", []);
