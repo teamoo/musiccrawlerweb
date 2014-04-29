@@ -1,22 +1,6 @@
 .hand {
 	cursor: pointer;
 }
-
-.icon-refreshing {
-	background:transparent url("/ajax-loader.gif");
-    background-position: center center;
-}
-
-.icon-loader {
-	background:transparent url("/ajax-loader2.gif");
-    background-position: center center;
-	width: 16px;
-	height: 16px;
-	margin-right: 3px;
-	margin-bottom: 0px;
-	padding:0px;
-}
-
 .icon-rss {
 	background:transparent url("/rss.png");
     background-position: center center;
@@ -32,32 +16,6 @@
     background-position: center center;
 }
 
-.icon-ok-green {
-	background:transparent url("/ok-green.png");
-    background-position: center center;
-	width: 24px;
-	height: 24px;
-	line-height: 24px;
-	vertical-align: middle;
-}
-
-.icon-remove-red {
-	background:transparent url("/remove-red.png");
-    background-position: center center;
-	width: 24px;
-	height: 24px;
-	line-height: 24px;
-	vertical-align: middle;
-}
-
-#searchfield , #searchfieldgroup{
-	background-color: white;
-	border-bottom-color: white;
-	border-left-color: white;
-	border-right-color: white;
-	
-	-webkit-box-shadow: none;
-	box-shadow: none;
-	-webkit-transition: none;
-	transition: none;
+#searchfield , #searchgroup{
+	height: 39px;
 }

@@ -12,20 +12,22 @@
 <body>
 </body>
 
-<template name="404">
- <div class="info">
-    <h1>404</h1>
-    <p>Oops, the page you're looking for doesn't exist.</p>
-
-    <p class="go-back">
-      Please continue to our <a href="index.html">Home page</a>.
-    </p>
-  </div>
-	<div id="container"></div>
+<template name="notFound">
+	<div id='not-found-alt'>
+	  <div class="info">
+	    <h1>404</h1>
+	    <p>Hier gibt es leider nichts zu hören.</p>
+	
+	    <p class="go-back">
+	      Bitte geh zurück zur <a href="{{pathFor 'home'}}">Startseite</a>.
+	    </p>
+	  </div>
+		<div id="container"></div>
+	</div>
 </template>
 
 <template name="home">
-
+	<div id="home3">
 	<div class="st-container">
 		<nav class="nav-menu">
 			<h3>Menu</h3>
@@ -64,7 +66,10 @@
 						<div class="container">
 							<h1 class="hero-text animated fadeIn">Die beste Möglichkeit, gute elektronische Musik zu entdecken.</h1>
 							<div class="cta animated fadeIn">
-								
+								<div class="input-group input-group-lg">
+								  <span id="searchgroup" class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+								  <input id="searchfield" type="text" class="form-control" placeholder="Titel, Interpret, Album, Compilation...">
+								</div>
 							</div>
 							<div class="screenshot animated fadeInUp">
 							</div>
@@ -442,6 +447,7 @@
 			</div><!-- end .st-content -->
 		</div><!-- end .st-pusher -->
 	</div><!-- end .st-container -->
+	</div>
 </template>
 
 <template name="page">
