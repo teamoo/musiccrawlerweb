@@ -686,8 +686,6 @@ a:focus, button:focus {
   -o-animation-delay: 0.15s;
   -ms-animation-delay: 0.15s;
   animation-delay: 0.15s;
-  /*background-image: url("../../images/bg2.png");*/
-  background-image: url("http://31.media.tumblr.com/fe341bc8e2f82db9e03cbb5a4323a84f/tumblr_mq7ejb3POL1st5lhmo1_1280.jpg");
 }
 @media (max-width: 991px) {
   #home3 #hero #cover-image {

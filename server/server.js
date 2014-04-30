@@ -1,3 +1,14 @@
+Facts.setUserIdFilter(function (userId) {
+	console.log(userId);
+
+	var user = Meteor.users.findOne(userId);
+	
+	if (user) console.log(user);
+	
+	return true;
+
+});
+
 // Add access points for `GET`, `POST`, `PUT`, `DELETE`
 HTTP.publish({collection: Links}, function(data) {
 	// this.userId, this.query, this.params

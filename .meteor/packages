@@ -19,7 +19,13 @@ http-publish
 bootstrap-3
 x-editable-bootstrap3
 connection-banner
-circular-progress
 less
 coffeescript
 iron-router-progress
+font-awesome
+glyphicons-halflings
+entypo
+ionicons
+trail
+spin
+iron-router-auth

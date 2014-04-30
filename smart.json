@@ -1,5 +1,12 @@
 {
   "packages": {
-    "iron-router": {}
+    "iron-router": {},
+    "font-awesome": {},
+    "glyphicons-halflings": {},
+    "entypo": {},
+    "ionicons": {},
+    "trail": {},
+    "spin": {},
+    "iron-router-auth": {}
   }
 }

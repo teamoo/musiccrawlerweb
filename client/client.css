@@ -27,3 +27,90 @@
     background-color : #2299DD;
     box-shadow       : 0 0 5px #2299DD;
 }
+
+.fb-login-button {
+	-webkit-background-clip: border-box;
+	-webkit-background-origin: padding-box;
+	-webkit-background-size: auto;
+	-webkit-font-smoothing: antialiased;
+	background-attachment: scroll;
+	background-clip: border-box;
+	background-color: rgba(0, 0, 0, 0);
+	background-image: -webkit-linear-gradient(top, rgb(76, 105, 186), rgb(59, 85, 160));
+	background-origin: padding-box;
+	background-size: auto;
+	border-bottom-color: rgb(76, 105, 186);
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	border-left-color: rgb(76, 105, 186);
+	border-right-color: rgb(76, 105, 186);
+	border-top-color: rgb(76, 105, 186);
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	color: rgb(255, 255, 255);
+	cursor: pointer;
+	direction: ltr;
+	display: inline-block;
+	font-family: 'Helvetica neue';
+	font-size: 11px;
+	height: 39px;
+	line-height: 14px;
+	text-align: left;
+	text-shadow: rgb(53, 76, 140) 0px -1px 0px;
+	vertical-align: top;
+	width: 167px;
+}
+
+#fblogo {
+	margin-left: 4px;
+	margin-top: -8px;
+	margin-bottom: 4px;
+}
+
+#fbtext {
+	-webkit-font-smoothing: antialiased;
+	border-bottom-color: rgb(255, 255, 255);
+	border-bottom-style: none;
+	border-bottom-width: 0px;
+	border-collapse: collapse;
+	border-left-color: rgb(255, 255, 255);
+	border-left-style: none;
+	border-left-width: 0px;
+	border-right-color: rgb(255, 255, 255);
+	border-right-style: none;
+	border-right-width: 0px;
+	border-top-color: rgb(255, 255, 255);
+	border-top-style: none;
+	border-top-width: 0px;
+	color: rgb(255, 255, 255);
+	cursor: pointer;
+	direction: ltr;
+	display: inline-block;
+	font-family: 'Helvetica Neue', Helvetica, Arial, 'lucida grande', tahoma, verdana, arial, sans-serif;
+	font-size: 24px;
+	font-weight: bold;
+	height: 30px;
+	line-height: 30px;
+	padding-bottom: 3px;
+	padding-left: 8px;
+	padding-right: 8px;
+	padding-top: 3px;
+	text-align: left;
+	text-shadow: rgb(53, 76, 140) 0px -1px 0px;
+	white-space: nowrap;
+	width: 116px;
+}
+
+.blurred {	  
+	  -webkit-filter: blur(5px);
+	  -moz-filter: blur(5px);
+	  -o-filter: blur(5px);
+	  -ms-filter: blur(5px);
+	  filter: blur(5px);
+}
+
+#spinner {
+	display:  inline-table;
+	margin-left:  20px;
+	margin-bottom: 8px;
+}

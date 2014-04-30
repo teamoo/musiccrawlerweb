@@ -46,6 +46,26 @@ IronRouterProgress.configure({
 	spinner: false
 });
 
+Meteor.Spinner.options = {
+    lines: 15, // The number of lines to draw
+    length: 0, // The length of each line
+    width: 4, // The line thickness
+    radius: 10, // The radius of the inner circle
+    corners: 1.0, // Corner roundness (0..1)
+    rotate: 0, // The rotation offset
+    direction: 1, // 1: clockwise, -1: counterclockwise
+    color: '#fff', // #rgb or #rrggbb
+    speed: 1.1, // Rounds per second
+    trail: 60, // Afterglow percentage
+    shadow: false, // Whether to render a shadow
+    hwaccel: true, // Whether to use hardware acceleration
+    className: 'spinner', // The CSS class to assign to the spinner
+    zIndex: 2e9, // The z-index (defaults to 2000000000)
+    top: 'auto', // Top position relative to parent in px
+    left: 'auto' // Left position relative to parent in px
+};
+
+
 //local Collection for external search results
 SearchResults = new Meteor.Collection(null);
 //Subscriptions
@@ -983,24 +1003,7 @@ UI.body.events({
 		}
 	}
 });
-// Eventhandler, um das Fenster zu schließen, wenn der Beenden Knopf in der ConnectionWarning gedrückt wird
-Template.connectionLostWarning.events({
-	'click #terminateappbutton': function () {
-		if ($.browser.opera || $.browser.mozilla) window.close();
-		else {
-			window.open('', '_self', '');
-			window.close();
-		}
-	},
-	'click #waitbutton': function (event, template) {
-		event.preventDefault();
-		event.target.disabled = true;
-		event.target.innerHTML = "<i class='icon-loader'></i> Warten";
-		Meteor.setTimeout(function () {
-			event.target.innerHTML = "<i class='icon-warning-sign'></i> Verbindung verloren";
-		}, 10000);
-	}
-});
+
 // Klick auf Login-Button
 Template.user_loggedout.events({
 	'click #login': function () {
