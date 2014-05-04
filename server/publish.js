@@ -1,4 +1,44 @@
 //Publishing - Meteor Collections, die Clients subscriben können
+Meteor.publish("allUsers", function () {
+		var user = Meteor.users.findOne(this.userId);
+		
+		if ((user) && user.admin && user.admin === true)
+			return Meteor.users.find({
+				}, {
+					fields: {
+						'admin': 1,
+						'profile' : 1
+					}
+				});
+});
+
+Meteor.publish("admin_notifications", function () {
+		var user = Meteor.users.findOne(this.userId);
+		
+		if ((user) && user.admin && user.admin === true)
+			return AdminNotifications.find({});
+});
+
+Meteor.publish("admin_statistics", function () {
+		var user = Meteor.users.findOne(this.userId);
+		
+		if ((user) && user.admin && user.admin === true)
+			return AdminStatistics.find({});
+});
+
+Meteor.publish("users", function () {
+		var user = Meteor.users.findOne(this.userId);
+		
+		if ((user) &&user.admin && user.admin === true)
+			return Meteor.users.find({
+				}, {
+					fields: {
+						'admin': 1,
+						'profile' : 1
+					}
+				});
+});
+
 Meteor.publish("userData", function () {
 	if (this.userId) return Meteor.users.find({
 			_id: this.userId
@@ -109,7 +149,7 @@ Meteor.publish("counts-by-timespan", function (filter_status, filter_sites, filt
 				$nin: filter_sites
 			}
 		}).count(false);
-		self.added("counts", timespan, {
+		self.added("unreadcounts", timespan, {
 			count: count
 		});
 	});
@@ -169,7 +209,23 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 					status: 1,
 					creator: 1,
 					aid: 1,
-					oid: 1
+					oid: 1,
+					
+					facebook_shares: 1,
+					youtube_likes: 1,
+					youtube_comments: 1,
+					youtube_views: 1,
+					youtube_dislikes: 1,
+					youtube_favorites: 1,
+					hypem_likes: 1,
+					hypem_posts: 1,
+					hypem_artwork_url: 1,
+					soundcloud_likes: 1,
+					soundcloud_comments: 1,
+					soundcloud_downloads: 1,
+					soundcloud_playbacks: 1,
+					soundcloud_artwork_url: 1,
+					name_routing: 1
 				}
 	
 	if (filter_sort && (filter_sort == "likes"))

@@ -19,16 +19,32 @@
   </div>
 </template>
 
-<template name="user_loggedout">
-	<div class="cta animated fadeIn">
-		<div id="login" data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>
+<template name="user_login">
+	<div class="cta animated fadeIn">	
 		{{#if loginServicesConfigured}}
-			<img id="fblogo" src="fblogo.png"/>
-			<span id="fbtext">Anmelden</span>
+			{{#if loggingIn}}
+				<div data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
+				{{> spinner}}<span id="fbtext">&nbsp;&nbsp;Einloggen</span>
+				</div>
+			{{else}}
+				{{#if currentUser}}
+				<div id="logout" data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
+				<img id="fblogo" src="fblogo.png"/>
+				<span id="fbtext">Abmelden</span>
+				</div>
+				{{else}}
+				<div id="login" data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
+				<img id="fblogo" src="fblogo.png"/>
+				<span id="fbtext">Anmelden</span>
+				</div>
+				{{/if}}
+			{{/if}}
 		{{else}}
-			{{> spinner}}<span id="fbtext">&nbsp;&nbsp;&nbsp;Laden...</span>
+			<div data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
+			{{> spinner}}<span id="fbtext">&nbsp;&nbsp;&nbsp;Laden</span>
+			</div>
 		{{/if}}
-		</div>
+		
 	</div>	
 </template>
 
@@ -52,7 +68,7 @@
 					</div>
 					<div class="container">
 						<h1 class="hero-text animated fadeIn">Die beste Möglichkeit, gute elektronische Musik zu entdecken.</h1>
-						{{> user_loggedout}}
+						{{> user_login}}
 					</div>
 				</div>
 
@@ -73,6 +89,34 @@
 		  <input id="searchfield" type="text" class="form-control" placeholder="Titel, Interpret, Album, Compilation...">
 		</div>
 	</div>
+</template>
+
+<template name="link">
+	<div class="col-lg-2">
+		{{#if hasImageURLSoundcloud}}
+			<img class="img-rounded" src="{{soundcloud_artwork_url}}" alt="Placeholder">
+			<p class="link-name">{{name}}</p>
+		{{else}}
+			{{#if hasImageURLHypem}}
+				<img class="img-rounded" src="{{soundcloud_artwork_url}}" alt="Placeholder">
+				<p class="link-name">{{name}}</p>
+			{{else}}
+			<img class="img-rounded" data-src="holder.js/175x175" alt="Placeholder">
+			<p class="link-name">{{name}}</p>
+			{{/if}}
+		{{/if}}
+	</div><!-- /.col-lg-4 -->
+</template>
+
+<template name="linklist">
+	<div class="container marketing">
+	      <!-- Three columns of text below the carousel -->
+	      <div class="row">
+	      	{{#each links}}
+	      		{{> link}}
+	      	{{/each}}
+	      </div><!-- /.row -->
+	  </div>
 </template>
 
 <template name="home">
@@ -96,7 +140,6 @@
 
 		<div class="st-pusher">
 			<div class="st-content">
-
 				<header class="navbar navbar-inverse hero" role="banner">
 			  		<div class="container">
 			    		<div class="navbar-header">
@@ -109,7 +152,6 @@
 			    		</div>
 			  		</div>
 				</header>
-
 				<div id="hero">
 					<div id="cover-image" class="animated fadeIn">
 						<div class="container">
@@ -120,11 +162,8 @@
 						</div>
 					</div>
 				</div>
-
-
+				{{> linklist}}
 				{{> footer}}
-
-
 			</div><!-- end .st-content -->
 		</div><!-- end .st-pusher -->
 	</div><!-- end .st-container -->
@@ -235,6 +274,20 @@
 	  <div class="info">
 	    <h1>404</h1>
 	    <p>Hier gibt es leider nichts zu hören.</p>
+	
+	    <p class="go-back">
+	      Bitte geh zurück zur <a href="{{pathFor 'home'}}">Startseite</a>.
+	    </p>
+	  </div>
+		<div id="container"></div>
+	</div>
+</template>
+
+<template name="unauthorized">
+	<div id='not-found-alt'>
+	  <div class="info">
+	    <h1>401</h1>
+	    <p>Du darfst diese Seite leider nicht besuchen.</p>
 	
 	    <p class="go-back">
 	      Bitte geh zurück zur <a href="{{pathFor 'home'}}">Startseite</a>.
@@ -440,7 +493,7 @@
 	{{/if}}
 </template>
 
-<template name="linklist">
+<template name="linklist_old">
 	<table class="table table-condensed table-striped">
 		<thead>
 			<th>
@@ -500,7 +553,7 @@
 <tr><td></td><td></td><td></td><td colspan="8"><i class="icon-loader"></i> weitere Links werden geladen...</td></tr>
 </template>
 
-<template name="link">
+<template name="link_old">
 	{{#if isNotAlreadyDownloaded}}
 		<tr>
 			<td style="width:12px;min-width:12px;max-width:12px">

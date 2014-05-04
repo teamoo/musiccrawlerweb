@@ -7,6 +7,9 @@
     "ionicons": {},
     "trail": {},
     "spin": {},
-    "iron-router-auth": {}
+    "holder": {},
+    "iron-router-auth": {},
+    "publish-counts": {},
+    "flot": {}
   }
 }

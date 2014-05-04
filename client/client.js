@@ -450,7 +450,7 @@ Deps.autorun(function () {
 	Meteor.subscribe('counts-by-timespan', Session.get("filter_status"), Session.get("filter_sites"), Session.get("filter_mixes"), function onReady() {
 		//Session.set('counts_completed', true);
 		[1, 14, 30, 90, 365].forEach(function (timespan) {
-			var item = Counts.findOne({
+			var item = UnreadCounts.findOne({
 				_id: timespan
 			});
 			if (item) Session.set("links_count_" + timespan, item.count);
@@ -672,6 +672,7 @@ Meteor.startup(function () {
 				Links.findOne() &&
 				$(document).height() - $(window).height() <= $(window).scrollTop() + threshold
 			){
+						Holder.run();
 						if (Session.get("filter_limit") <= 4 && Session.equals("wait_for_items", false) && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
 							Session.set("wait_for_items", true);
 							Session.set("filter_limit", Session.get("filter_limit") + 1);
@@ -722,7 +723,7 @@ Template.page.linksFound = function () {
 	return false;
 };
 
-Template.user_loggedout.loginServicesConfigured = function () {
+Template.user_login.loginServicesConfigured = function () {
 	return Accounts.loginServicesConfigured();
 };
 
@@ -736,6 +737,11 @@ Template.page.isExternalSearch = function () {
 		return (!(Session.equals("filter_term", "")) && Meteor.user().profile.searchproviders.length);
 	return false;
 };
+
+Template.admin.notificationCount = function() {
+	return AdminNotifications.find().count();	
+};
+
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
 Template.navigation.isAnyLinkSelected = function () {
 	if (Session.get("selected_links").length) return true;
@@ -946,6 +952,15 @@ Template.filterSitesDialog.noSitefiltered = function () {
 Template.sitesDialog.getFeedTypeIcon = function () {
 	return Template[this.type + "siteicon"]
 };
+
+Template.link.hasImageURLSoundcloud = function() {
+	return this.soundcloud_image_url && soundcloud_image_url != ''
+};
+Template.link.hasImageURLHypem = function() {
+	return this.hypem_artwork_url && soundcloud_image_url != ''
+};
+
+
 // Funktion um zu überprüfen, ob eine Seite von einem User erstellt wurde
 Template.sitesDialog.isOwner = function () {
 	if (!Meteor.user()) return false;
@@ -1005,7 +1020,7 @@ UI.body.events({
 });
 
 // Klick auf Login-Button
-Template.user_loggedout.events({
+Template.user_login.events({
 	'click #login': function () {
 		// wir loggen den User mit Facebook ein, erbitten Zugriff auf seine
 		// eMail-Addresse
@@ -1018,10 +1033,7 @@ Template.user_loggedout.events({
 					console.log(error);
 				}		
 			});
-	}
-});
-// Logout-Eventhandler
-Template.user_loggedin.events({
+	},
 	'click #logout': function () {
 		Session.set("init",false);
 		if (VK.Auth.getSession()) VK.Auth.logout();
@@ -1030,7 +1042,10 @@ Template.user_loggedin.events({
 				alert("Fehler beim Ausloggen", "Beim Ausloggen ist ein unerwarteter Fehler aufgetreten. \nBitte schließ das Fenster und öffne den MusicCrawler erneut.");
 			}
 		});
-	},
+	}
+});
+// Logout-Eventhandler
+Template.user_loggedin.events({
 	//Accounteinstellungen anzeigen
 	'click #showsettings': function (event, template) {
 		event.preventDefault();
@@ -1066,6 +1081,7 @@ Template.user_loggedin.events({
 		return false;
 	}
 });
+
 Template.navigation.rendered = function () {
 	this.$('li.linkfilter').removeClass("active");
 	var activenumber = parseInt(Session.get("selected_navitem"));

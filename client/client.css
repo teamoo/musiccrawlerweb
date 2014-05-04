@@ -114,3 +114,14 @@
 	margin-left:  20px;
 	margin-bottom: 8px;
 }
+
+div.container.marketing {
+	width:  1642px;
+}
+
+p.link-name {
+	width:  175px;
+	overflow:  hidden;
+	line-height:  1.2;
+	max-height: 30px;	
+}
