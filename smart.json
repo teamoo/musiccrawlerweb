@@ -1,5 +1,6 @@
 {
   "packages": {
+	"bootstrap-3": {},
     "iron-router": {},
     "font-awesome": {},
     "glyphicons-halflings": {},
@@ -7,9 +8,19 @@
     "ionicons": {},
     "trail": {},
     "spin": {},
+	"moment": {},
+	"soundcloud": {},
+	"npm": {},
     "holder": {},
     "iron-router-auth": {},
-    "publish-counts": {},
-    "flot": {}
+    "chartjs": {},
+	"iron-router-progress": {},
+	"livestamp": {},
+	"typeahead": {},
+	"connection-banner": {},
+	"http-publish": {},
+	"x-editable-bootstrap3": {},
+	"winston": {},
+	"winston-mongodb": {}
   }
 }

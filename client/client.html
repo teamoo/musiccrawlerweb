@@ -25,7 +25,7 @@
 			{{#if loggingIn}}
 				<div data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
 				{{> spinner}}<span id="fbtext">&nbsp;&nbsp;Einloggen</span>
-				</div>
+ 				</div>
 			{{else}}
 				{{#if currentUser}}
 				<div id="logout" data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
@@ -84,9 +84,9 @@
 
 <template name ="searchpanel">
 	<div class="cta animated fadeIn">
-		<div class="input-group input-group-lg">
-		  <span id="searchgroup" class="input-group-addon searchgroup"><span class="glyphicon glyphicon-search"></span></span>
-		  <input id="searchfield" type="text" class="form-control" placeholder="Titel, Interpret, Album, Compilation...">
+		<div class="input-group input-group-lg" id="searchgroup">
+		  <span id="searchbutton" class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+		  <input id="searchfield" type="text" class="form-control typeahead" data-highlight="true" data-min-length="3" name="search" autocomplete="off" spellcheck="off" data-source="search" placeholder="Titel, Interpret, Album, Compilation...">
 		</div>
 	</div>
 </template>
@@ -94,15 +94,24 @@
 <template name="link">
 	<div class="col-lg-2">
 		{{#if hasImageURLSoundcloud}}
-			<img class="img-rounded" src="{{soundcloud_artwork_url}}" alt="Placeholder">
-			<p class="link-name">{{name}}</p>
+			<div class="insideWrapper">
+				<img class="img-rounded coveredImage" src="{{soundcloud_artwork_url}}" alt="Placeholder">
+				<canvas class="ratingChart coveringCanvas" id="ratingChart_{{_id._str}}"></canvas>
+			</div>
+			<p class="link-name">{{name}} <br/><small><time datetime="{{date_published}}" data-livestamp="{{date_published}}"></time></small></p>
 		{{else}}
 			{{#if hasImageURLHypem}}
-				<img class="img-rounded" src="{{soundcloud_artwork_url}}" alt="Placeholder">
-				<p class="link-name">{{name}}</p>
+				<div class="insideWrapper">
+					<img class="img-rounded coveredImage" src="{{soundcloud_artwork_url}}" alt="Placeholder">
+					<canvas class="ratingChart coveringCanvas" id="ratingChart_{{_id._str}}"></canvas>
+				</div>
+				<p class="link-name">{{name}} <br/><small><time datetime="{{date_published}}" data-livestamp="{{date_published}}"></time></small></p>
 			{{else}}
-			<img class="img-rounded" data-src="holder.js/175x175" alt="Placeholder">
-			<p class="link-name">{{name}}</p>
+				<div class="insideWrapper">
+					<img class="img-rounded coveredImage" src="placeholder.png" alt="Placeholder">
+					<canvas class="ratingChart coveringCanvas" id="ratingChart_{{_id._str}}"></canvas>
+				</div>
+				<p class="link-name">{{name}} <br/><small><time datetime="{{date_published}}" data-livestamp="{{date_published}}"></time></small></p>
 			{{/if}}
 		{{/if}}
 	</div><!-- /.col-lg-4 -->

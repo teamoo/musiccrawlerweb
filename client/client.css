@@ -16,11 +16,23 @@
     background-position: center center;
 }
 
-#searchfield , .searchgroup{
-	height: 39px;
+#searchfield , #searchbutton{
 	box-shadow: none;
-	background-color: rgba(255, 255, 255, 0.7);
+	background-color: rgba(255, 255, 255, 0.8);
 	font-size: 18px;
+	border: 0px;
+}
+
+#searchfield {
+	height: 46px;
+	font-size: 20px;
+}
+
+#searchgroup {
+	width: 650px;
+	border: 0px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 #iron-router-progress {
@@ -124,4 +136,13 @@ p.link-name {
 	overflow:  hidden;
 	line-height:  1.2;
 	max-height: 30px;	
+}
+
+div.st-content {
+	background-color: Gainsboro;
+}
+
+.coveringCanvas{ 
+    width:100%; height:100%; 
+    position:absolute; top:12px; right:21px;
 }

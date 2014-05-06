@@ -672,7 +672,6 @@ Meteor.startup(function () {
 				Links.findOne() &&
 				$(document).height() - $(window).height() <= $(window).scrollTop() + threshold
 			){
-						Holder.run();
 						if (Session.get("filter_limit") <= 4 && Session.equals("wait_for_items", false) && Links.find().count() === (Session.get("filter_limit") * Meteor.settings.public.itembadgesize)) {
 							Session.set("wait_for_items", true);
 							Session.set("filter_limit", Session.get("filter_limit") + 1);
@@ -686,6 +685,23 @@ Meteor.startup(function () {
 // Template-Helper für handlebars
 // represent ISO Date as String from now (e.g. 3 minute before, in 1 hour)
 // usage: {{dateFormatPretty creation_date}}
+Template.searchpanel.rendered = function() {
+	Meteor.typeahead(this.$("#searchfield"));
+}
+
+var getSuggestions = _.debounce(function(query, callback) {
+		Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
+			if (result && result.length) {
+				result.unshift(query.trim());
+				callback(result.map(function(v){ return {value: v}; }));
+			}
+		});
+}, 300);
+
+Template.searchpanel.search = function(query, callback) {
+	getSuggestions(query, callback);
+}
+
 UI.registerHelper('dateFormatPretty', function (context) {
 	if (window.moment) {
 		if (context && moment(context).isValid()) return moment(context).fromNow();
@@ -1019,6 +1035,23 @@ UI.body.events({
 	}
 });
 
+Template.searchpanel.events({
+	'typeahead:selected' : function (event, template) {
+		var name = template.find('#searchfield').value;
+	
+		SearchResults.remove({});
+		var term = name.trim();
+		Session.set("links_completed", false);
+		Session.set("filter_id", undefined);
+		Session.set("filter_show_already_downloaded", true);
+		Session.set("filter_status", ["on", "off", "unknown"]);
+		Session.set("filter_term", term.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1"));
+		Session.set("filter_skip", 0);
+		Session.set("filter_sites", []);
+		Session.set("filter_mixes",false);
+	}
+})
+
 // Klick auf Login-Button
 Template.user_login.events({
 	'click #login': function () {
@@ -1119,7 +1152,7 @@ Template.navigation.rendered = function () {
 					hide: 3000
 				}
 			});
-		
+			
 			var searchTracks = _.debounce(function(query, process) {
 				Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
 					if (result && result.length) {
@@ -1847,6 +1880,13 @@ Template.link.rendered = function () {
 	});
 };
 */
+Template.link.rendered = function() {
+	this.$(".ratingChart").each(function() {
+		var randomScore = randomInt(1, 100);
+		new Chart(this.getContext("2d")).Doughnut([{value: randomScore, color: "#FF6347"},{value: 100 - randomScore, color: "#F5F5F5"}],{percentageInnerCutout: 70, segmentShowStroke: false, animateRotate: false, animation: false});
+	});
+};
+
 Template.linklist.rendered = function () {
 	this.$('.linkname').editable();
 	this.$('#filter_links').tooltip({
@@ -3093,4 +3133,9 @@ function htmlDecode(input){
   var e = document.createElement('div');
   e.innerHTML = input;
   return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+}
+
+function randomInt(min,max)
+{
+    return Math.floor(Math.random()*(max-(min+1))+(min+1));
 }

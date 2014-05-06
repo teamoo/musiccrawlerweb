@@ -15,7 +15,6 @@ iron-router
 moment
 soundcloud
 npm
-http-publish
 bootstrap-3
 x-editable-bootstrap3
 connection-banner
@@ -28,7 +27,10 @@ entypo
 ionicons
 trail
 spin
-holder
-oauth-encryption
+#oauth-encryption
 iron-router-auth
-publish-counts
+chartjs
+livestamp
+typeahead
+winston
+winston-mongodb
