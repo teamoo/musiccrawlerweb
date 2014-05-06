@@ -25,12 +25,10 @@ font-awesome
 glyphicons-halflings
 entypo
 ionicons
-trail
 spin
 #oauth-encryption
 iron-router-auth
 chartjs
 livestamp
 typeahead
-winston
 winston-mongodb
