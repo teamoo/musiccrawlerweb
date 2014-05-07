@@ -20,9 +20,16 @@ Meteor.AppCache.config({
 ServiceConfiguration.configurations.remove({
     service : "facebook"
 });
+ServiceConfiguration.configurations.remove({
+    service : "soundcloud"
+});
 // Facebook-Konfiguration anlegen
 ServiceConfiguration.configurations.insert({
     service : "facebook",
     appId : Meteor.settings.facebook.appId,
     secret : Meteor.settings.facebook.secret
+});
+ServiceConfiguration.configurations.insert({
+    service : "soundcloud",
+    client_id : Meteor.settings.soundcloud.client_id
 });

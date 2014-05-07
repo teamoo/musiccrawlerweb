@@ -612,10 +612,6 @@ Deps.autorun(function () {
 // Startup function
 Meteor.startup(function () {	
 	//initialize soundcloud API for external search with app key
-	SC.initialize({
-		client_id: Meteor.settings.public.soundcloud.client_id
-	});
-	
 	SC.whenStreamingReady(function(){Session.set("soundcloud_ready", true)})
 	
 	VK.init({
@@ -690,28 +686,42 @@ Template.searchpanel.rendered = function() {
 }
 
 var getSuggestions = _.debounce(function(query, callback) {
-		Meteor.call("getSuggestionsForSearchTermV2", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
+		Meteor.call("getSuggestions", ".*" + query.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1") + ".*", function (error, result) {
 			if (result && result.length) {
-				result.unshift(query.trim());
-				callback(result.map(function(v){ return {value: v}; }));
+				result.forEach(function(item){item.value = item.name});
+				result.unshift({name: "Suche nach " + query.trim(), value:query.trim()});
+				callback(result);
 			}
 		});
 }, 300);
 
-Template.searchpanel.search = function(query, callback) {
+Template.searchpanel.suggestions = function(query, callback) {
 	getSuggestions(query, callback);
 }
 
+// Link-Größe von Kilobyte in MB umwandeln
+UI.registerHelper('getSizeinMB', function (context) {
+	if (this.size && this.size > 0) {
+		var sizeinMB = Math.round(this.size / 1048576);
+		if (Math.ceil(Math.log(sizeinMB + 1) / Math.LN10) > 3) {
+			var sizeinGB = sizeinMB / 1024;
+			return sizeinGB.toFixed(1).toString().replace(".", ",") + " GB";
+		}
+		return sizeinMB + " MB";
+	}
+	return undefined;
+});
+
 UI.registerHelper('dateFormatPretty', function (context) {
 	if (window.moment) {
-		if (context && moment(context).isValid()) return moment(context).fromNow();
+		if (this && moment(this).isValid()) return moment(this).fromNow();
 		return "noch nie";
 	}
 	return context; // moment plugin not available. return data as is.;
 });
 UI.registerHelper('millisecondsFormatPretty', function (context) {
 	if (window.moment) {
-		if (context && moment(context).isValid()) return moment(context).format('mm:ss') + " min.";
+		if (this && moment(this).isValid()) return moment(this).format('mm:ss') + " min.";
 		return "unbekannt";
 	}
 	return context; // moment plugin not available. return data as is.;
@@ -815,18 +825,7 @@ Template.link.isNotAlreadyDownloaded = function () {
 	if (this.downloaders && this.downloaders.length) return !_.contains(this.downloaders, Meteor.userId());
 	return true;
 };
-// Link-Größe von Kilobyte in MB umwandeln
-Template.link.getSizeinMB = function () {
-	if (this.size && this.size > 0) {
-		var sizeinMB = Math.round(this.size / 1048576);
-		if (Math.ceil(Math.log(sizeinMB + 1) / Math.LN10) > 3) {
-			var sizeinGB = sizeinMB / 1024;
-			return sizeinGB.toFixed(1).toString().replace(".", ",") + " GB";
-		}
-		return sizeinMB + " MB";
-	}
-	return undefined;
-};
+
 // Status-Icon auswählen je nach Status des Links
 Template.link.getStatusIcon = function () {
 	return Template[this.status + "icon"];

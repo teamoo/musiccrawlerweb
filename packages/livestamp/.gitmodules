@@ -1,3 +1,0 @@
-[submodule "lib/livestamp"]
-	path = lib/livestamp
-	url = https://github.com/mattbradley/livestampjs.git

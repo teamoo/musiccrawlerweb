@@ -1,23 +1,23 @@
 {
   "packages": {
-  	"npm": {},
-	"soundcloud": {},
+    "npm": {},
+    "soundcloud": {},
     "iron-router": {},
-	"iron-router-auth": {},
-	"iron-router-progress": {},
-	"bootstrap-3": {},
-	"typeahead": {},
-	"x-editable-bootstrap3": {},
-	"connection-banner": {},
-	"moment": {},
-	"livestamp": {},
-	"chartjs": {},
+    "iron-router-auth": {},
+    "iron-router-progress": {},
+    "bootstrap-3": {},
+    "typeahead": {},
+    "x-editable-bootstrap3": {},
+    "connection-banner": {},
+    "moment": {},
+    "livestamp": {},
+    "chartjs": {},
     "spin": {},
     "font-awesome": {},
     "glyphicons-halflings": {},
     "entypo": {},
     "ionicons": {},
-	"winston": {},
-	"winston-mongodb": {}
+    "winston-mongodb": {},
+    "winston": {}
   }
 }

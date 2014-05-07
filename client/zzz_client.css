@@ -146,3 +146,12 @@ div.st-content {
     width:100%; height:100%; 
     position:absolute; top:12px; right:21px;
 }
+
+.tt-dropdown-menu {
+	width: 650px;
+	margin-left:  -50px;
+}
+
+p.suggestion {
+	text-align: left;
+}

@@ -71,11 +71,7 @@
 						{{> user_login}}
 					</div>
 				</div>
-
-
 				{{> footer}}
-
-
 			</div><!-- end .st-content -->
 		</div><!-- end .st-pusher -->
 	</div><!-- end .st-container -->
@@ -86,9 +82,13 @@
 	<div class="cta animated fadeIn">
 		<div class="input-group input-group-lg" id="searchgroup">
 		  <span id="searchbutton" class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
-		  <input id="searchfield" type="text" class="form-control typeahead" data-highlight="true" data-min-length="3" name="search" autocomplete="off" spellcheck="off" data-source="search" placeholder="Titel, Interpret, Album, Compilation...">
+		  <input id="searchfield" type="text" class="form-control typeahead" data-highlight="true" data-min-length="3" name="suggestion" data-template="suggestion" data-source="suggestions" data-display-key="value" autocomplete="off" spellcheck="off" placeholder="Titel, Interpret, Album, Compilation...">
 		</div>
 	</div>
+</template>
+
+<template name="suggestion">
+	<p class="suggestion">{{name}}<small><em><time class="pull-right" datetime="{{date_published}}" data-livestamp="{{date_published}}"></time></em></small></p>
 </template>
 
 <template name="link">

@@ -1,15 +1,16 @@
-Facts.setUserIdFilter(function (userId) {
-	console.log(userId);
-
-	var user = Meteor.users.findOne(userId);
+//TODO Logging einbauen. Notifications in adminnotifications db loggen mit zusätzlichen Metadaten
+Meteor.startup(function () {	
+	Facts.setUserIdFilter(function (userId) {
+		console.log(userId);
 	
-	if (user) console.log(user);
+		var user = Meteor.users.findOne(userId);
+		
+		if (user) console.log(user);
+		
+		return true;
 	
-	return true;
+	});
 
-});
-  
-Meteor.startup(function () {
 	Links._ensureIndex({
 		date_published: 1
 	});
@@ -65,18 +66,24 @@ Meteor.startup(function () {
 });
 
 Accounts.onLoginFailure(function(infoObject) {
-	//TODO: Anmeldeversuche protokollieren
+	if (!winston) {
+		var winston = Winston;
+	}
+	winston.log("Anmeldeversuch fehlgeschlagen.",{object: infoObject, action:"onLoginFailure"});
 });
 
 Accounts.onLogin(function(infoObject) {
-	//TODO warum geht winston hier nicht?
+	if (!winston) {
+		var winston = Winston;
+	}
 	// Add user facebook token to groups of the user that should be crawled, so the crawl will work
 	//winston.info("Benutzer hat sich angemeldet",{action:"onLogin",object: infoObject});
-	
 	Meteor.call('updateFacebookTokensForUser', infoObject);
 	Meteor.call('updateFacebookPictureForUser', infoObject);
 	// Update the number of links and sites the user contributed to the app and save it in his profile
 	Meteor.call('updateLinkContributionCount', infoObject);
+	
+	winston.log("Benutzer erfolgreich angemeldet.",{object: infoObject, action:"onLogin"});
 });
 
 Accounts.onCreateUser(function (options, user) {
@@ -113,6 +120,7 @@ Accounts.onCreateUser(function (options, user) {
 			});	
 		}
 		catch (e) {
+			winston.error("Fehler bei der Benutzerprofil-Erstellung: Facebook-Foto konnte nicht abgerufen werden.",{action:"onCreateUser",object:user});
 			console.log("Error receiving user picture from facebook");
 		}
 
@@ -127,14 +135,22 @@ Accounts.onCreateUser(function (options, user) {
 		user.profile.gender = user.services.facebook.gender;
 		user.profile.locale = user.services.facebook.locale;
 	}
+	else {
+		//TODO Meteor Error erzeugen
+		winston.error("Fehler bei der Benutzerprofil-Erstellung: Facebook-Konto-Objekt fehlerhaft.",{action:"onCreateUser",object:user});
+	}
 	
 	if (result && result.data && result.data.data && result.data.data.url)
 		user.profile.pictureurl = result.data.data.url;
+	else {
+		//TODO Meteor Error
+		winston.error("Fehler bei der Benutzerprofil-Erstellung: Fehlerhafte Antwort vom Facebook-Server",{action:"onCreateUser",object:user});
+	}
 	
 	user.admin = false;
 	
-	//TODO Winston einbaeun
 	// fertigen Benutzer zurueckgeben, damit er in der Datenbank
 	// gespeichert werden kann
+	winston.info("Benutzerkonto erstellt.",{object: user, action:"onCreateUser"});
 	return user;
 });

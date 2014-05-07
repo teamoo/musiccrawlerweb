@@ -4,6 +4,7 @@
 # but you can also edit it by hand.
 
 standard-app-packages
+winston-mongodb
 accounts-facebook
 email
 http
@@ -32,4 +33,3 @@ chartjs
 livestamp
 typeahead
 winston
-winston-mongodb

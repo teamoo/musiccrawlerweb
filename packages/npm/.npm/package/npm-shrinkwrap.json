@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "oauth": {
-      "version": "0.9.11"
-    }
-  }
-}
