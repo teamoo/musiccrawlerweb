@@ -64,33 +64,19 @@ Meteor.startup(function () {
 //	});
 });
 
-Accounts.onLogin(function(infoObject) {
-	// Add user facebook token to groups of the user that should be crawled, so the crawl will work
-	Meteor.call('updateFacebookTokensForUser');
-	// Update the number of links and sites the user contributed to the app and save it in his profile
-	Meteor.call('updateLinkContributionCount');
-	
-	try {
-		result = HTTP.get("https://graph.facebook.com/me/picture?access_token=&redirect=false", {
-			params: {
-				access_token: infoObject.user.services.facebook.accessToken
-			}
-		});
-		
-		if (result && result.data && result.data.data && result.data.data.url)
-			Meteor.users.update({
-					id: infoObject.user.id
-				}, {
-					$set: {
-						'profile.pictureurl' : result.data.data.url
-					}
-			});
-	}
-	catch (e) {
-		console.log("Error receiving user picture from facebook: " + e);
-	}
-	
+Accounts.onLoginFailure(function(infoObject) {
+	//TODO: Anmeldeversuche protokollieren
+});
 
+Accounts.onLogin(function(infoObject) {
+	//TODO warum geht winston hier nicht?
+	// Add user facebook token to groups of the user that should be crawled, so the crawl will work
+	//winston.info("Benutzer hat sich angemeldet",{action:"onLogin",object: infoObject});
+	
+	Meteor.call('updateFacebookTokensForUser', infoObject);
+	Meteor.call('updateFacebookPictureForUser', infoObject);
+	// Update the number of links and sites the user contributed to the app and save it in his profile
+	Meteor.call('updateLinkContributionCount', infoObject);
 });
 
 Accounts.onCreateUser(function (options, user) {
@@ -146,6 +132,8 @@ Accounts.onCreateUser(function (options, user) {
 		user.profile.pictureurl = result.data.data.url;
 	
 	user.admin = false;
+	
+	//TODO Winston einbaeun
 	// fertigen Benutzer zurueckgeben, damit er in der Datenbank
 	// gespeichert werden kann
 	return user;
