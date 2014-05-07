@@ -26,9 +26,10 @@ glyphicons-halflings
 entypo
 ionicons
 spin
-#oauth-encryption
+oauth-encryption
 iron-router-auth
 chartjs
 livestamp
 typeahead
+winston
 winston-mongodb
