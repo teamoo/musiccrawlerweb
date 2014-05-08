@@ -151,9 +151,10 @@ fieldset[disabled] .twitter-typeahead .tt-input {
   left: 0;
   z-index: 1000;
   min-width: 160px;
-  width: 100%;
+  width: 650px;
   padding: 5px 0;
   margin: 2px 0 0;
+  margin-left:  -35px;
   list-style: none;
   font-size: 14px;
   background-color: #ffffff;
@@ -165,7 +166,9 @@ fieldset[disabled] .twitter-typeahead .tt-input {
   background-clip: padding-box;
   *border-right-width: 2px;
   *border-bottom-width: 2px;
+  background-color: rgba(255, 255, 255, 0.8);
 }
+
 .tt-dropdown-menu .tt-suggestion {
   display: block;
   padding: 3px 20px;

@@ -678,6 +678,7 @@ Meteor.startup(function () {
 	
 	Session.set("started",true);
 });
+
 // Template-Helper für handlebars
 // represent ISO Date as String from now (e.g. 3 minute before, in 1 hour)
 // usage: {{dateFormatPretty creation_date}}
@@ -710,6 +711,10 @@ UI.registerHelper('getSizeinMB', function (context) {
 		return sizeinMB + " MB";
 	}
 	return undefined;
+});
+
+UI.registerHelper("prettifyDate", function(context) {
+	return moment(this).format("Do MMMM YYYY");
 });
 
 UI.registerHelper('dateFormatPretty', function (context) {
@@ -764,12 +769,12 @@ Template.page.isExternalSearch = function () {
 	return false;
 };
 
-Template.admin.notificationCount = function() {
-	return AdminNotifications.find().count();	
+Template.adminnotifications.notificationCount = function() {
+	return AdminNotifications.find({read_by: {$ne: Meteor.user().id},$or: [ { level: "warn" }, { level: "info" } ]},{sort:{timestamp:-1}}).count();	
 };
 
-Template.admin.adminnotifications = function() {
-	return AdminNotifications.find();	
+Template.adminnotifications.adminnotifications = function() {
+	return AdminNotifications.find({read_by: {$ne: Meteor.user().id},$or: [ { level: "warn" }, { level: "info" } ]},{limit:5,sort:{timestamp:-1}});	
 };
 
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
@@ -1038,10 +1043,10 @@ UI.body.events({
 	}
 });
 
-Template.admin.events({
+Template.adminsidebar.events({
 	"click .dropdown-toggle": function (e, template) {
 		e.preventDefault();
-		var item = $(e.target).parent();
+		var item = $(e.currentTarget).parent();
 		
 		item.toggleClass("active");
 		if (item.hasClass("active")) {
@@ -1052,8 +1057,7 @@ Template.admin.events({
   }
 });
 
-
-Template.admin.rendered = function() {
+Template.adminnavigation.rendered = function() {
 	this.$(".notification-dropdown").each(function (index, el) {
 		var $el = $(el);
 		var $dialog = $el.find(".pop-dialog");

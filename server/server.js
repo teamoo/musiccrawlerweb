@@ -113,14 +113,14 @@ Accounts.onCreateUser(function (options, user) {
 		var accessToken = user.services.facebook.accessToken;
 				
 		try {
-			result = HTTP.get("https://graph.facebook.com/me/picture?access_token=&redirect=false", {
+			result = HTTP.get("https://graph.facebook.com/me/picture?access_token=&redirect=false&type=square", {
 				params: {
 					access_token: accessToken
 				}
 			});	
 		}
 		catch (e) {
-			winston.error("Fehler bei der Benutzerprofil-Erstellung: Facebook-Foto konnte nicht abgerufen werden.",{action:"onCreateUser",object:user});
+			winston.error("Fehler bei der Benutzerprofil-Erstellung: Facebook-Foto konnte nicht abgerufen werden.",{title:"Fehler bei Facebook-Bildabruf",action:"onCreateUser",object:user});
 			console.log("Error receiving user picture from facebook");
 		}
 
@@ -137,20 +137,20 @@ Accounts.onCreateUser(function (options, user) {
 	}
 	else {
 		//TODO Meteor Error erzeugen
-		winston.error("Fehler bei der Benutzerprofil-Erstellung: Facebook-Konto-Objekt fehlerhaft.",{action:"onCreateUser",object:user});
+		winston.error("Fehler bei der Benutzerprofil-Erstellung: Facebook-Konto-Objekt fehlerhaft.",{title:"Fehler bei Benutzeranlage",action:"onCreateUser",object:user});
 	}
 	
 	if (result && result.data && result.data.data && result.data.data.url)
 		user.profile.pictureurl = result.data.data.url;
 	else {
 		//TODO Meteor Error
-		winston.error("Fehler bei der Benutzerprofil-Erstellung: Fehlerhafte Antwort vom Facebook-Server",{action:"onCreateUser",object:user});
+		winston.error("Fehler bei der Benutzerprofil-Erstellung: Fehlerhafte Antwort vom Facebook-Server",{title:"Fehler bei Benutzeranlage",action:"onCreateUser",object:user});
 	}
 	
 	user.admin = false;
 	
 	// fertigen Benutzer zurueckgeben, damit er in der Datenbank
 	// gespeichert werden kann
-	winston.info("Benutzerkonto erstellt.",{object: user, action:"onCreateUser"});
+	winston.info("Benutzerkonto erstellt.",{title:"Benutzer registriert" ,object: user, action:"onCreateUser"});
 	return user;
 });
