@@ -768,6 +768,10 @@ Template.admin.notificationCount = function() {
 	return AdminNotifications.find().count();	
 };
 
+Template.admin.adminnotifications = function() {
+	return AdminNotifications.find();	
+};
+
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
 Template.navigation.isAnyLinkSelected = function () {
 	if (Session.get("selected_links").length) return true;
@@ -1033,6 +1037,58 @@ UI.body.events({
 		}
 	}
 });
+
+Template.admin.events({
+	"click .dropdown-toggle": function (e, template) {
+		e.preventDefault();
+		var item = $(e.target).parent();
+		
+		item.toggleClass("active");
+		if (item.hasClass("active")) {
+		  item.find(".submenu").slideDown("fast");
+		} else {
+		  item.find(".submenu").slideUp("fast");
+		}
+  }
+});
+
+
+Template.admin.rendered = function() {
+	this.$(".notification-dropdown").each(function (index, el) {
+		var $el = $(el);
+		var $dialog = $el.find(".pop-dialog");
+		var $trigger = $el.find(".trigger");
+		
+		$dialog.click(function (e) {
+			e.stopPropagation()
+		});
+		$dialog.find(".close-icon").click(function (e) {
+		  e.preventDefault();
+		  $dialog.removeClass("is-visible");
+		  $trigger.removeClass("active");
+		});
+		$("body").click(function () {
+		  $dialog.removeClass("is-visible");
+		  $trigger.removeClass("active");
+		});
+
+		$trigger.click(function (e) {
+		  e.preventDefault();
+		  e.stopPropagation();
+		  
+		  // hide all other pop-dialogs
+		  $(".notification-dropdown .pop-dialog").removeClass("is-visible");
+		  $(".notification-dropdown .trigger").removeClass("active")
+
+		  $dialog.toggleClass("is-visible");
+		  if ($dialog.hasClass("is-visible")) {
+			$(this).addClass("active");
+		  } else {
+			$(this).removeClass("active");
+		  }
+    });
+  });
+}
 
 Template.searchpanel.events({
 	'typeahead:selected' : function (event, template) {

@@ -1,0 +1,32 @@
+{
+  "format": "unipackage-slice-pre1",
+  "packageVariables": [
+    {
+      "name": "_publishHTTP",
+      "export": "tests"
+    }
+  ],
+  "uses": [
+    {
+      "package": "meteor"
+    },
+    {
+      "package": "http-methods"
+    }
+  ],
+  "implies": [
+    {
+      "package": "http-methods"
+    }
+  ],
+  "resources": [
+    {
+      "type": "prelink",
+      "file": "browser/packages/http-publish.js",
+      "length": 1582,
+      "offset": 0,
+      "servePath": "/packages/http-publish.js",
+      "sourceMap": "browser/packages/http-publish.js.map"
+    }
+  ]
+}

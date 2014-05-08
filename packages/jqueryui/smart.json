@@ -1,0 +1,11 @@
+{
+    "name": "jqueryui",
+    "description": "Simple lightweight pull-in for jQuery UI in Meteor",
+    "homepage": "https://github.com/mizzao/meteor-jqueryui",
+    "author": "Andrew Mao  (http://www.andrewmao.net)",
+    "version": "1.10.4",
+    "git": "https://github.com/mizzao/meteor-jqueryui.git",
+    "packages": {
+        "build-fetcher": {}
+    }
+}

@@ -1,0 +1,44 @@
+{
+  "format": "unipackage-slice-pre1",
+  "noExports": true,
+  "packageVariables": [],
+  "uses": [
+    {
+      "package": "meteor"
+    },
+    {
+      "package": "http-methods"
+    },
+    {
+      "package": "test-helpers"
+    },
+    {
+      "package": "tinytest"
+    },
+    {
+      "package": "underscore"
+    },
+    {
+      "package": "ejson"
+    },
+    {
+      "package": "ordered-dict"
+    },
+    {
+      "package": "random"
+    },
+    {
+      "package": "deps"
+    }
+  ],
+  "resources": [
+    {
+      "type": "prelink",
+      "file": "tests.os/packages/http-methodstests.js",
+      "length": 15762,
+      "offset": 0,
+      "servePath": "/packages/http-methods:tests.js",
+      "sourceMap": "tests.os/packages/http-methodstests.js.map"
+    }
+  ]
+}

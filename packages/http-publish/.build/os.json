@@ -1,0 +1,44 @@
+{
+  "format": "unipackage-slice-pre1",
+  "packageVariables": [
+    {
+      "name": "_publishHTTP",
+      "export": "tests"
+    }
+  ],
+  "uses": [
+    {
+      "package": "meteor"
+    },
+    {
+      "package": "webapp"
+    },
+    {
+      "package": "underscore"
+    },
+    {
+      "package": "ejson"
+    },
+    {
+      "package": "random"
+    },
+    {
+      "package": "http-methods"
+    }
+  ],
+  "implies": [
+    {
+      "package": "http-methods"
+    }
+  ],
+  "resources": [
+    {
+      "type": "prelink",
+      "file": "os/packages/http-publish.js",
+      "length": 57507,
+      "offset": 0,
+      "servePath": "/packages/http-publish.js",
+      "sourceMap": "os/packages/http-publish.js.map"
+    }
+  ]
+}

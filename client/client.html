@@ -133,18 +133,23 @@
 	<div class="st-container">
 		<nav class="nav-menu">
 			<h3>Menu</h3>
-			<a href="features.html" class="item">
+			<a href="{{pathFor 'home'}}" class="item">
 				Home
 			</a>
-			<a href="services.html" class="item">
+			<a href="{{pathFor 'links'}}" class="item">
 				Links
 			</a>
-			<a href="pricing.html" class="item">
+			<a href="{{pathFor 'sites'}}" class="item">
 				Seiten
 			</a>
-			<a href="blog.html" class="item">
+			<a href="{{pathFor 'blog'}}" class="item">
 				Blog
 			</a>
+			{{#if currentUser.admin}}
+			<a href="{{pathFor 'admin'}}" class="item">
+				Admin
+			</a>
+			{{/if}}
 		</nav>
 
 		<div class="st-pusher">

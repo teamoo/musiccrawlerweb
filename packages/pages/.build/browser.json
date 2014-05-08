@@ -1,0 +1,59 @@
+{
+  "format": "unipackage-slice-pre1",
+  "packageVariables": [
+    {
+      "name": "__coffeescriptShare"
+    }
+  ],
+  "uses": [
+    {
+      "package": "meteor"
+    },
+    {
+      "package": "deps"
+    },
+    {
+      "package": "underscore"
+    },
+    {
+      "package": "coffeescript"
+    },
+    {
+      "package": "templating"
+    },
+    {
+      "package": "handlebars"
+    },
+    {
+      "package": "ui"
+    },
+    {
+      "package": "session"
+    }
+  ],
+  "resources": [
+    {
+      "type": "css",
+      "file": "browser/packages/pages/client/main.css",
+      "length": 3397,
+      "offset": 0,
+      "servePath": "/packages/pages/client/main.css"
+    },
+    {
+      "type": "asset",
+      "file": "browser/packages/pages/public/loader.gif",
+      "length": 3208,
+      "offset": 0,
+      "servePath": "/packages/pages/public/loader.gif",
+      "path": "public/loader.gif"
+    },
+    {
+      "type": "prelink",
+      "file": "browser/packages/pages.js",
+      "length": 48248,
+      "offset": 0,
+      "servePath": "/packages/pages.js",
+      "sourceMap": "browser/packages/pages.js.map"
+    }
+  ]
+}

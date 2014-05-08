@@ -670,3 +670,10 @@
      width: 50%;
      float: left; } }
  
+.fa-chevron-down {
+        color: #777;
+        font-size: 8px;
+        margin-left: 110px;
+        position: relative;
+        top: -1px;
+}

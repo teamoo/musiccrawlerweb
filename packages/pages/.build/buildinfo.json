@@ -1,0 +1,63 @@
+{
+  "builtBy": "meteor/10",
+  "sliceDependencies": {
+    "browser.json": {
+      "files": {
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\package.js": "637b1d7ce3bfb559f4b1dde3a9d32722ec57be09",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\lib\\pages.coffee": "bc384be17d9e4423dc9b8ce0c4da04e39b7bbb76",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\client\\templates.html": "c6101aa80e7d6ec6b976500400c9eaa6638d40cf",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\client\\controllers.coffee": "3320396030f8e030e7c046949481a1cd85666aa3",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\client\\main.css": "525e2512d5921c08b94718173c57649b11719d21",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\public\\loader.gif": "313b867d11fc0dd6bc6ca47c334bbcf18956ca76"
+      },
+      "directories": []
+    },
+    "os.json": {
+      "files": {
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\package.js": "637b1d7ce3bfb559f4b1dde3a9d32722ec57be09",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\lib\\pages.coffee": "bc384be17d9e4423dc9b8ce0c4da04e39b7bbb76"
+      },
+      "directories": []
+    },
+    "tests.browser.json": {
+      "files": {
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\package.js": "637b1d7ce3bfb559f4b1dde3a9d32722ec57be09",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\lib\\pages.coffee": "bc384be17d9e4423dc9b8ce0c4da04e39b7bbb76",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\test\\tests.coffee": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\client\\templates.html": "c6101aa80e7d6ec6b976500400c9eaa6638d40cf",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\client\\controllers.coffee": "3320396030f8e030e7c046949481a1cd85666aa3",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\client\\main.css": "525e2512d5921c08b94718173c57649b11719d21",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\public\\loader.gif": "313b867d11fc0dd6bc6ca47c334bbcf18956ca76"
+      },
+      "directories": []
+    },
+    "tests.os.json": {
+      "files": {
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\package.js": "637b1d7ce3bfb559f4b1dde3a9d32722ec57be09",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\lib\\pages.coffee": "bc384be17d9e4423dc9b8ce0c4da04e39b7bbb76",
+        "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\test\\tests.coffee": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+      },
+      "directories": []
+    }
+  },
+  "pluginDependencies": {
+    "files": {
+      "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages\\package.js": "637b1d7ce3bfb559f4b1dde3a9d32722ec57be09"
+    },
+    "directories": []
+  },
+  "pluginProviderPackages": {
+    "pages": "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages",
+    "meteor": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\meteor\\bcc04a9f11",
+    "deps": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\deps\\83992fd9a6",
+    "underscore": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\underscore\\385ecbfa96",
+    "coffeescript": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\coffeescript\\63cfa4226c",
+    "templating": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\templating\\6f7911c556",
+    "handlebars": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\handlebars\\d3b7ae6766",
+    "ui": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\ui\\8be6efa53c",
+    "session": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\session\\ddf930b687",
+    "htmljs": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\htmljs\\e3bf849ec0",
+    "check": "C:\\Users\\DE-56194\\AppData\\Local\\.meteor\\packages\\check\\2744cb3e88"
+  },
+  "source": "C:\\Users\\DE-56194\\Documents\\GitHub\\musiccrawlerweb\\packages\\pages"
+}

@@ -18,6 +18,7 @@
     "entypo": {},
     "ionicons": {},
     "winston-mongodb": {},
-    "winston": {}
+    "winston": {},
+	"jqueryui": {}
   }
 }

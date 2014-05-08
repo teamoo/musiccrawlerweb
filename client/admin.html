@@ -1,7 +1,7 @@
 <template name="adminnotification">
-	<a href="#" class="item">
-	    <i class="fa fa-signin"></i> New user registration
-	    <span class="time"><i class="fa fa-time"></i> 13 min.</span>
+	<a href="/notification/{{_id}}" class="item">
+	    {{message}}
+	    <time datetime="{{timestamp}}" data-livestamp="{{timestamp}}" class="time"><i class="fa fa-time"></i></time>
 	</a>
 </template>
 
@@ -16,8 +16,8 @@
                 <span class="fa fa-bar"></span>
                 <span class="fa fa-bar"></span>
             </button>
-            <a class="navbar-brand" href="index.html">
-                <img src="img/logo.png" alt="logo" />
+            <a class="navbar-brand" href="{{pathFor 'admin'}}">
+				<h3>MusicCrawler Admin</h3>
             </a>
         </div>
         <ul class="nav navbar-nav pull-right hidden-xs">
@@ -26,7 +26,7 @@
             </li>
             <li class="notification-dropdown hidden-xs hidden-sm">
                 <a href="#" class="trigger">
-                    <i class="fa fa-warning-sign"></i>
+                    <i class="fa fa-warning"></i>
                     <span class="count">{{notificationCount}}</span>
                 </a>
                 <div class="pop-dialog">
@@ -50,22 +50,17 @@
             </li>
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle hidden-xs hidden-sm" data-toggle="dropdown">
-                    Dein Account
+                    Mein Account
                     <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="personal-info.html">Persönliches Profil</a></li>
-                    <li><a href="#">Einstellungen</a></li>
+                    <li><a href="{{pathFor 'personal_profile'}}">Persönliches Profil</a></li>
+                    <li><a href="{{pathFor 'personal_settings'}}">Einstellungen</a></li>
                 </ul>
             </li>
             <li class="settings hidden-xs hidden-sm">
-                <a href="personal-info.html" role="button">
+                <a href="{{pathFor 'application_settings'}}" role="button">
                     <i class="fa fa-cog"></i>
-                </a>
-            </li>
-            <li class="settings hidden-xs hidden-sm">
-                <a href="signin.html" role="button">
-                    <i class="fa fa-share-alt"></i>
                 </a>
             </li>
         </ul>
@@ -80,13 +75,13 @@
                     <div class="arrow"></div>
                     <div class="arrow_border"></div>
                 </div>
-                <a href="index.html">
+                <a href="{{pathFor 'home'}}">
                     <i class="fa fa-home"></i>
                     <span>Home</span>
                 </a>
             </li>            
             <li>
-                <a href="chart-showcase.html">
+                <a href="{{pathFor 'statistics'}}">
                     <i class="fa fa-signal"></i>
                     <span>Reports</span>
                 </a>
@@ -98,27 +93,22 @@
                     <i class="fa fa-chevron-down"></i>
                 </a>
                 <ul class="submenu">
-                    <li><a href="user-list.html">Benutzerliste</a></li>
-                    <li><a href="new-user.html">Benutzer anlegen</a></li>
-                    <li><a href="user-profile.html">Benutzerprofil</a></li>
+                    <li><a href="{{pathFor 'users'}}">Benutzerliste</a></li>
+                    <li><a href="{{pathFor 'add_user'}}">Benutzer anlegen</a></li>
                 </ul>
             </li>
             <li>
-                <a class="dropdown-toggle" href="tables.html">
+                <a class="dropdown-toggle" href="#">
                     <i class="fa fa-th-large"></i>
                     <span>Tables</span>
                     <i class="fa fa-chevron-down"></i>
                 </a>
                 <ul class="submenu">
                     <li><a href="tables.html">Custom tables</a></li>
-                    <li><a href="datatables.html">DataTables</a></li>
+                    <li><a href="{{pathFor 'table_links'}}">Links</a></li>
+					<li><a href="{{pathFor 'table_sites'}}">Seiten</a></li>
+					<li><a href="{{pathFor 'table_sets'}}">Sets</a></li>
                 </ul>
-            </li>
-            <li>
-                <a href="personal-info.html">
-                    <i class="fa fa-cog"></i>
-                    <span>Mein Profil</span>
-                </a>
             </li>
         </ul>
     </div>
