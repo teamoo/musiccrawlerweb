@@ -763,6 +763,10 @@ Template.page.linksFoundLessThanThree = function () {
 	return false;
 };
 
+Template.userlist.users = function() {
+	return Meteor.users.find();
+};
+
 Template.page.isExternalSearch = function () {
 	if (Meteor.user())
 		return (!(Session.equals("filter_term", "")) && Meteor.user().profile.searchproviders.length);
@@ -770,11 +774,13 @@ Template.page.isExternalSearch = function () {
 };
 
 Template.adminnotifications.notificationCount = function() {
-	return AdminNotifications.find({read_by: {$ne: Meteor.user().id},$or: [ { level: "warn" }, { level: "info" } ]},{sort:{timestamp:-1}}).count();	
+	if (Meteor.user() && Meteor.user().id)
+		return AdminNotifications.find({read_by: {$ne: Meteor.user().id},$or: [ { level: "warn" }, { level: "info" } ]},{sort:{timestamp:-1}}).count();
 };
 
 Template.adminnotifications.adminnotifications = function() {
-	return AdminNotifications.find({read_by: {$ne: Meteor.user().id},$or: [ { level: "warn" }, { level: "info" } ]},{limit:5,sort:{timestamp:-1}});	
+	if (Meteor.user() && Meteor.user().id)
+		return AdminNotifications.find({read_by: {$ne: Meteor.user().id},$or: [ { level: "warn" }, { level: "info" } ]},{limit:5,sort:{timestamp:-1}});	
 };
 
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist

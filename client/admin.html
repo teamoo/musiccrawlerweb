@@ -1,3 +1,61 @@
+<template name="userlist">
+  <div id="pad-wrapper" class="users-list">
+            <div class="row header">
+                <h3>Benutzer</h3>
+                <div class="col-md-10 col-sm-12 col-xs-12 pull-right">
+                    <input type="text" class="col-md-5 search" placeholder="Gib einen Benutzernamen ein...">
+                </div>
+            </div>
+
+            <!-- Users table -->
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="col-md-4 sortable">
+                                    Name
+                                </th>
+                                <th class="col-md-3 sortable">
+                                    <span class="line"></span>Registrierung
+                                </th>
+                                <th class="col-md-2 sortable">
+                                    <span class="line"></span>Links beigetragen
+                                </th>
+                                <th class="col-md-3 sortable align-right">
+                                    <span class="line"></span>eMail Adresse
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+						{{#each users}}
+                        <!-- row -->
+                        <tr>
+                            <td>
+                                <img src="{{user.profile.imageurl}}" alt="contact" class="img-circle avatar hidden-phone" />
+                                <a href="user-profile.html" class="name">{{user.profile.name}}</a>
+                                <span class="subtext">{{user.username}}</span>
+                            </td>
+                            <td>
+                                {{prettifyDate user.createdAt}}
+                            </td>
+                            <td>
+                                {{user.profile.linkcontributioncount}}
+                            </td>
+                            <td class="align-right">
+                                <a href="#">user.emails.[0].address</a>
+                            </td>
+                        </tr>
+						{{/each}}
+                        <!-- row -->
+                        </tbody>
+                    </table>
+                </div>                
+            </div>
+        </div>
+
+</template>
+
 <template name="userinfo">
       <div class="settings-wrapper" id="pad-wrapper">
             <div class="row">
@@ -83,20 +141,11 @@
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
-	                        	<label class="col-lg-2 control-label">Administrator:</label>
-	                            <div class="col-lg-8">
-	                                    <div class="checkbox">
-	                                        <input type="checkbox" checked="{{currentUser.admin}}"> 
-	                                    </div>
-	                            </div>
-	                        </div>
-	                        <div class="form-group">
 	                            <label class="col-lg-2 control-label">Links beigetragen:</label>
 	                            <div class="col-lg-8">
 	                                <input class="form-control" type="text" value="{{currentUser.profile.linkcontributioncount}}" />
 	                            </div>
 	                        </div>
-
 
                         </fieldset>
                         <div class="actions">
@@ -107,7 +156,6 @@
                 </div>
             </div>            
         </div>
-
 </template>
 
 <template name="adminlayout">
@@ -181,7 +229,7 @@
 	                <b class="caret"></b>
 	            </a>
 	            <ul class="dropdown-menu">
-	                <li><a href="{{pathFor 'admin_userinfo'}}">Persönliches Profil</a></li>
+	                <li><a href="{{pathFor 'userInfoShow'}}">Persönliches Profil</a></li>
 	                <li><a href="{{pathFor 'admin_usersettings'}}">Einstellungen</a></li>
 	            </ul>
 	        </li>
@@ -210,27 +258,22 @@
             </a>
         </li>
         <li>
-            <a href="{{pathFor 'notifications'}}">
+            <a href="{{pathFor 'notificationsShow'}}">
                 <i class="fa fa-warning"></i>
                 <span>Ereignisse</span>
             </a>
         </li>            
         <li>
-            <a href="{{pathFor 'statistics'}}">
+            <a href="{{pathFor 'statisticsShow'}}">
                 <i class="fa fa-signal"></i>
                 <span>Reports</span>
             </a>
         </li>
         <li>
-            <a class="dropdown-toggle" href="#">
+			<a href="{{pathFor 'userListShow'}}">
                 <i class="fa fa-users"></i>
                 <span>Benutzer</span>
-                <i class="fa fa-chevron-down"></i>
             </a>
-            <ul class="submenu">
-                <li><a href="{{pathFor 'users'}}">Benutzerliste</a></li>
-                <li><a href="{{pathFor 'add_user'}}">Benutzer anlegen</a></li>
-            </ul>
         </li>
         <li>
             <a class="dropdown-toggle" href="#">
