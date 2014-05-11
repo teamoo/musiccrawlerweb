@@ -1,3 +1,10 @@
+Meteor.publish('admin_counts', function() {
+  publishCount(this, 'link-count', Links.find(), {noReady: false});
+  publishCount(this, 'link-online-count', Links.find({"status":"on"}), {noReady: false});
+  publishCount(this, 'site-count', Sites.find(), {noReady: false});
+  publishCount(this, 'set-count', Sets.find(), {noReady: false});
+});
+
 //Publishing - Meteor Collections, die Clients subscriben können
 Meteor.publish("allUsers", function () {
 		var user = Meteor.users.findOne(this.userId);
@@ -211,20 +218,11 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 					aid: 1,
 					oid: 1,
 					
-					facebook_shares: 1,
-					youtube_likes: 1,
-					youtube_comments: 1,
-					youtube_views: 1,
-					youtube_dislikes: 1,
-					youtube_favorites: 1,
-					hypem_likes: 1,
-					hypem_posts: 1,
-					hypem_artwork_url: 1,
-					soundcloud_likes: 1,
-					soundcloud_comments: 1,
-					soundcloud_downloads: 1,
-					soundcloud_playbacks: 1,
-					soundcloud_artwork_url: 1,
+					soundcloud: 1,
+					facebook: 1,
+					youtube: 1,
+					hypem: 1,
+					vk: 1,
 					name_routing: 1
 				}
 	
@@ -263,6 +261,10 @@ Meteor.publish('links', function (filter_date, filter_status, filter_term, filte
 	
 	if (filter_mixes && filter_mixes === true)
 		query = {
+		
+		//TODO remove after test
+		soundcloud: {$exists:true},
+		
 			$and:[{
 					name: {
 						$regex: "(?=^((?!Live at).)*$)(?=^((?!Chart).)*$)(?=^(?!VA).*)" }

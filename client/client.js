@@ -984,10 +984,10 @@ Template.sitesDialog.getFeedTypeIcon = function () {
 };
 
 Template.link.hasImageURLSoundcloud = function() {
-	return this.soundcloud_image_url && soundcloud_image_url != ''
+	return this.soundcloud && this.soundcloud.artwork_url && this.soundcloud.artwork_url != ''
 };
 Template.link.hasImageURLHypem = function() {
-	return this.hypem_artwork_url && soundcloud_image_url != ''
+	return this.hypem && this.hypem.artwork_url && this.hypem.artwork_url != ''
 };
 
 
@@ -2092,6 +2092,11 @@ Template.user_loggedin_profile.rendered = function () {
 		});
 	}
 };
+
+Template.adminstatistics.getCount = function(context) {
+	return Counts.get(context);
+};
+
 //Events für die einzelnen Link-Objekte
 Template.link.events({
 	'click .player': function (event, template) {

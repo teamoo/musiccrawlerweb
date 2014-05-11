@@ -95,14 +95,14 @@
 	<div class="col-lg-2">
 		{{#if hasImageURLSoundcloud}}
 			<div class="insideWrapper">
-				<img class="img-rounded coveredImage" src="{{soundcloud_artwork_url}}" alt="Placeholder">
+				<img class="img-rounded coveredImage" src="{{soundcloud.artwork_url}}" alt="Placeholder">
 				<canvas class="ratingChart coveringCanvas" id="ratingChart_{{_id._str}}"></canvas>
 			</div>
 			<p class="link-name">{{name}} <br/><small><time datetime="{{date_published}}" data-livestamp="{{date_published}}"></time></small></p>
 		{{else}}
 			{{#if hasImageURLHypem}}
 				<div class="insideWrapper">
-					<img class="img-rounded coveredImage" src="{{soundcloud_artwork_url}}" alt="Placeholder">
+					<img class="img-rounded coveredImage" src="{{hypem.artwork_url}}" alt="Placeholder">
 					<canvas class="ratingChart coveringCanvas" id="ratingChart_{{_id._str}}"></canvas>
 				</div>
 				<p class="link-name">{{name}} <br/><small><time datetime="{{date_published}}" data-livestamp="{{date_published}}"></time></small></p>
@@ -146,7 +146,7 @@
 				Blog
 			</a>
 			{{#if currentUser.admin}}
-			<a href="{{pathFor 'admin'}}" class="item">
+			<a href="{{pathFor 'admin'}}" class="item item-blue">
 				Admin
 			</a>
 			{{/if}}

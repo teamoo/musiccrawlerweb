@@ -13,16 +13,16 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th class="col-md-4 sortable">
+                                <th class="col-md-4">
                                     Name
                                 </th>
-                                <th class="col-md-3 sortable">
+                                <th class="col-md-3">
                                     <span class="line"></span>Registrierung
                                 </th>
-                                <th class="col-md-2 sortable">
+                                <th class="col-md-2">
                                     <span class="line"></span>Links beigetragen
                                 </th>
-                                <th class="col-md-3 sortable align-right">
+                                <th class="col-md-3">
                                     <span class="line"></span>eMail Adresse
                                 </th>
                             </tr>
@@ -32,18 +32,18 @@
                         <!-- row -->
                         <tr>
                             <td>
-                                <img src="{{user.profile.imageurl}}" alt="contact" class="img-circle avatar hidden-phone" />
-                                <a href="user-profile.html" class="name">{{user.profile.name}}</a>
-                                <span class="subtext">{{user.username}}</span>
+                                <img src="{{profile.pictureurl}}" alt="contact" class="img-circle avatar img-list hidden-phone" />
+                                <a href="{{pathFor 'userInfoShow' id}}" class="name">{{profile.name}}</a>
+                                <span class="subtext">{{username}}</span>
                             </td>
                             <td>
-                                {{prettifyDate user.createdAt}}
+                                {{prettifyDate createdAt}}
                             </td>
                             <td>
-                                {{user.profile.linkcontributioncount}}
+                                {{profile.linkcontributioncount}}
                             </td>
                             <td class="align-right">
-                                <a href="#">user.emails.[0].address</a>
+                                <a href="#">{{emails.[0].address}}</a>
                             </td>
                         </tr>
 						{{/each}}
@@ -62,7 +62,7 @@
                 <!-- avatar column -->
                 <div class="col-md-3 col-md-offset-1 avatar-box">
                     <div class="personal-image">
-                        <img src="{{currentUser.profile.pictureurl}}" class="avatar img-thubnail" alt="avatar" />
+                        <img src="{{currentUser.profile.pictureurl}}" class="avatar img-thumbnail" alt="avatar" />
                     </div>
                 </div>
 
@@ -73,76 +73,76 @@
                     <form class="form-horizontal" role="form">
                     	<fieldset>
                     		<div class="form-group">
-                    		    <label class="col-lg-2 control-label">Facebook ID:</label>
-                    		    <div class="col-lg-8">
+                    		    <label class="col-lg-4 control-label">Facebook ID:</label>
+                    		    <div class="col-lg-6">
                     		        <input class="form-control" type="text" value="{{currentUser.id}}" />
                     		    </div>
                     		</div>
                     		<div class="form-group">
-                    		    <label class="col-lg-2 control-label">MeteorID:</label>
-                    		    <div class="col-lg-8">
+                    		    <label class="col-lg-4 control-label">MeteorID:</label>
+                    		    <div class="col-lg-6">
                     		        <input class="form-control" type="text" value="{{currentUser._id}}" />
                     		    </div>
                     		</div>
                     		<div class="form-group">
-                    		    <label class="col-lg-2 control-label">Benutzername:</label>
-                    		    <div class="col-lg-8">
+                    		    <label class="col-lg-4 control-label">Benutzername:</label>
+                    		    <div class="col-lg-6">
                     		        <input class="form-control" type="text" value="{{currentUser.username}}" />
                     		    </div>
                     		</div>
 							<div class="form-group">
-								<label class="col-lg-2 control-label">Administrator:</label>
-							    <div class="col-lg-8">
+								<label class="col-lg-4 control-label">Administrator:</label>
+							    <div class="col-lg-6">
 							            <div class="checkbox">
 							                <input type="checkbox" checked="{{currentUser.admin}}"> 
 							            </div>
 							    </div>
 							</div>
 	                        <div class="form-group">
-	                            <label class="col-lg-2 control-label">Vorname:</label>
-	                            <div class="col-lg-8">
+	                            <label class="col-lg-4 control-label">Vorname:</label>
+	                            <div class="col-lg-6">
 	                                <input class="form-control" type="text" value="{{currentUser.profile.first_name}}" />
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
-	                            <label class="col-lg-2 control-label">Nachname:</label>
-	                            <div class="col-lg-8">
+	                            <label class="col-lg-4 control-label">Nachname:</label>
+	                            <div class="col-lg-6">
 	                                <input class="form-control" type="text" value="{{currentUser.profile.last_name}}" />
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
-	                            <label class="col-lg-2 control-label">eMail Adresse:</label>
-	                            <div class="col-lg-8">
+	                            <label class="col-lg-4 control-label">eMail Adresse:</label>
+	                            <div class="col-lg-6">
 	                                <input class="form-control" type="email" value="{{currentUser.emails.[0].address}}" />
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
-	                        	<label class="col-lg-2 control-label">Compilations ausblenden:</label>
-	                            <div class="col-lg-8">
+	                        	<label class="col-lg-4 control-label">Compilations ausblenden:</label>
+	                            <div class="col-lg-6">
 	                                    <div class="checkbox">
 	                                        <input type="checkbox" checked="{{currentUser.profile.hidemixes}}"> 
 	                                    </div>
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
-	                        	<label class="col-lg-2 control-label">bereits geladene Links anzeigen:</label>
-	                            <div class="col-lg-8">
+	                        	<label class="col-lg-4 control-label">bereits geladene Links anzeigen:</label>
+	                            <div class="col-lg-6">
 	                                    <div class="checkbox">
 	                                        <input type="checkbox" checked="{{currentUser.profile.showdownloadedlinks}}"> 
 	                                    </div>
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
-	                        	<label class="col-lg-2 control-label">unbekannte Links anzeigen:</label>
-	                            <div class="col-lg-8">
+	                        	<label class="col-lg-4 control-label">unbekannte Links anzeigen:</label>
+	                            <div class="col-lg-6">
 	                                    <div class="checkbox">
 	                                        <input type="checkbox" checked="{{currentUser.profile.showunknownlinks}}"> 
 	                                    </div>
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
-	                            <label class="col-lg-2 control-label">Links beigetragen:</label>
-	                            <div class="col-lg-8">
+	                            <label class="col-lg-4 control-label">Links beigetragen:</label>
+	                            <div class="col-lg-6">
 	                                <input class="form-control" type="text" value="{{currentUser.profile.linkcontributioncount}}" />
 	                            </div>
 	                        </div>
@@ -177,6 +177,10 @@
 	</a>
 </template>
 
+<template name="notificationlist">
+
+</template>
+
 <template name="adminnotifications">
 	<li class="notification-dropdown hidden-xs hidden-sm">
 	    <a href="#" class="trigger">
@@ -196,7 +200,7 @@
 	                	{{> adminnotification}}
 	                {{/each}}
 	                <div class="footer">
-	                    <a href="#" class="logout">Alle Benachrichtigungen anzeigen</a>
+	                    <a href="{{pathFor 'notificationsShow'}}" class="logout">Alle Benachrichtigungen anzeigen</a>
 	                </div>
 	            </div>
 	        </div>
@@ -229,7 +233,7 @@
 	                <b class="caret"></b>
 	            </a>
 	            <ul class="dropdown-menu">
-	                <li><a href="{{pathFor 'userInfoShow'}}">Persönliches Profil</a></li>
+	                <li><a href="{{pathFor 'userInfoShow' 'currentUser.id'}}">Persönliches Profil</a></li>
 	                <li><a href="{{pathFor 'admin_usersettings'}}">Einstellungen</a></li>
 	            </ul>
 	        </li>
@@ -311,31 +315,31 @@
 	            <div class="row stats-row">
 	                <div class="col-md-3 col-sm-3 stat">
 	                    <div class="data">
-	                        <span class="number">2457</span>
+	                        <span class="number">{{getCount 'link-count'}}</span>
 	                        Links
 	                    </div>
-	                    <span class="date">Heute</span>
+	                    <span class="date">{{getCount 'link-online-count'}} online</span>
 	                </div>
 	                <div class="col-md-3 col-sm-3 stat">
 	                    <div class="data">
-	                        <span class="number">3240</span>
+	                        <span class="number">{{getCount 'user-count'}}</span>
 	                        Benutzer
 	                    </div>
-	                    <span class="date">February 2013</span>
+	                    <span class="date"></span>
 	                </div>
 	                <div class="col-md-3 col-sm-3 stat">
 	                    <div class="data">
-	                        <span class="number">322</span>
+	                        <span class="number">{{getCount 'site-count'}}</span>
 	                        Seiten
 	                    </div>
-	                    <span class="date">Diese Woche</span>
+	                    <span class="date"></span>
 	                </div>
 	                <div class="col-md-3 col-sm-3 stat last">
 	                    <div class="data">
-	                        <span class="number">$2,340</span>
+	                        <span class="number">{{getCount 'set-count'}}</span>
 	                        Sets
 	                    </div>
-	                    <span class="date">letzte 30 Tage</span>
+	                    <span class="date"></span>
 	                </div>
 	            </div>
 	        </div>
