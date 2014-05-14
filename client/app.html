@@ -1,0 +1,899 @@
+﻿<head>
+	<title>MusicCrawler Web</title>     
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+	<!--<script type="text/javascript" src="http://scmplayer.net/script.js" data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':false,'shuffle':false,'repeat':1,'placement':'top','showplaylist':false,'playlist':[]}" ></script>
+	--><link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+	<link rel="icon" href="favicon.ico" type="image/x-icon" />
+</head>
+
+<body>
+</body>
+
+
+
+<template name="tabstemp">
+				<div id="tabs">
+					<div class="container">
+						<div class="row header">
+							<div class="col-md-12">
+								<h3>Finde schneller neue Musik mit MusicCrawlerWeb</h3>
+								<p>Choose your favorite formats for your own sites</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-12 tabs-wrapper">
+								<ul class="nav nav-tabs">
+								  	<li class="active"><a href="#home" data-toggle="tab">Upstart your development</a></li>
+								  	<li><a href="#profile" data-toggle="tab">Get ready in half the time</a></li>
+								  	<li><a href="#messages" data-toggle="tab">Collaborate with everyone</a></li>
+								  	<li><a href="#settings" data-toggle="tab">Get more done faster</a></li>
+								</ul>
+
+								<div class="tab-content">
+								  	<div class="tab-pane fade in active" id="home">
+								  		<div class="col-md-6 info">
+								  			<h4>You don't need to have any advanced technical</h4>
+								  			<p>
+								  				Whether you want to fill this paragraph with some text like I'm doing right now, this place is perfect to describe some features or anything you want - React has a complete solution for you.
+								  			</p>
+								  			<p>
+								  				You have complete control over the look & feel of your website, we offer the best quality so you take your site up and running in no time.
+								  			</p>
+								  		</div>
+								  		<div class="col-md-6 image">
+								  			<img src="images/tabs/pic1.png" class="img-responsive" alt="pic1" />
+								  		</div>
+								  	</div>
+								  	<div class="tab-pane fade" id="profile">
+								  		<div class="col-md-6 image">
+								  			<img src="images/portfolioitem1.png" class="img-responsive" alt="pic2" />
+								  		</div>
+								  		<div class="col-md-6 info">
+								  			<h4>You don't need to have any advanced technical</h4>
+								  			<p>
+								  				Whether you want to fill this paragraph with some text like I'm doing right now, this place is perfect to describe some features or anything you want - React has a complete solution for you.
+								  			</p>
+								  		</div>					  		
+								  	</div>
+								  	<div class="tab-pane fade" id="messages">
+								  		<div class="col-md-6 info">
+								  			<h4>You don't need to have any advanced technical</h4>
+								  			<p>
+								  				Whether you want to fill this paragraph with some text like I'm doing right now, this place is perfect to describe some features or anything you want - React has a complete solution for you.
+								  			</p>
+								  			<p>
+								  				You have complete control over the look & feel of your website, we offer the best quality so you take your site up and running in no time.
+								  			</p>
+								  		</div>
+								  		<div class="col-md-6 image">
+								  			<img src="images/tabs/pic2.png" class="img-responsive" style="position: relative;top: 15px;" alt="pic3" />
+								  		</div>
+								  	</div>
+								  	<div class="tab-pane fade" id="settings">
+								  		<div class="col-md-6 image">
+								  			<img src="images/tabs/pic1.png" class="img-responsive" alt="pic4" />
+								  		</div>
+								  		<div class="col-md-6 info">
+								  			<h4>You don't need to have any advanced technical</h4>
+								  			<p>
+								  				Whether you want to fill this paragraph with some text like I'm doing right now, this place is perfect to describe some features or anything you want - React has a complete solution for you.
+								  			</p>
+								  		</div>
+								  	</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+</template>
+
+<template name="page">
+                {{#if session "showShareLinkDialog"}}
+				  {{> shareLinkDialog}}
+				{{/if}}
+    
+                {{#if session "showAccountSettingsDialog"}}
+				  {{> accountSettingsDialog}}
+				{{/if}}
+				
+				{{#if session "showAddLinkDialog"}}
+				  {{> addLinkDialog}}
+				{{/if}}
+				
+				{{#if session "showAddSiteDialog"}}
+				  {{> addSiteDialog}}
+				{{/if}}
+				
+				{{#if session "showSitesDialog"}}
+				  {{> sitesDialog}}
+				{{/if}}
+				
+				{{#if session "showFilterSitesDialog"}}
+				  {{> filterSitesDialog}}
+				{{/if}}
+				
+				{{#if session "showBulkDownloadDialog"}}
+				  {{> bulkDownloadDialog}}
+				{{/if}}
+				
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span12" style="margin-top:-10px;">
+				{{> navigationOld}}
+			</div>
+		</div>
+		<div class="row-fluid">
+			<div class="span12">
+				{{#if currentUser}}
+					{{#if session "links_completed"}}
+						{{# if linksFound}}
+							{{> linklist}}
+							{{# if linksFoundLessThanThree}}
+								{{#if session "loading_results"}}
+									<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
+								{{else}}
+									{{#if isExternalSearch}}
+										{{#if searchresultsFound}}
+											<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
+											{{> searchresultlist}}
+										{{else}}
+											<p class="lead">Es wurden leider keine externen Links gefunden.</p>
+										{{/if}}
+									{{/if}}
+								{{/if}}
+							{{/if}}
+						{{else}}
+							{{#if session "filter_id"}}
+								<p class="lead">Die angegebene Link- oder Set-Adresse ist ungültig.</p>
+							{{else}}
+								{{#if session "filter_term_external"}}
+									<p class="lead">Für den ausgewählten Suchbegriff wurden keine Links in der Datenbank gefunden.</p>
+								{{else}}
+									<p class="lead">Für den ausgewählten Zeitraum wurden keine Links in der Datenbank gefunden.</p>
+								{{/if}}
+
+								{{#if session "loading_results"}}
+									<p class="lead"><i class="icon-loader"></i> externe Suchergebnisse werden geladen...</p>
+								{{else}}
+									{{#if isExternalSearch}}
+										{{#if searchresultsFound}}
+											<p class="lead">Folgende externe Links wurden für den Suchbegriff <b><i>{{session "filter_term_external"}}</i></b> gefunden:</p>
+											{{> searchresultlist}}
+										{{else}}
+											<p class="lead">Es wurden leider auch keine externen Links gefunden.</p>
+										{{/if}}
+									{{/if}}
+								{{/if}}
+							{{/if}}
+						{{/if}}
+					{{else}}
+						<p class="lead"><i class="icon-loader"></i> Daten werden geladen...</p>
+					{{/if}}
+				{{else}}
+					<p class="lead">Bitte logge dich ein, um auf das Tool zuzugreifen.</p>
+				{{/if}}
+			</div>
+		</div>
+	</div>
+</template>  
+
+<template name="navigationOld">
+	<div class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+			{{#if currentUser}}
+				<a class="brand" id="brand" style="margin-left:-15px;cursor:default">MusicCrawler <bdi style="color:black">Web</bdi></a>
+				<ul class="nav" role="navigation">
+					<li class="dropdown hidden-phone">
+	                      <a id="drop1" role="button" class="dropdown-toggle hand" data-toggle="dropdown">Links <b class="caret"></b></a>
+	                      	<ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
+	                      			<li class="linkfilter hand"><a tabindex="-1" id="1">Letzte 24 Stunden <span class="badge" id="1">{{session "links_count_1"}}</span></a></li>
+	                      			<li class="linkfilter hand"><a tabindex="-1" id="14">Letzte 14 Tage <span class="badge" id="14">{{session "links_count_14"}}</span></a></li>
+	                      			<li class="linkfilter hand"><a tabindex="-1" id="30">Letzte 30 Tage <span class="badge" id="30">{{session "links_count_30"}}</span></a></li>
+	                      			<li class="linkfilter hand"><a tabindex="-1" id="90">Letzte 90 Tage <span class="badge" id="90">{{session "links_count_90"}}</span></a></li>
+	                      			<li class="divider"></li>
+	                      			<li class="linkfilter hand"><a tabindex="-1" id="365">Letzte 365 Tage <span class="badge" id="365">{{session "links_count_365"}}</span></a></li>
+	                      	</ul>
+	                </li>
+					<li class="dropdown hidden-phone">
+	                      <a id="drop2" role="button" class="dropdown-toggle hand" data-toggle="dropdown">Seiten <b class="caret"></b></a>
+	                      <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
+	                      		<li class="hand"><a tabindex="-1" id="addsitebutton"><i class="icon-plus"></i> Seite hinzufügen</a></li>
+	                      		<li class="divider"></li>
+	                      		<li class="hand"><a tabindex="-1" id="showsitesbutton"><i class="icon-th-list"></i> Seiten anzeigen <span class="badge">{{getActiveSitesCount}}</span></a></li>
+	                      </ul>
+	                </li>
+					<a class="btn hidden-phone" id="addlinkbutton"><i class="icon-plus"></i> Link hinzufügen</a>
+					{{#if isAnyLinkSelected}}
+						<a class="btn hidden-phone hidden-tablet" id="copybutton"><i class="icon-file"></i> Zwischenablage</a>
+						{{#if session "JDOnlineStatus"}}
+							<a class="btn btn-primary" id="downloadbutton"><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+						{{else}}
+							<a class="btn btn-primary" id="downloadbutton" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+						{{/if}}
+					{{else}}
+						<a class="btn hidden-phone hidden-tablet" id="copybutton" disabled><i class="icon-file"></i> Zwischenablage</a>
+						<a class="btn btn-primary" id="downloadbutton" disabled><i class="icon-circle-arrow-down icon-white"></i> Download (via JDownloader)</a>
+					{{/if}}
+					<li class="divider-vertical hidden-phone"></li>
+					<a class="btn hidden-phone" id="bulkdownloadbutton"><i class="icon-hdd"></i> Massendownload</a>
+				</ul>
+				<ul class="nav pull-right">
+					<li class="hidden-phone">
+						<form class="navbar-search pull-right" id="searchform">
+							<input type="search" class="search-query span20" placeholder="Titel, Interpret, Album..." id="searchfield" value="{{getLastSearchTerm}}" autocomplete="off" autocorrect="off" data-provide="typeahead" />
+							<div class="icon-search"></div>
+						</form>
+					</li>
+					<li class="divider-vertical hidden-phone"></li>
+					<li>
+						<div class="btn-group">
+							{{> user_info}}		  
+						</div>
+					</li>
+				</ul>
+			{{else}}
+				<ul class="nav pull-right">
+					<li>
+						<div class="btn-group">
+							{{> user_info}}
+						</div>
+					</li>
+				</ul>
+			{{/if}}
+		</div>
+	</div>
+</template>
+
+<template name="user_info">
+		{{#if currentUser}}
+			{{> user_loggedin}}
+		{{else}}
+			{{> user_loggedout}}
+		{{/if}}
+</template>
+
+<template name="user_loggedin">
+	{{#if loggingIn}}
+		<a class="btn"><i class="icon-user"></i> Einloggen...</a>
+	{{else}}
+		{{> user_loggedin_profile}}
+	{{/if}}
+</template>
+
+<template name="user_loggedin_profile">
+	<a class="btn" id="accountbtn" rel="popover" data-placement="bottom"><i class="icon-user"></i> {{currentUser.profile.first_name}}</a>
+	<a class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+	<ul class="dropdown-menu pull-right">
+		<li class="hand"><a id="showsettings"><i class="icon-wrench"></i> Einstellungen</a></li>
+		<li class="hand hidden-phone"><a id="showsitefilter"><i class="icon-filter"></i> Seitenfilter</a></li>
+		<li class="divider"></li>
+		{{#if currentUser.admin}}	
+		<li class="hand"><a id="cleandatabase"><i class="icon-fire"></i> Datenbank bereinigen</a></li>
+		<li class="divider"></li>
+		{{/if}}
+		<li class="hand"><a id="logout"><i class="icon-off"></i> Abmelden</a></li>
+</ul>
+</template>
+
+<template name="user_loggedout_old">
+	{{#if loginServicesConfigured}}
+		<a class="btn hand" id="login"><i class="icon-user"></i> Login</a>
+	{{else}}
+		<a class="btn hand" id="login_waiting"><i class="icon-user"></i> Laden...</a>
+	{{/if}}
+</template>
+
+<template name="linklist_old">
+	<table class="table table-condensed table-striped">
+		<thead>
+			<th>
+				<input type="checkbox" id="select_all" />
+			</th>
+			<th class="hidden-phone">
+				{{#if isAnyLinkSelectedSet}}
+					<i class="icon-share hand" id="share_links"></i>	
+				{{/if}}
+			</th>
+			<th class="hidden-phone"></th>
+			<th class="hidden-phone"><i class="icon-volume-up"></i></th>
+			<th>Name</th>
+			<th class="hidden-phone">URL</th>
+			<!--<th></th>-->
+			<th>
+				<i class="icon-thumbs-up hand" id="sort_like"></i>{{#if sortLikes}} <i class="icon-chevron-down" id="filter_links"></i>{{/if}}
+			</th>
+			<th class="hidden-phone">
+				{{#if currentUser.profile.showunknownlinks}}
+					<i class="icon-filter icon-white hand" id="filter_links"></i>
+				{{else}}
+					<i class="icon-filter hand" id="filter_links"></i>
+				{{/if}}	
+			</th>
+			<th class="hidden-phone">Quelle</th>
+			<th class="hidden-phone">Größe</th>
+			<th class="hidden-phone hand" style="text-align:right" id="sort_date_published">Veröffentlicht{{#if sortPublished}} <i class="icon-chevron-down" id="filter_links"></i>{{else}}&nbsp;&nbsp;&nbsp;&nbsp;{{/if}}</th>
+			{{#if session "filter_show_already_downloaded"}}
+			{{else}}
+				{{#if isAnyLinkSelected}}
+					<th class="hidden-phone"><i class="icon-remove hand" id="hide_selected_links"></i></th>
+				{{/if}}
+			{{/if}}
+		</thead>
+		<tbody>
+			{{#each links}}
+				{{> link}}
+			{{/each}}
+			{{#if session "wait_for_items"}}
+				{{> loading}}
+			{{/if}}
+		</tbody>
+	</table>
+	{{#if isLinksLimit}}
+		{{#if hasMoreLinks}}
+			<p class="lead text-center">Aus Performancegründen werden maximal 250 Links angezeigt ({{getCurrentLinksText}}). <a class="hand" id="paginate">Links {{getNextLinksText}} anzeigen</a></p>
+		{{/if}}
+	{{else}}
+		{{#unless hasMoreLinks}}
+			<p class="lead text-center">{{getCurrentLinksText}}</p>
+		{{/unless}}
+	{{/if}}
+</template>
+
+<template name="loading">
+<tr><td></td><td></td><td></td><td colspan="8"><i class="icon-loader"></i> weitere Links werden geladen...</td></tr>
+</template>
+
+<template name="link_old">
+	{{#if isNotAlreadyDownloaded}}
+		<tr>
+			<td style="width:12px;min-width:12px;max-width:12px">
+				{{#if isDownloadable}}
+					{{#if isLinkSelected}}
+						<input type="checkbox" class="link_checkbox" checked="checked" />
+					{{else}}
+						<input type="checkbox" class="link_checkbox" />
+					{{/if}}
+				{{/if}}
+			</td>
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
+				{{#if isLinkSelectedSet}}
+					<i class="icon-minus hand removelinkfromset"></i>
+				{{else}}
+					<i class="icon-plus hand addlinktoset"></i>
+				{{/if}}
+			</td>
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
+				<i class="icon-refresh hand refreshlink"></i>
+			</td>
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
+				{{#if isPlayable}}
+					{{> playableicon}}
+				{{/if}}
+			</td>
+		  <td style="max-width: 400px;"><a class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
+		  <td class="hidden-phone" style="max-width: 200px;"><a href="{{url}}" target="_blank">{{url}}</a></td>
+			<!--
+			<td style="width:14px;min-width:14px;max-width:14px">
+				{{#if comments}}
+					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{else}}
+					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{/if}}
+			</td>
+			-->
+			<td style="width:40px;min-width:40px;max-width:40px">
+				<i class="icon-thumbs-up hand like"></i>
+				{{#if likes}}{{likes}}{{else}}0{{/if}}
+			</td>
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px;text-align:center">
+				{{> getStatusIcon}}
+			</td>
+			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;">{{getSourceName}}</td>
+			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;">{{getSizeinMB}}</td>
+			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;text-align:right;">{{dateFormatPretty date_published}}</td>
+			
+			{{#if session "filter_show_already_downloaded"}}
+				{{#if isSearch}}
+					<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
+				{{/if}}
+				{{#if currentUser.admin}}	
+					<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
+				{{/if}}
+			{{else}}
+				{{#if currentUser.admin}}	
+					<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
+					<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
+				{{else}}
+					<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-remove hand hide_link"></i></td>
+				{{/if}}
+			{{/if}}	
+		</tr>
+	{{else}}
+		<tr>
+			<td style="width:12px;min-width:12px;max-width:12px">
+				{{#if isDownloadable}}
+					{{#if isLinkSelected}}
+						<input type="checkbox" class="link_checkbox" checked="checked" />
+					{{else}}
+						<input type="checkbox" class="link_checkbox" />
+					{{/if}}
+				{{/if}}
+			</td>
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
+				{{#if isLinkSelectedSet}}
+					<i class="icon-minus hand removelinkfromset"></i>
+				{{else}}
+					<i class="icon-plus hand addlinktoset"></i>
+				{{/if}}
+			</td>
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
+				<i class="icon-refresh hand refreshlink"></i>
+			</td>
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px">
+				{{#if isPlayable}}
+					{{> playableicon}}
+				{{/if}}
+			</td>
+			<td style="max-width: 400px;color: gray;"><a style="color: gray;" class="linkname" data-mode="inline" data-name="linkname" data-type="text">{{name}}</a></td>
+			<td class="hidden-phone" style="max-width: 200px;color: gray;"><a style="color: gray;" href="{{url}}" target="_blank">{{url}}</a></td>
+			<!--
+			<td style="width:14px;min-width:14px;max-width:14px">
+				{{#if comments}}
+					<i class="icon-comment hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{else}}
+					<i class="icon-comment icon-white hand" rel="popover" id="{{_id._str}}_comments"></i>
+				{{/if}}
+			</td>
+			-->
+			<td style="width:40px;min-width:40px;max-width:40px;color: gray;">
+				<i class="icon-thumbs-up hand like"></i>
+				{{#if likes}}{{likes}}{{else}}0{{/if}}
+			</td>
+			<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px;text-align:center;">
+				<i class="{{getStatusIcon}}"></i>
+			</td>
+			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;color: gray;">{{getSourceName}}</td>
+			<td class="hidden-phone" style="width:72px;min-width:72px;max-width:72px;text-align:right;color:gray">{{getSizeinMB}}</td>
+			<td class="hidden-phone" style="width:150px;min-width:150px;max-width:150px;text-align:right;color:gray">{{dateFormatPretty date_published}}</td>
+			{{#if currentUser.admin}}	
+				<td class="hidden-phone" style="width:14px;min-width:14px;max-width:14px"><i class="icon-trash hand delete_link"></i></td>
+			{{/if}}
+		</tr>
+	{{/if}}
+</template>
+
+<template name="searchresultlist">
+		<table class="table table-condensed table-striped">
+		<thead>
+			<th style="text-align:center">Quelle</th>
+			<th><i class="icon-volume-up"></i></th>
+			<th>Name</th>
+			<th>Dauer</th>
+			<th></th>
+			<th></th>
+		</thead>
+		{{#each searchresults}}
+			{{> searchresult}}
+		{{/each}}
+		</table>
+</template>
+
+<template name="searchresult">
+  <tr>
+	<td style="width:142px;min-width:142px;max-width:142px;text-align:center">
+		{{> getExternalSourceIcon}}
+	</td>
+	<td style="width:14px;min-width:14px;max-width:14px">
+		{{#if isPlayable}}
+			{{> playableicon}}
+		{{/if}}
+	</td>
+    <td style="min-width:400px;max-width: 400px;"><a href="{{url}}" target="_blank">{{name}}</a></td>
+	<td style="width:71px;min-width:71px;max-width:71px">{{millisecondsFormatPretty duration}}</td>	
+	<td style="width:34px;min-width:34px;max-width:34px">
+		{{#if isDownloadable}}
+			<button class="btn btn-small download_external_link"><i class="icon-circle-arrow-down"></i></button>
+		{{/if}}
+	</td>
+	<td style="width:209px;min-width:209px;max-width:209px">
+		<button class="btn btn-small add_external_link"><i class="icon-plus"></i> Link zur Datenbank hinzufügen</button>
+	</td>
+  </tr>
+</template>
+
+<template name="accountSettingsDialog">
+<div class="mask"> </div>
+<div id="accountSettingsModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close cancel" aria-hidden="true">&times;</button>
+    <h3 align="center">Kontoeinstellungen</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" id="settingsform">
+		<span class="help-inline">IP-Adresse:</span>
+			{{#if currentUser.profile.autoupdateip}}
+				<input class="input-medium" id="ip" type="text" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" value={{currentUser.profile.ip}} disabled />
+			{{else}}
+				<input class="input-medium" id="ip" type="text" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" value={{currentUser.profile.ip}} />
+			{{/if}}
+			<button class="btn btn-link" type="button" id="refreship">Aktualisieren</button>
+		<span class="help-inline">Port:</span>
+		<input class="input-mini" id="port" type="number" min="0" max="65536" value={{currentUser.profile.port}} />
+		<label class="checkbox">
+		<br/>
+			<input id="autoupdate" type="checkbox" checked={{currentUser.profile.autoupdateip}} />
+		IP-Adresse automatisch updaten?
+		</label>
+		<label class="checkbox">
+			<input id="showdownloadedlinks" type="checkbox" checked={{session "filter_show_already_downloaded"}} />
+		bereits heruntergeladene/kopierte Links anzeigen?
+		</label>
+		<label class="checkbox">
+			<input id="showtooltips" type="checkbox" checked={{currentUser.profile.showtooltips}} />
+		Tooltips anzeigen?
+		</label>
+		<label class="checkbox">
+			<input id="hidemixes" type="checkbox" checked={{currentUser.profile.hidemixes}} />
+		Compilations/Mixes ausblenden?
+		</label>
+		<br/>
+		<label><strong>externe Suchanbieter</strong></label>
+		
+		<label class="checkbox">
+			<input id="searchzippysharemusic" type="checkbox" checked={{searchProviderEnabled "zippysharemusic"}} />
+		<a href="http://www.zippysharemusic.com"><img alt="zippysharemusic" src="/zippysharemusic.png"></a>
+		</label>
+		
+		<label class="checkbox">
+			<input id="searchmuzofon" type="checkbox" checked={{searchProviderEnabled "muzofon"}} />
+		<a href="http://www.muzofon.com"><img alt='muzofon' src='/muzofon.png'></a>
+		</label>
+		
+		<label class="checkbox">
+			<input id="searchsoundcloud" type="checkbox" checked={{searchProviderEnabled "soundcloud"}} />
+		<a href="http://www.soundcloud.com"><img alt='soundcloud' src='/soundcloud.png'></a>
+		</label>
+		
+		<label class="checkbox">
+			<input id="searchyoutube" type="checkbox" checked={{searchProviderEnabled "youtube"}} />
+		<a href="http://www.youtube.com"><img alt='youtube' src='/youtube.png'></a>
+		</label>
+		
+		<label class="checkbox">
+			<input id="searchexfm" type="checkbox" checked={{searchProviderEnabled "ex.fm"}} />
+		<a href="http://www.ex.fm"><img alt='ex.fm' src='/exfm.png'></a>
+		</label>
+		
+		<label class="checkbox">
+			<input id="searchvk" type="checkbox" checked={{searchProviderEnabled "vk.com"}} />
+		<a href="http://www.vk.com"><img alt='vk.com' src='/vkontakte.png'></a> <small>(Anmeldung erforderlich)</small>
+		</label>
+		
+		<label class="checkbox">
+			<input id="searchmyfreemp3" type="checkbox" checked={{searchProviderEnabled "myfreemp3.eu"}} />
+		<a href="http://www.myfreemp3.eu"><img alt='myfreemp3.eu' src='/myfreemp3.png'></a>
+		</label>
+		
+		<label class="checkbox">
+			<input id="searchmp3monkey" type="checkbox" checked={{searchProviderEnabled "mp3monkey"}} />
+		<a href="http://www.mp3monkey.net"><img alt='mp3monkey.net' src='/mp3monkey.png'></a>
+		</label>
+			
+		<label class="checkbox">
+			<input id="searchbeatport" type="checkbox" checked={{searchProviderEnabled "beatport"}} />
+		<a href="http://www.beatport.com"><img alt='beatport.com' src='/beatport.png'></a>
+		</label>
+	</form>
+  </div>
+  <div class="modal-footer">
+  	{{{session "status"}}}
+	{{#if session "JDOnlineStatus"}}
+		<p class="pull-left jdstatustext">Dein JDownloader ist <strong id="jdon" style="color:green">online</strong>.</p>
+	{{else}}
+		<p class="pull-left jdstatustext">Dein JDownloader ist <strong id="jdoff" style="color:red">offline</strong>.</p>
+	{{/if}}
+  </div>
+</div>
+</template>
+
+<template name="addLinkDialog">
+<div class="mask"> </div>
+<div id="addLinkModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close cancel">&times;</button>
+    <h3 align="center">Link hinzufügen</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-inline" id="addlinkform">
+		<div class="input-append">
+			<input id="newlinkurl" class="input-xlarge linkurl" type="url" pattern="https?://.+" placeholder="http://www28.zippyshare.com/v/82393135/file.html" required />
+			<button class="btn addlink" disabled>Hinzufügen</button>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer status">
+	    {{{session "status"}}}
+  </div>
+</div>
+</template>
+
+<template name="addSiteDialog">
+<div class="mask"> </div>
+<div id="addSiteModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close cancel">&times;</button>
+    <h3 align="center">Musik-Quelle hinzufügen</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" id="addsiteform">
+		<div class="input-append">
+			<span class="help-inline">URL der Seite, die wir nach Links durchsuchen sollen</span>
+			<input id="newsiteurl" class="input-xlarge siteurl" type="url" pattern="https?://.+" placeholder="http://www.electrotechnosuperblog.com" required />
+			<button class="btn addsite" disabled>Seite hinzufügen</button>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer status">
+    {{{session "status"}}}
+  </div>
+</div>
+</template>
+
+<template name="sitesDialog">
+<div class="mask"> </div>
+<div id="showSitesModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close cancel">&times;</button>
+    <h3 align="center">Musik-Quellen</h3>
+  </div>
+  <div class="modal-body">
+		<table class="table table-striped table-condensed">
+		<thead>
+			<th></th>
+			<th>Name</th>
+			<th>URL</th>
+			<th style="text-align: left;">Treffer</th>
+			<th>zuletzt durchsucht</th>
+			<th>Typ</th>
+			<th>aktiv</th>
+			{{#if currentUser.admin}}
+				<th>zuletzt aktualisiert</th>
+			{{/if}}
+			<th>
+				{{#if currentUser.admin}}
+					<i class="icon-search hand" id="crawl_all_sites"></i>
+				{{/if}}
+			</th>
+		</thead>
+		<tbody>
+			{{#each sites}}
+				<tr>
+					<td>
+						{{#if isOwner}}
+							<i class="icon-trash hand remove_site"></i>
+						{{/if}}
+					</td>
+					<td>
+						{{#if isOwner}}
+							<a class="sitename" data-mode="inline" data-name="name" data-type="text">{{name}}</a>
+						{{else}}
+							{{name}}
+						{{/if}}
+					</td>
+					<td>{{url}}</td>
+					<td>{{discovered_links}}</td>
+					<td>{{dateFormatPretty last_crawled}}</td>
+					<td>{{> getFeedTypeIcon}}</td>
+					<td class="site_active">
+					{{#if active}}
+						<i class="icon-ok-sign"></i>
+					{{/if}}
+					</td>
+					{{#if currentUser.admin}}
+						<td>{{dateFormatPretty last_post}}</td>
+					{{/if}}
+					<td>
+						{{#if currentUser.admin}}
+							{{#if next_crawl}}
+								<i class="icon-time hand crawl_single_site" id="{{_id._str}}_crawlstatus"></i>
+							{{else}}
+                                {{#if canCrawlAgain}}
+									{{#if active}}
+										<i class="icon-search hand crawl_single_site" id="{{_id._str}}_crawlstatus"></i>
+									{{/if}}
+                                {{else}}
+                                    <i class="icon-ban-circle" id="{{_id._str}}_crawlstatus"></i>
+                                {{/if}}
+							{{/if}}
+						{{/if}}
+						{{#if isOwner}}
+							{{#if currentUser.admin}}
+							{{else}}
+								{{#if next_crawl}}
+									<i class="icon-time hand crawl_single_site"  id="{{_id._str}}_crawlstatus"></i>
+								{{else}}
+									{{#if canCrawlAgain}}
+										{{#if active}}
+											<i class="icon-search hand crawl_single_site" id="{{_id._str}}_crawlstatus"></i>
+										{{/if}}
+									{{else}}
+										<i class="icon-ban-circle" id="{{_id._str}}_crawlstatus"></i>
+									{{/if}}
+								{{/if}}
+							{{/if}}
+						{{/if}}
+					</td>
+				</tr>
+			{{/each}}
+		</tbody>
+		</table>
+  </div>
+</div>
+</template>
+
+<template name="filterSitesDialog">
+<div class="mask"> </div>
+<div id="showFilterSitesModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close save">&times;</button>
+    <h3 align="center">Seitenfilter</h3>
+  </div>
+  <div class="modal-body">
+		<table class="table table-condensed">
+		<thead>
+			<th>
+				{{#if noSitefiltered}}
+					<input type="checkbox" id="filter_all" checked={{noSitefiltered}} />
+				{{else}}
+					<input type="checkbox" id="filter_all" />
+				{{/if}}
+			</th>
+			<th>Name</th>
+		</thead>
+		<tbody>
+			{{#each sites}}
+				<tr>
+					<td>
+					{{#if isSiteFiltered}}
+						<input type="checkbox" class="site_checkbox" />
+					{{else}}
+						<input type="checkbox" class="site_checkbox" checked="checked" />
+					{{/if}}	
+					</td>
+					<td>
+						{{name}}
+					</td>
+				</tr>
+			{{/each}}
+		</tbody>
+		</table>
+  </div>
+</div>
+</template>
+
+<template name="shareLinkDialog">
+<div class="mask"> </div>
+<div id="showShareLinkModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close cancel">&times;</button>
+    <h3 align="center">Links teilen</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" id="sharelinkform">
+		<p>Bitte gib eine eMail-Adresse ein, an die die Links gesendet werden sollen.</p>
+        <div class="input-append">
+			<input id="sharelinkaddress" class="input-xlarge siteurl" multiple="multiple" type="email" placeholder="{{getUsereMail}}" required autocomplete="off" data-provide="typeahead" />
+			<button class="btn btn-primary" id="sharelink" disabled>Links teilen</button>
+		</div>
+		<br/>
+		<br/>
+	</form>
+  </div>
+  <div class="modal-footer status">
+    {{{session "status"}}}
+  </div>        
+</div>
+</template>
+
+
+<template name="bulkDownloadDialog">
+<div class="mask"> </div>
+<div id="showBulkDownloadModal" class="modal">
+  <div class="modal-header">
+	<button type="button" class="close cancel">&times;</button>
+    <h3 align="center">Massendownload</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" id="bulkdownloadform">
+		<p>Zeitraum:
+			<select required autofocus id="bulkdownloadselect">
+			  <option value={{session "links_count_1"}}>Letzte 24 Stunden ({{session "links_count_1"}})</option>
+			  <option value={{session "links_count_14"}}>Letzte 14 Tage ({{session "links_count_14"}})</option>
+			  <option value={{session "links_count_30"}}>Letzte 30 Tage ({{session "links_count_30"}})</option>
+			  <option value={{session "links_count_90"}}>Letzte 90 Tage ({{session "links_count_90"}})</option>
+			  <option value={{session "links_count_365"}}>Letztes Jahr ({{session "links_count_365"}})</option>
+			</select>
+			{{#if session "links_count_1"}}
+				<button class="btn pull-right" id="bulkcopy"><i class="icon-file"></i> Zwischenablage</button>
+			{{else}}
+				<button class="btn pull-right" id="bulkcopy" disabled><i class="icon-file"></i> Zwischenablage</button>
+			{{/if}}
+		</p>
+	</form>
+  </div>      
+</div>
+</template>
+
+<template name ="zippyshare.comicon">
+	<a href='http://www.zippyshare.com'><img alt='Zippyshare Attribution' src='/zippyshare.png'></a>
+</template>
+
+<template name ="soundcloud.comicon">
+	<a href='"http://soundcloud.com"'><img alt='Player Attribution' class='playerattribution' src='/soundcloud.png'></a>
+</template>
+
+<template name ="muzofon.comicon">
+<a href='http://www.muzofon.com'><img alt='Muzofon Attribution' src='/muzofon.png'></a>
+</template>
+
+<template name ="youtube.comicon">
+<a href='http://www.youtube.com'><img alt='YouTube Attribution' src='/youtube.png'></a>
+</template>
+
+<template name ="ex.fmicon">
+<a href='http://ex.fm'><img alt='ex.fm Attribution' src='/exfm.png'></a>
+</template>
+
+<template name ="vk.comicon">
+<a href='http://vk.com'><img alt='vk.com Attribution' src='/vkontakte.png'></a>
+</template>
+
+<template name ="beatport.comicon">
+<a href='http://beatport.com'><img alt='beatport.com Attribution' src='/beatport.png'></a>
+</template>
+
+<template name ="myfreemp3.euicon">
+<a href='http://myfreemp3.eu'><img alt='myfreemp3.eu Attribution' src='/myfreemp3.png'></a>
+</template>
+
+<template name ="mp3monkey.neticon">
+<a href='http://mp3monkey.net'><img alt='mp3monkey.net Attribution' src='/mp3monkey.png'></a>
+</template>
+
+<template name ="onicon">
+<i class="icon-ok"></i>
+</template>
+
+<template name ="officon">
+<i class="icon-remove"></i>
+</template>
+
+<template name ="unknownicon">
+<i class="icon-question-sign"></i>
+</template>
+
+<template name ="feedsiteicon">
+<i class="icon-rss"></i>
+</template>
+
+<template name ="facebook-groupsiteicon">
+<i class="icon-facebook"></i>
+</template>
+
+<template name ="vkontaktesiteicon">
+<i class="icon-vk"></i>
+</template>
+
+<template name ="unknownsiteicon">
+<i class="icon-globe"></i>
+</template>
+
+<template name ="specialsiteicon">
+<i class="icon-globe"></i>
+</template>
+
+<template name="playableicon">
+<i class="icon-play player hand"></i>
+</template>

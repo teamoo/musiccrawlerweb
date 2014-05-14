@@ -1,0 +1,37 @@
+<template name="navigation_menu">
+	<nav class="nav-menu">
+		<h3>Menu</h3>
+		<a href="{{pathFor 'home'}}" class="item">
+			Home
+		</a>
+		<a href="{{pathFor 'links'}}" class="item">
+			Links
+		</a>
+		<a href="{{pathFor 'sites'}}" class="item">
+			Seiten
+		</a>
+		<a href="{{pathFor 'blog'}}" class="item">
+			Blog
+		</a>
+		{{#if currentUser.admin}}
+		<a href="{{pathFor 'admin'}}" class="item item-blue">
+			Admin
+		</a>
+		{{/if}}
+	</nav>
+</template>
+
+<template name="navigation">
+	<header class="navbar navbar-inverse hero" role="banner">
+		<div class="container">
+	 		<div class="navbar-header">
+	   			<a href="{{pathFor 'home'}}" class="navbar-brand">MusicCrawler Web</a>
+	  		</div>
+			<div class="sidebar-toggle">
+				<div class="line"></div>
+				<div class="line"></div>
+			    <div class="line"></div>
+			</div>
+		</div>
+	</header>
+</template>

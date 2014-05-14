@@ -1,0 +1,57 @@
+<template name="userlist">
+  <div id="pad-wrapper" class="users-list">
+            <div class="row header">
+                <h3>Benutzer</h3>
+                <div class="col-md-10 col-sm-12 col-xs-12 pull-right">
+                    <input type="text" class="col-md-5 search" placeholder="Gib einen Benutzernamen ein...">
+                </div>
+            </div>
+
+            <!-- Users table -->
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="col-md-4">
+                                    Name
+                                </th>
+                                <th class="col-md-3">
+                                    <span class="line"></span>Registrierung
+                                </th>
+                                <th class="col-md-2">
+                                    <span class="line"></span>Links beigetragen
+                                </th>
+                                <th class="col-md-3">
+                                    <span class="line"></span>eMail Adresse
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+						{{#each users}}
+                        <!-- row -->
+                        <tr>
+                            <td>
+                                <img src="{{profile.pictureurl}}" alt="contact" class="img-circle avatar img-list hidden-phone" />
+                                <a href="{{pathFor 'userInfoShow' id}}" class="name">{{profile.name}}</a>
+                                <span class="subtext">{{username}}</span>
+                            </td>
+                            <td>
+                                {{prettifyDate createdAt}}
+                            </td>
+                            <td>
+                                {{profile.linkcontributioncount}}
+                            </td>
+                            <td class="align-right">
+                                <a href="#">{{emails.[0].address}}</a>
+                            </td>
+                        </tr>
+						{{/each}}
+                        <!-- row -->
+                        </tbody>
+                    </table>
+                </div>                
+            </div>
+        </div>
+
+</template>

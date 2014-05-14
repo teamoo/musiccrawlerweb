@@ -1,0 +1,57 @@
+<template name="adminstatistics">
+	        <!-- upper main stats -->
+	        <div id="main-stats">
+	            <div class="row stats-row">
+	                <div class="col-md-3 col-sm-3 stat">
+	                    <div class="data">
+	                        <span class="number">{{getCount 'link-count'}}</span>
+	                        Links
+	                    </div>
+	                    <span class="date">{{getCount 'link-online-count'}} online</span>
+	                </div>
+	                <div class="col-md-3 col-sm-3 stat">
+	                    <div class="data">
+	                        <span class="number">{{getCount 'site-count'}}</span>
+	                        Seiten
+	                    </div>
+	                    <span class="date"></span>
+	                </div>
+	                <div class="col-md-3 col-sm-3 stat last">
+	                    <div class="data">
+	                        <span class="number">{{getCount 'set-count'}}</span>
+	                        Sets
+	                    </div>
+	                    <span class="date"></span>
+	                </div>
+					<div class="col-md-3 col-sm-3 stat">
+	                    <div class="data">
+	                        <span class="number">{{getCount 'user-count'}}</span>
+	                        Benutzer
+	                    </div>
+	                    <span class="date"></span>
+	                </div>
+	            </div>
+	        </div>
+	        <!-- end upper main stats -->
+	
+	        <div id="pad-wrapper">
+	
+	            <!-- statistics chart built with jQuery Flot -->
+	            <div class="row chart">
+	                <div class="col-md-12">
+	                    <h4 class="clearfix pull-left">
+	                        Statistiken                         
+	                    </h4>
+	                    <div class="btn-group pull-right">
+	                        <button class="glow left">TAG</button>
+	                        <button class="glow middle active">MONAT</button>
+	                        <button class="glow right">JAHR</button>
+	                    </div>
+	                </div>
+	                <div class="col-md-12">
+	                    <div id="statsChart"></div>
+	                </div>
+	            </div>
+	            <!-- end statistics chart -->
+	        </div>
+</template>

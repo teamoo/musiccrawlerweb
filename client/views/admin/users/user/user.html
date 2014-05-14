@@ -1,0 +1,101 @@
+<template name="userinfo">
+      <div class="settings-wrapper" id="pad-wrapper">
+            <div class="row">
+                <!-- avatar column -->
+                <div class="col-md-3 col-md-offset-1 avatar-box">
+                    <div class="personal-image">
+                        <img src="{{currentUser.profile.pictureurl}}" class="avatar img-thumbnail" alt="avatar" />
+                    </div>
+                </div>
+
+                <!-- edit form column -->
+                <div class="col-md-7 personal-info">
+					<h2 class="personal-title">Profil von {{currentUser.profile.name}}<small>erstellt am {{prettifyDate currentUser.createdAt}}</small></h2>
+					<br/>
+                    <form class="form-horizontal" role="form">
+                    	<fieldset>
+                    		<div class="form-group">
+                    		    <label class="col-lg-4 control-label">Facebook ID:</label>
+                    		    <div class="col-lg-6">
+                    		        <input class="form-control" type="text" value="{{currentUser.id}}" />
+                    		    </div>
+                    		</div>
+                    		<div class="form-group">
+                    		    <label class="col-lg-4 control-label">MeteorID:</label>
+                    		    <div class="col-lg-6">
+                    		        <input class="form-control" type="text" value="{{currentUser._id}}" />
+                    		    </div>
+                    		</div>
+                    		<div class="form-group">
+                    		    <label class="col-lg-4 control-label">Benutzername:</label>
+                    		    <div class="col-lg-6">
+                    		        <input class="form-control" type="text" value="{{currentUser.username}}" />
+                    		    </div>
+                    		</div>
+							<div class="form-group">
+								<label class="col-lg-4 control-label">Administrator:</label>
+							    <div class="col-lg-6">
+							            <div class="checkbox">
+							                <input type="checkbox" checked="{{currentUser.admin}}"> 
+							            </div>
+							    </div>
+							</div>
+	                        <div class="form-group">
+	                            <label class="col-lg-4 control-label">Vorname:</label>
+	                            <div class="col-lg-6">
+	                                <input class="form-control" type="text" value="{{currentUser.profile.first_name}}" />
+	                            </div>
+	                        </div>
+	                        <div class="form-group">
+	                            <label class="col-lg-4 control-label">Nachname:</label>
+	                            <div class="col-lg-6">
+	                                <input class="form-control" type="text" value="{{currentUser.profile.last_name}}" />
+	                            </div>
+	                        </div>
+	                        <div class="form-group">
+	                            <label class="col-lg-4 control-label">eMail Adresse:</label>
+	                            <div class="col-lg-6">
+	                                <input class="form-control" type="email" value="{{currentUser.emails.[0].address}}" />
+	                            </div>
+	                        </div>
+	                        <div class="form-group">
+	                        	<label class="col-lg-4 control-label">Compilations ausblenden:</label>
+	                            <div class="col-lg-6">
+	                                    <div class="checkbox">
+	                                        <input type="checkbox" checked="{{currentUser.profile.hidemixes}}"> 
+	                                    </div>
+	                            </div>
+	                        </div>
+	                        <div class="form-group">
+	                        	<label class="col-lg-4 control-label">bereits geladene Links anzeigen:</label>
+	                            <div class="col-lg-6">
+	                                    <div class="checkbox">
+	                                        <input type="checkbox" checked="{{currentUser.profile.showdownloadedlinks}}"> 
+	                                    </div>
+	                            </div>
+	                        </div>
+	                        <div class="form-group">
+	                        	<label class="col-lg-4 control-label">unbekannte Links anzeigen:</label>
+	                            <div class="col-lg-6">
+	                                    <div class="checkbox">
+	                                        <input type="checkbox" checked="{{currentUser.profile.showunknownlinks}}"> 
+	                                    </div>
+	                            </div>
+	                        </div>
+	                        <div class="form-group">
+	                            <label class="col-lg-4 control-label">Links beigetragen:</label>
+	                            <div class="col-lg-6">
+	                                <input class="form-control" type="text" value="{{currentUser.profile.linkcontributioncount}}" />
+	                            </div>
+	                        </div>
+
+                        </fieldset>
+                        <div class="actions">
+                            <button type="button" class="btn btn-primary">Speichern</button>
+                            <button type="button" class="btn btn-default">Verwerfen</button>
+                        </div>
+                    </form>
+                </div>
+            </div>            
+        </div>
+</template>

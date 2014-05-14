@@ -1,0 +1,40 @@
+<template name="login">
+				<div id="hero">
+					<div id="cover-image" class="animated fadeIn blurred">
+
+					</div>
+					<div class="container">
+						<h1 class="hero-text animated fadeIn">Die beste Möglichkeit, gute elektronische Musik zu entdecken.</h1>
+						{{> user_login}}
+					</div>
+				</div>
+</template>
+
+<template name="user_login">
+	<div class="cta animated fadeIn">	
+		{{#if loginServicesConfigured}}
+			{{#if loggingIn}}
+				<div data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
+				{{> spinner}}<span id="fbtext">&nbsp;&nbsp;Einloggen</span>
+ 				</div>
+			{{else}}
+				{{#if currentUser}}
+				<div id="logout" data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
+				<img id="fblogo" src="fblogo.png"/>
+				<span id="fbtext">Abmelden</span>
+				</div>
+				{{else}}
+				<div id="login" data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
+				<img id="fblogo" src="fblogo.png"/>
+				<span id="fbtext">Anmelden</span>
+				</div>
+				{{/if}}
+			{{/if}}
+		{{else}}
+			<div data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" class="fb-login-button fb_iframe_widget"><span style="vertical-align: bottom; width: 167px; height: 39px;"></span>	
+			{{> spinner}}<span id="fbtext">&nbsp;&nbsp;&nbsp;Laden</span>
+			</div>
+		{{/if}}
+		
+	</div>	
+</template>

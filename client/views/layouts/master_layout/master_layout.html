@@ -1,0 +1,19 @@
+<template name="layout">
+	{{> connectionBanner}}
+  <div id="home3">
+	<div class="st-container">
+		{{#if currentUser}}
+			{{> navigation_menu}}
+		{{/if}}
+		<div class="st-pusher">
+			<div class="st-content">
+				{{#if currentUser}}
+					{{> navigation}}
+				{{/if}}
+				{{> yield}}
+				{{> footer}}
+			</div>
+		</div>
+	</div>
+  </div>
+</template>

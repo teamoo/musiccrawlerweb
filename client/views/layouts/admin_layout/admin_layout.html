@@ -1,0 +1,11 @@
+<template name="adminlayout">
+	{{> connectionBanner}}
+	<div id="admin">	
+		{{> adminnavigation}}
+		{{> adminsidebar}}
+		<!-- main container -->
+		<div class="content">
+			{{> yield}}
+		</div>
+	</div>
+</template>

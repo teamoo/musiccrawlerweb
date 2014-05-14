@@ -1,0 +1,133 @@
+<template name="adminnavigation">
+	<!-- navbar -->
+	<header class="navbar navbar-inverse" role="banner">
+	    <div class="navbar-header">
+	        <button class="navbar-toggle" type="button" data-toggle="collapse" id="menu-toggler">
+	            <span class="sr-only">Navigation ein/ausblenden</span>
+	            <span class="fa fa-bar"></span>
+	            <span class="fa fa-bar"></span>
+	            <span class="fa fa-bar"></span>
+	        </button>
+	        <a class="navbar-brand" href="{{pathFor 'admin'}}">
+				<h3>MusicCrawler Admin</h3>
+	        </a>
+	    </div>
+	    <ul class="nav navbar-nav pull-right hidden-xs">
+	        <li class="hidden-xs hidden-sm">
+	            <input class="search" type="text" />
+	        </li>
+			{{> adminnotifications}}
+	        <li class="dropdown">
+	            <a href="#" class="dropdown-toggle hidden-xs hidden-sm" data-toggle="dropdown">
+	                Mein Account
+	                <b class="caret"></b>
+	            </a>
+	            <ul class="dropdown-menu">
+	                <li><a href="{{pathFor 'userInfoShow' 'currentUser.id'}}">Persönliches Profil</a></li>
+	                <li><a href="{{pathFor 'admin_usersettings'}}">Einstellungen</a></li>
+	            </ul>
+	        </li>
+	        <li class="settings hidden-xs hidden-sm">
+	            <a href="{{pathFor 'application_settings'}}" role="button">
+	                <i class="fa fa-cog"></i>
+	            </a>
+	        </li>
+	    </ul>
+	</header>
+	<!-- end navbar -->
+</template>
+
+<template name="adminsidebar">
+<!-- sidebar -->
+<div id="sidebar-nav">
+    <ul id="dashboard-menu">
+        <li class="active">
+            <div class="pointer">
+                <div class="arrow"></div>
+                <div class="arrow_border"></div>
+            </div>
+            <a href="{{pathFor 'home'}}">
+                <i class="fa fa-home"></i>
+                <span>Home</span>
+            </a>
+        </li>
+        <li>
+            <a href="{{pathFor 'notificationsShow'}}">
+                <i class="fa fa-warning"></i>
+                <span>Ereignisse</span>
+            </a>
+        </li>            
+        <li>
+            <a href="{{pathFor 'statisticsShow'}}">
+                <i class="fa fa-signal"></i>
+                <span>Reports</span>
+            </a>
+        </li>
+        <li>
+			<a href="{{pathFor 'userListShow'}}">
+                <i class="fa fa-users"></i>
+                <span>Benutzer</span>
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-toggle" href="#">
+                <i class="fa fa-th-large"></i>
+                <span>Tabellen</span>
+                <i class="fa fa-chevron-down"></i>
+            </a>
+            <ul class="submenu">
+                <li><a href="{{pathFor 'dataTableShow' query='links'}}">Links</a></li>
+				<li><a href="{{pathFor 'dataTableShow' query='sites'}}">Seiten</a></li>
+				<li><a href="{{pathFor 'dataTableShow' query='sets'}}">Sets</a></li>
+            </ul>
+        </li>
+        <li>
+            <a class="dropdown-toggle" href="#">
+                <i class="fa fa-share"></i>
+                <span>Extras</span>
+                <i class="fa fa-chevron-down"></i>
+            </a>
+            <ul class="submenu">
+                <li><a href="{{pathFor 'schedulecleanup'}}">Links aktualisieren</a></li>
+            	<li><a href="{{pathFor 'cancelcrawls'}}">Crawls abbrechen</a></li>
+            	<li><a href="{{pathFor 'restartcrawler'}}">LinkBuilder Neustart</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+<!-- end sidebar -->
+</template>
+
+<template name="adminnotifications">
+	<li class="notification-dropdown hidden-xs hidden-sm">
+	    <a href="#" class="trigger">
+	        <i class="fa fa-warning"></i>
+	        <span class="count">{{notificationCount}}</span>
+	    </a>
+	    <div class="pop-dialog">
+	        <div class="pointer right">
+	            <div class="arrow"></div>
+	            <div class="arrow_border"></div>
+	        </div>
+	        <div class="body">
+	            <a href="#" class="close-icon"><i class="fa fa-times"></i></a>
+	            <div class="notifications">
+	                <h3>Du hast {{notificationCount}} neue Benachrichtigungen</h3>
+	                {{#each adminnotifications}}
+	                	{{> adminnotification}}
+	                {{/each}}
+	                <div class="footer">
+	                    <a href="{{pathFor 'notificationsShow'}}" class="logout">Alle Benachrichtigungen anzeigen</a>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</li>
+</template>
+
+<template name="adminnotification">
+	<a href="admin/notifications/{{_id._str}}" class="item">
+	    {{title}}
+	    <span class="time"><i class="fa fa-clock-o"></i><time datetime="{{timestamp}}" data-livestamp="{{timestamp}}" class="time"></time></span>
+	</a>
+</template>
