@@ -23,8 +23,10 @@
 	                <b class="caret"></b>
 	            </a>
 	            <ul class="dropdown-menu">
-	                <li><a href="{{pathFor 'userInfoShow' 'currentUser.id'}}">Persönliches Profil</a></li>
+	            	{{#with currentUser}}
+	                <li><a href="{{pathFor 'userInfoShow'}}">Persönliches Profil</a></li>
 	                <li><a href="{{pathFor 'admin_usersettings'}}">Einstellungen</a></li>
+	                {{/with}}
 	            </ul>
 	        </li>
 	        <li class="settings hidden-xs hidden-sm">

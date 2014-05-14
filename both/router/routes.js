@@ -48,7 +48,7 @@ Router.map(function() {
   	layoutTemplate: 'adminlayout',
   	loginRequired: true,
   	waitOn: function() {
-  		return [Meteor.subscribe('admin_notifications'),Meteor.subscribe('admin_statistics'), Meteor.subscribe('admin_counts')]
+  		return [Meteor.subscribe('admin_notifications')]
   	},
   	isLoggedIn: isAdmin,
   });
@@ -67,6 +67,9 @@ Router.map(function() {
   	template:"userinfo",
   	path:'/admin/users/:id',
   	loginRequired: true,
+  	data: function() {
+  		return {user: Meteor.users.findOne({"id": this.params.id})};
+  	},
   	waitOn: function() {
   		return [Meteor.subscribe('allUsers'),Meteor.subscribe('admin_notifications')]
   	},

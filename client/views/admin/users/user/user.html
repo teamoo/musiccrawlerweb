@@ -2,67 +2,68 @@
       <div class="settings-wrapper" id="pad-wrapper">
             <div class="row">
                 <!-- avatar column -->
+                {{#with user}}
                 <div class="col-md-3 col-md-offset-1 avatar-box">
                     <div class="personal-image">
-                        <img src="{{currentUser.profile.pictureurl}}" class="avatar img-thumbnail" alt="avatar" />
+                        <img src="{{profile.pictureurl}}" class="avatar img-thumbnail" alt="avatar" />
                     </div>
                 </div>
 
                 <!-- edit form column -->
                 <div class="col-md-7 personal-info">
-					<h2 class="personal-title">Profil von {{currentUser.profile.name}}<small>erstellt am {{prettifyDate currentUser.createdAt}}</small></h2>
+					<h2 class="personal-title">Profil von {{profile.name}}<small>erstellt am {{prettifyDate createdAt}}</small></h2>
 					<br/>
                     <form class="form-horizontal" role="form">
                     	<fieldset>
                     		<div class="form-group">
                     		    <label class="col-lg-4 control-label">Facebook ID:</label>
                     		    <div class="col-lg-6">
-                    		        <input class="form-control" type="text" value="{{currentUser.id}}" />
+                    		        <input class="form-control" type="text" value="{{id}}" />
                     		    </div>
                     		</div>
                     		<div class="form-group">
-                    		    <label class="col-lg-4 control-label">MeteorID:</label>
+                    		    <label class="col-lg-4 control-label">Meteor ID:</label>
                     		    <div class="col-lg-6">
-                    		        <input class="form-control" type="text" value="{{currentUser._id}}" />
+                    		        <input class="form-control" type="text" value="{{_id}}" />
                     		    </div>
                     		</div>
                     		<div class="form-group">
                     		    <label class="col-lg-4 control-label">Benutzername:</label>
                     		    <div class="col-lg-6">
-                    		        <input class="form-control" type="text" value="{{currentUser.username}}" />
+                    		        <input class="form-control" type="text" value="{{username}}" />
                     		    </div>
                     		</div>
 							<div class="form-group">
 								<label class="col-lg-4 control-label">Administrator:</label>
 							    <div class="col-lg-6">
 							            <div class="checkbox">
-							                <input type="checkbox" checked="{{currentUser.admin}}"> 
+							                <input type="checkbox" checked="{{admin}}"> 
 							            </div>
 							    </div>
 							</div>
 	                        <div class="form-group">
 	                            <label class="col-lg-4 control-label">Vorname:</label>
 	                            <div class="col-lg-6">
-	                                <input class="form-control" type="text" value="{{currentUser.profile.first_name}}" />
+	                                <input class="form-control" type="text" value="{{profile.first_name}}" />
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
 	                            <label class="col-lg-4 control-label">Nachname:</label>
 	                            <div class="col-lg-6">
-	                                <input class="form-control" type="text" value="{{currentUser.profile.last_name}}" />
+	                                <input class="form-control" type="text" value="{{profile.last_name}}" />
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
 	                            <label class="col-lg-4 control-label">eMail Adresse:</label>
 	                            <div class="col-lg-6">
-	                                <input class="form-control" type="email" value="{{currentUser.emails.[0].address}}" />
+	                                <input class="form-control" type="email" value="{{emails.[0].address}}" />
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
 	                        	<label class="col-lg-4 control-label">Compilations ausblenden:</label>
 	                            <div class="col-lg-6">
 	                                    <div class="checkbox">
-	                                        <input type="checkbox" checked="{{currentUser.profile.hidemixes}}"> 
+	                                        <input type="checkbox" checked="{{profile.hidemixes}}"> 
 	                                    </div>
 	                            </div>
 	                        </div>
@@ -70,7 +71,7 @@
 	                        	<label class="col-lg-4 control-label">bereits geladene Links anzeigen:</label>
 	                            <div class="col-lg-6">
 	                                    <div class="checkbox">
-	                                        <input type="checkbox" checked="{{currentUser.profile.showdownloadedlinks}}"> 
+	                                        <input type="checkbox" checked="{{profile.showdownloadedlinks}}"> 
 	                                    </div>
 	                            </div>
 	                        </div>
@@ -78,14 +79,14 @@
 	                        	<label class="col-lg-4 control-label">unbekannte Links anzeigen:</label>
 	                            <div class="col-lg-6">
 	                                    <div class="checkbox">
-	                                        <input type="checkbox" checked="{{currentUser.profile.showunknownlinks}}"> 
+	                                        <input type="checkbox" checked="{{profile.showunknownlinks}}"> 
 	                                    </div>
 	                            </div>
 	                        </div>
 	                        <div class="form-group">
 	                            <label class="col-lg-4 control-label">Links beigetragen:</label>
 	                            <div class="col-lg-6">
-	                                <input class="form-control" type="text" value="{{currentUser.profile.linkcontributioncount}}" />
+	                                <input class="form-control" type="text" value="{{profile.linkcontributioncount}}" />
 	                            </div>
 	                        </div>
 
@@ -96,6 +97,7 @@
                         </div>
                     </form>
                 </div>
+                {{/with}}
             </div>            
         </div>
 </template>

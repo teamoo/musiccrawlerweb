@@ -543,6 +543,10 @@ Deps.autorun(function () {
 		$('.crawl_single_site').tooltip("enable");
 	}	
 	
+	if (Meteor.user() && Meteor.user().admin) {
+			Meteor.subscribe('allUsers');
+	}
+	
 	if (Meteor.user() && Session.equals("init",false)) {
 		Session.set("init",true);
 		
