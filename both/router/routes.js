@@ -87,8 +87,8 @@ Router.map(function() {
 					tableoptions :
 					{
 					  columns: [{
-						title: "URL",
-						data: "url"
+						title: "Name",
+						data: "name"
 					  },{
 						title: "Status",
 						data: "status"
@@ -110,11 +110,20 @@ Router.map(function() {
 							title: "Seite",
 							data: "name"
 						  },{
-							title: "URL",
+							title: "aktiv",
+							data: "active"
+						  },{
+							title: "Feed URL",
 							data: "feedurl"
 						  },{
+							title: "URL",
+							data: "url"
+						  },{
 							title: "Veröffentlicht",
-							data: "date_published"
+							data: "date_created",
+							mRender: function(data, type, row) {
+								return moment(data).format("Do MMMM YYYY")
+							}
 						  }],
 						  subscription: "all_" + this.params.collection
 					}
