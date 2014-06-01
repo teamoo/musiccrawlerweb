@@ -63,6 +63,11 @@ Meteor.startup(function () {
 //	}, {
 //		unique: 1, sparse: 1, dropDups: 1
 //	});
+	Blog.config({
+		adminRole: 'blogAdmin',
+		title: "MusicCrawler Web Blog",
+		description: "Blog über das MusicCrawlerWeb Projekt"
+	});
 });
 
 Accounts.onLoginFailure(function(infoObject) {

@@ -8,6 +8,12 @@ function isValidObjectID(str) {
   return valid;
 }
 
+if (Meteor.isClient)
+Blog.config({
+	blogIndexTemplate: "blogTemplate",
+	blogShowTemplate: "blogItemTemplate"
+})
+
 isAdmin = function() {
 	if ((Meteor.user() !== null) && (Meteor.user().admin) && (Meteor.user().admin === true))
 		return true;
@@ -25,6 +31,13 @@ Router.configure({
 });
 	
 Router.map(function() {
+//  this.route('blog', {
+//  	waitOn: function() {
+//  		return Meteor.subscribe("blog_posts");
+//  	},
+//  	loginRequired: true
+//  });	
+  
   this.route('home', {path: '/',
   	loginRequired: 'login'
   });
@@ -205,31 +218,40 @@ Router.map(function() {
 	loginRequired: 'login'
   });
   this.route('link/:id?', {
-	path: /^[0-9a-fA-F]{24}$/
+	path: /^[0-9a-fA-F]{24}$/,
+	loginRequired: 'login'
   });
   this.route('links/:id?', {
-	path: /^[0-9a-fA-F]{24}$/
+	path: /^[0-9a-fA-F]{24}$/,
+	loginRequired: 'login'
   });
   this.route('links/:page?', {
-	path: /^[0-9]*$/
+	path: /^[0-9]*$/,
+	loginRequired: 'login'
   });
   this.route('links/recent/:page?', {
-  	path: /^[0-9]*$/
+  	path: /^[0-9]*$/,
+  	loginRequired: 'login'
   });
   this.route('site/:id?', {
-	path: /^[0-9a-fA-F]{24}$/
+	path: /^[0-9a-fA-F]{24}$/,
+	loginRequired: 'login'
   });
   this.route('sites/:id?', {
-	path: /^[0-9a-fA-F]{24}$/
+	path: /^[0-9a-fA-F]{24}$/,
+	loginRequired: 'login'
   });
   this.route('sites/:page?', {
-	path: /^[0-9]*$/
+	path: /^[0-9]*$/,
+	loginRequired: 'login'
   });
   this.route('set/:id?', {
-	path: /^[0-9a-fA-F]{24}$/
+	path: /^[0-9a-fA-F]{24}$/,
+	loginRequired: 'login'
   });
   this.route('sets/:id?', {
-	path: /^[0-9a-fA-F]{24}$/
+	path: /^[0-9a-fA-F]{24}$/,
+	loginRequired: 'login'
   });
   
   this.route("REST", {path: "/api/links/:id?",
@@ -252,7 +274,6 @@ Router.map(function() {
 		
 		// Check the userToken before adding it to the db query
 		// Set the this.userId
-		//TODO update for oauth-encrypted
 		if (userToken) {
 			var user = Meteor.users.findOne({ 'services.resume.loginTokens.hashedToken': Accounts._hashLoginToken(userToken)});
 		

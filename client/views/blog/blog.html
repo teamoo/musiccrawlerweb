@@ -1,0 +1,36 @@
+<template name="blogTemplate">
+<div id="blog">
+  	<div id="posts">
+  		<div class="container">
+  			<div class="row">
+  				<div class="col-md-9">
+  					{{#each posts}}
+  						{{#if count}}
+						<div class="post">
+							<a href="blogpost.html" class="pic">
+								<img src="images/blogpost1.png" class="img-responsive" alt="blogpost" />
+							</a>
+	
+							<div class="title">
+								<a href="blogpost.html">{{title}}</a>
+							</div>
+							<div class="author">
+								<img src="images/testimonials/testimonial2.jpg" class="avatar" alt="author" />
+								Jessica Smith, {{publishedAt}}
+							</div>
+							<p class="intro">
+								{{body}}
+							</p>
+							<a href="blogpost.html" class="continue-reading">Eintrag weiterlesen</a>
+						</div>
+						{{else}}
+							Dieser Blog ist noch leer.
+						{{/if}}
+  					{{/each}}
+   				</div>
+  			</div>
+  		</div>
+  	</div>
+  	{{blogPager}}
+  </div>
+</template>
