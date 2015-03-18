@@ -272,8 +272,8 @@ Meteor.methods({
 		}
 		
 		searchterm_mod = searchterm_mod.replace(/\.\*|\(|\)/g,"").trim();
-		
-		Future = Meteor.require('fibers/future');
+		//TODO: Auf Meteor.wrapAsync umstellen
+		Future = Meteor.npmRequire('fibers/future');
 		
 		var fut = new Future();		
 		
@@ -321,11 +321,11 @@ Meteor.methods({
 //	initiateBeatportLogin: function() {
 //		if (this.isSimulation) return undefined;
 //		
-//		Future = Meteor.require('fibers/future');
+//		Future = Meteor.npmRequire('fibers/future');
 //		
 //		var fut = new Future();
 //		
-//		var OAuth = Meteor.require('oauth').OAuth;
+//		var OAuth = Meteor.npmRequire('oauth').OAuth;
 //		
 //		var oa = new OAuth("https://oauth-api.beatport.com/identity/1/oauth/request-token",
 //		                  "https://oauth-api.beatport.com/identity/1/oauth/access-token",
@@ -354,12 +354,12 @@ Meteor.methods({
 	searchBeatport: function(searchterm) {
 		if (this.isSimulation) return undefined;
 		
-		Future = Meteor.require('fibers/future');
+		Future = Meteor.npmRequire('fibers/future');
 		
 		var fut = new Future();
 		
 		
-		var OAuth = Meteor.require('oauth').OAuth;
+		var OAuth = Meteor.npmRequire('oauth').OAuth;
 		
 		var oa = new OAuth("https://oauth-api.beatport.com/catalog/3/search/",
 		                  "https://oauth-api.beatport.com/catalog/3/search/",
@@ -384,7 +384,7 @@ Meteor.methods({
 	getMuzofonDownloadLink: function(url, searchterm) {
 		if (this.isSimulation) return undefined;
 		
-		Future = Meteor.require('fibers/future');
+		Future = Meteor.npmRequire('fibers/future');
 		
 		var fut = new Future();
 	

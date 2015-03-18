@@ -5,17 +5,16 @@ Accounts.config({oauthSecretKey: Meteor.settings.oauthSecretKey});
 Accounts.config({
 	forbidClientAccountCreation: false
 });
-Meteor.AppCache.config({
-	onlineOnly: ['/packages/'],
-	chrome: false,
-	chromium : false,
-	firefox: false,
-	ie: false,
-	android: false,
-	mobileSafari: false,
-	safari: false,
-	chromeMobileIOS : false
-});
+//Meteor.AppCache.config({
+//	chrome: false,
+//	chromium : false,
+//	firefox: false,
+//	ie: false,
+//	android: false,
+//	mobileSafari: false,
+//	safari: false,
+//	chromeMobileIOS : false
+//});
 // Facebook-Konfiguration entfernen
 ServiceConfiguration.configurations.remove({
     service : "facebook"

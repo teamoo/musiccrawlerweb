@@ -1,7 +1,7 @@
 ﻿//url = encodeURIComponent(searchHost) + "/ip" + ipprot_q_current + "%252C" + ipprot_a_current + "/ha" + hash_ + "/cs" + cs_ + "/u" + u_ + "/" + mp3_ + ".mp3?vkid=" + encodeURIComponent(s_vk_id[a] + "&vkoid=" + s_vk_oid[a] + "&us=" + encodeURIComponent(u_us_current))
   // Add access points for `GET`, `POST`, `PUT`, `DELETE`
 
-moment.lang('de');
+moment.locale('de');
 //Initialize Session Variables
 Session.setDefault("loading_results", false);
 Session.setDefault("wait_for_items", false);
@@ -40,10 +40,6 @@ Session.setDefault("init",false);
 Session.setDefault("filter_sort", "date_published");
 [1, 14, 30, 90, 365].forEach(function (timespan) {
 	Session.setDefault("links_count_" + timespan, undefined);
-});
-
-IronRouterProgress.configure({
-	spinner: false
 });
 
 Meteor.Spinner.options = {
@@ -556,7 +552,7 @@ Deps.autorun(function () {
 			SCM.volume(Meteor.user().profile.volume);
 		}
 		
-		moment.lang(Meteor.user().profile.locale.substr(0,2));
+		moment.locale(Meteor.user().profile.locale.substr(0,2));
 		
 		Session.set("filter_show_already_downloaded", Meteor.user().profile.showdownloadedlinks);
 		Session.set("filter_mixes", Meteor.user().profile.hidemixes);
@@ -701,9 +697,11 @@ var getSuggestions = _.debounce(function(query, callback) {
 		});
 }, 300);
 
-Template.searchpanel.suggestions = function(query, callback) {
-	getSuggestions(query, callback);
-}
+Template.searchpanel.helpers({
+    suggestions : function(query, callback) {
+        getSuggestions(query, callback);
+    }
+});
 
 // Link-Größe von Kilobyte in MB umwandeln
 UI.registerHelper('getSizeinMB', function (context) {
@@ -759,9 +757,12 @@ UI.registerHelper('session', function (input) {
 	// return false;
 // };
 
-Template.user_login.loginServicesConfigured = function () {
-	return Accounts.loginServicesConfigured();
-};
+Template.user_login.helpers({
+    loginServicesConfigured : function () {
+        return Accounts.loginServicesConfigured();
+    }
+});
+
 
 // Template.pageold.linksFoundLessThanThree = function () {
 	// if (Links.find().count() < 3) return true;
@@ -778,15 +779,19 @@ Template.userlist.users = function() {
 	// return false;
 // };
 
-Template.adminnotifications.notificationCount = function() {
-	if (Meteor.user() && Meteor.user().id)
-		return AdminNotifications.find({read_by: {$ne: Meteor.user().id}},{sort:{timestamp:-1}}).count();
-};
+Template.adminnotifications.helpers({
+    notificationCount: function(){
+	    if (Meteor.user() && Meteor.user().id)
+		    return AdminNotifications.find({read_by: {$ne: Meteor.user().id}},{sort:{timestamp:-1}}).count();
+    }
+});
 
-Template.adminnotifications.adminnotifications = function() {
-	if (Meteor.user() && Meteor.user().id)
-		return AdminNotifications.find({read_by: {$ne: Meteor.user().id}},{limit:5,sort:{timestamp:-1}});	
-};
+Template.adminnotifications.helpers({
+    adminnotifications : function(){
+        if (Meteor.user() && Meteor.user().id)
+            return AdminNotifications.find({read_by: {$ne: Meteor.user().id}},{limit:5,sort:{timestamp:-1}});
+    }
+});
 
 // Funktion um zu bestimmen, ob irgend ein Link ausgewählt ist
 Template.navigation.isAnyLinkSelected = function () {
@@ -833,10 +838,6 @@ Template.link.isSearch = function () {
 // Funktion um die Anzahl der Seiten als badge anzuzeigen
 Template.navigation.getActiveSitesCount = function () {
 	return Sites.find({"active" : true}).count();
-};
-// Links-Outlet: alle Links, die gerade in der Subscription sind
-Template.linklist.links = function () {
-	return Links.find();
 };
 // Template.searchresultlist.searchresults = function () {
 	// return SearchResults.find({});

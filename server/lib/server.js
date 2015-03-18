@@ -1,5 +1,7 @@
 //TODO Logging einbauen. Notifications in adminnotifications db loggen mit zusätzlichen Metadaten
-Meteor.startup(function () {	
+Meteor.startup(function () {
+    winston = Meteor.npmRequire('winston');
+
 	Facts.setUserIdFilter(function (userId) {
 		console.log(userId);
 	
@@ -10,7 +12,6 @@ Meteor.startup(function () {
 		return true;
 	
 	});
-
 	Links._ensureIndex({
 		date_published: 1
 	});
@@ -63,24 +64,13 @@ Meteor.startup(function () {
 //	}, {
 //		unique: 1, sparse: 1, dropDups: 1
 //	});
-	Blog.config({
-		adminRole: 'blogAdmin',
-		title: "MusicCrawler Web Blog",
-		description: "Blog über das MusicCrawlerWeb Projekt"
-	});
 });
 
 Accounts.onLoginFailure(function(infoObject) {
-	if (!winston) {
-		var winston = Winston;
-	}
 	winston.log("Anmeldeversuch fehlgeschlagen.",{object: infoObject, action:"onLoginFailure"});
 });
 
 Accounts.onLogin(function(infoObject) {
-	if (!winston) {
-		var winston = Winston;
-	}
 	// Add user facebook token to groups of the user that should be crawled, so the crawl will work
 	//winston.info("Benutzer hat sich angemeldet",{action:"onLogin",object: infoObject});
 	Meteor.call('updateFacebookTokensForUser', infoObject);
